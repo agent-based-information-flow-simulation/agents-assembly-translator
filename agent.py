@@ -21,25 +21,11 @@ class Agent:
         
     def add_list(self, list_param: ListParam) -> None:
         self.lists[list_param.name] = list_param
-        
-    # def get_param(self, name: str) -> Param:
-    #     if name in self.floats:
-    #         return self.floats[name]
-    #     elif name in self.enums:
-    #         return self.enums[name]
-    #     elif name in self.lists:
-    #         return self.lists[name]
 
     def param_exists(self, name: str) -> bool:
         # if name in (*list(self.init_floats), *list(self.dist_normal_floats), *list(self.enums), *list(self, self.lists)):
         #     return True
         return False
-    
-    # def get_enum_value(self, name: str) -> Tuple[str, str]:
-    #     return self._enum_values[name]
-    
-    # def enum_value_exists(self, name: str) -> bool:
-    #     return name in self._enum_values
 
     def print(self) -> None:
         print(f'Agent {self.name}')
