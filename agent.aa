@@ -15,7 +15,35 @@ PRM is_online, enum, yes, 95, no, 5
 PRM friends, list, conn_list
 PRM spam, list, msg_list
 
+# SETUPBEHAV directive is followed by a non-whitespace token
+# which corresponds to the OnSetup behaviour name
+SETUPBEHAV setup_behav_1
+
+# ACTION directive is followed by a non-whitespace token
+# which corresponds to action name
+ACTION action_1
+
+# ACTION scope starts with declaration of all local variables
+DECL var1, 2
+# note that second argument might be a named systemic variable
+DECL var2, connCount
+
+# after all declarations other actions are supported: example
+GT   minutes_spent_daily_on_youtube,var1
+MULT fakenews_susceptibility,var2
+FI
+
+LTE  minutes_spent_daily_on_youtube,var1
+SUBT fakenews_susceptibility,var2
+FI
+
+# We escape ACTION scope with EACTION
+EACTION
+
+# We escape SETUPBEHAV scope with ESETUPBEHAV
+ESETUPBEHAV
+
 # We escape AGENT scope with EAGENT directive
 EAGENT
- 
+
 EENVIRONMENT
