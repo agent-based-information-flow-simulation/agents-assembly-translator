@@ -12,6 +12,7 @@ def get_args() -> Tuple[str, str, bool]:
     args = parser.parse_args()
     return args.input_path, args.output_path, args.debug
 
+
 def main(input_path: str, output_path: str, debug: bool) -> None:
     with open(input_path, 'r') as f:
         lines = f.readlines()
