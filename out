@@ -3,12 +3,12 @@ import spade
 from numpy.random import normal
 
 
-class a1(spade.agent.Agent):
+class AverageUser(spade.agent.Agent):
     def __init__(self, jid, password, location, connections):
         super().__init__(jid, password, verify_security=False)
-        self.param1 = 200
-        self.param2 = normal(2138, 2137)
-        self.param3 = r.choices(["enum_val1", "enum_val2"], [100, 0])
-        self.param4 = r.choices(["enum_val3", "enum_val4"], [99, 1])
-        self.param5 = []
-        self.param6 = []
+        self.minutes_spent_daily_on_youtube = 205.7
+        self.fakenews_susceptibility = normal(15, 32)
+        self.prefered_website = r.choices(["facebook", "twitter"], [100, 0])
+        self.is_online = r.choices(["yes", "no"], [95, 5])
+        self.friends = []
+        self.spam = []
