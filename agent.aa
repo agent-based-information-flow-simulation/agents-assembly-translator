@@ -7,7 +7,7 @@ ENVIRONMENT
 # which corresponds to the agent class name
 AGENT a1
 
-# instruction PRM declares a parameter of name $arg1, type $arg2, $arg[3:] optional arguments
+# instruction PRM declares a parameter of name $arg1, type $arg2 and optional arguments $arg[3:]
 PRM     param1, float, init, 200
 PRM     param2, float, dist_normal, 2138, 2137
 PRM     param3, enum, enum_val1, 100, enum_val2, 0
