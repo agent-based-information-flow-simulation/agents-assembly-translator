@@ -3,6 +3,7 @@ from state import State
 from agent import Agent
 from param import EnumParam, ListParam, InitFloatParam, DistNormalFloatParam
 from typing import List
+from utils import is_float, is_valid_enum_list
 
 
 def op_ENVIRONMENT(state: State) -> None:
@@ -43,13 +44,13 @@ def op_PRM(state: State, name: str, category: str, args: List[str]) -> None:
     match state.in_agent:
         case True if not state.last_agent.param_exists(name):
             match category, args:
-                case 'float', ['init', val]:
+                case 'float', ['init', val] if is_float(val):
                     state.last_agent.add_init_float(InitFloatParam(name, val))
-                case 'float', ['dist_normal', mean, std_dev]:
+                case 'float', ['dist_normal', mean, std_dev] if is_float(mean) and is_float(std_dev):
                     state.last_agent.add_dist_normal_float(DistNormalFloatParam(name, mean, std_dev))
                 case 'list', ['conn_list' | 'msg_list']:
                     state.last_agent.add_list(ListParam(name))
-                case 'enum', enums:
+                case 'enum', enums if is_valid_enum_list(enums):
                     state.last_agent.add_enum(EnumParam(name, enums))
                 case _:
                     state.panic(f'Incorrect operation: PRM {name} {category} {args}')
