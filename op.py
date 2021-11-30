@@ -6,8 +6,8 @@ from typing import List
 
 
 def op_ENVIRONMENT(state: State) -> None:
-    match state.in_environment, state.in_agent:
-        case False, False:
+    match state.in_environment:
+        case False:
             state.in_environment = True
             state.add_environment(Environment())
         case _:
@@ -32,8 +32,8 @@ def op_AGENT(state: State, name: str) -> None:
 
 
 def op_EAGENT(state: State) -> None:
-    match state.in_environment, state.in_agent:
-        case True, True:
+    match state.in_agent:
+        case True:
             state.in_agent = False
         case _:
             state.panic('Incorrect operation: EAGENT')
