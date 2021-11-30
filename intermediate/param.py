@@ -1,5 +1,5 @@
-from typing import List, Tuple
 from pprint import pprint
+from typing import List, Tuple
 
 
 class InitFloatParam:

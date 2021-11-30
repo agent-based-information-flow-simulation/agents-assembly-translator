@@ -1,7 +1,8 @@
-from typing import Tuple
 from argparse import ArgumentParser
-from parsing.environments import get_environments
+from typing import Tuple
+
 from generating.spade import generate_agent, get_imports
+from parsing.environments import get_environments
 
 
 def get_args() -> Tuple[str, str, bool]:

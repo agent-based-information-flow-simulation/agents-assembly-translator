@@ -1,5 +1,7 @@
 from typing import Dict, Tuple
-from intermediate.param import EnumParam, InitFloatParam, ListParam, DistNormalFloatParam
+
+from intermediate.param import (DistNormalFloatParam, EnumParam,
+                                InitFloatParam, ListParam)
 
 
 class Agent:

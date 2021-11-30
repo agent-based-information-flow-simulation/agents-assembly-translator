@@ -1,5 +1,6 @@
-from intermediate.agent import Agent
 from typing import List
+
+from intermediate.agent import Agent
 
 
 def get_imports() -> List[str]:

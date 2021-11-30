@@ -1,8 +1,10 @@
-from intermediate.environment import Environment
-from parsing.state import State
-from intermediate.agent import Agent
-from intermediate.param import EnumParam, ListParam, InitFloatParam, DistNormalFloatParam
 from typing import List
+
+from intermediate.agent import Agent
+from intermediate.environment import Environment
+from intermediate.param import (DistNormalFloatParam, EnumParam,
+                                InitFloatParam, ListParam)
+from parsing.state import State
 from utils.validation import is_float, is_valid_enum_list
 
 

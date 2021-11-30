@@ -1,7 +1,10 @@
-from parsing.state import State
-from parsing.op import op_AGENT,op_EAGENT, op_EENVIRONMENT, op_ENVIRONMENT, op_PRM, op_SETUPBEHAV, op_ESETUPBEHAV, op_ACTION, op_EACTION, op_GT, op_LTE, op_MULT, op_SUBT
-from intermediate.environment import Environment
 from typing import List
+
+from intermediate.environment import Environment
+from parsing.op import (op_ACTION, op_AGENT, op_EACTION, op_EAGENT,
+                        op_EENVIRONMENT, op_ENVIRONMENT, op_ESETUPBEHAV, op_GT,
+                        op_LTE, op_MULT, op_PRM, op_SETUPBEHAV, op_SUBT)
+from parsing.state import State
 
 
 def get_environments(lines: List[str], debug: bool) -> List[Environment]:

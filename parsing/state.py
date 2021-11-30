@@ -1,7 +1,8 @@
 from pprint import pprint
-from typing import List, Generator
-from intermediate.environment import Environment
+from typing import Generator, List
+
 from intermediate.agent import Agent
+from intermediate.environment import Environment
 from intermediate.message import Message
 
 
