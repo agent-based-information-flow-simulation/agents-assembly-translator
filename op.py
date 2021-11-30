@@ -28,7 +28,7 @@ def op_AGENT(state: State, name: str) -> None:
             state.in_agent = True
             state.last_environment.add_agent(Agent(name))
         case _:
-            state.panic(f'Incorrect operation: EAGENT {name}')
+            state.panic(f'Incorrect operation: AGENT {name}')
 
 
 def op_EAGENT(state: State) -> None:
