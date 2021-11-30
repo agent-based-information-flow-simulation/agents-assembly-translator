@@ -42,12 +42,12 @@ python translate.py --help
 * `generating`
     * `spade.py` - SPADE code generation from the intermediate representation
 * `intermediate`
-    * `action.py` - intermediate action representation
-    * `agent.py` - intermediate agent representation
-    * `behaviour.py` - intermediate behaviour representation
-    * `environment.py` - intermediate environment representation
-    * `message.py` - intermediate message representation
-    * `param.py` - intermediate parameters representation
+    * `action.py` - action representation
+    * `agent.py` - agent representation
+    * `behaviour.py` - behaviour representation
+    * `environment.py` - environment representation
+    * `message.py` - message representation
+    * `param.py` - parameters representation
 * `parsing`
     * `environments.py` - parsing environments from `*.aa` files
     * `op.py` - Agents Assembly operations
