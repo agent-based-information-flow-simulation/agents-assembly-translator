@@ -1,5 +1,5 @@
 import sys
-from environments import get_environments
+from parse import get_environments
 from spade_generator import generate_agent, get_imports
 
 
