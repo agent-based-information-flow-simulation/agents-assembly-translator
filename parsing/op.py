@@ -56,3 +56,35 @@ def op_PRM(state: State, name: str, category: str, args: List[str]) -> None:
                     state.panic(f'Incorrect operation: PRM {name} {category} {args}')
         case _:
             state.panic(f'Incorrect operation: PRM {name} {category} {args}')
+
+
+def op_SETUPBEHAV(state: State, name: str):
+    ...
+    
+
+def op_ESETUPBEHAV(state: State):
+    ...
+    
+
+def op_ACTION(state: State, name: str):
+    ...
+    
+    
+def op_EACTION(state: State):
+    ...
+    
+
+def op_GT(state: State, arg1: str, arg2: str):
+    ...
+    
+    
+def op_LTE(state: State, arg1: str, arg2: str):
+    ...
+    
+    
+def op_MULT(state: State, arg1: str, arg2: str):
+    ...
+    
+    
+def op_SUBT(state: State, arg1: str, arg2: str):
+    ...
