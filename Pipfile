@@ -4,6 +4,8 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+numpy = "*"
+spade = {git = "https://github.com/agent-based-information-flow-simulation/spade"}
 
 [dev-packages]
 
