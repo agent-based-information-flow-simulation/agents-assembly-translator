@@ -14,7 +14,7 @@ class Environment:
     
     @property
     def last_message(self) -> Message:
-        return self.messages[-1]
+        return self.messages[list(self.messages.keys())[-1]]
     
     def add_agent(self, agent: Agent) -> None:
         self.agents[agent.name] = agent
