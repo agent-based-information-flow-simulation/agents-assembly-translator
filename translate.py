@@ -8,7 +8,7 @@ def get_args() -> Tuple[str, str, bool]:
     parser = ArgumentParser()
     parser.add_argument('input_path', type=str, help='path to input file in .aa format')
     parser.add_argument('-d', '--debug', action='store_true', help='toggle compiler debug mode')
-    parser.add_argument('-o', '--output_path', type=str, default='out', help='output path')
+    parser.add_argument('-o', '--output_path', type=str, default='out', help='output file path')
     args = parser.parse_args()
     return args.input_path, args.output_path, args.debug
 
