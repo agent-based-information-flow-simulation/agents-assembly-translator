@@ -11,7 +11,7 @@ def get_imports() -> List[str]:
     return code
 
 
-def generate_agent(agent_name: str, agent_body: Agent):
+def generate_agent(agent_name: str, agent_body: Agent) -> List[str]:
     code = []
     code.append('\n')
     code.append(f'class {agent_name}(spade.agent.Agent):\n')
