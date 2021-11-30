@@ -1,6 +1,6 @@
-from state import State
-from op import op_AGENT, op_EAGENT, op_EENVIRONMENT, op_ENVIRONMENT, op_PRM
-from environment import Environment
+from parsing.state import State
+from parsing.op import op_AGENT, op_EAGENT, op_EENVIRONMENT, op_ENVIRONMENT, op_PRM
+from intermediate.environment import Environment
 from typing import List
 
 

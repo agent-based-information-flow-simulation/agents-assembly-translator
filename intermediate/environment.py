@@ -1,6 +1,6 @@
 from typing import Dict
-from agent import Agent
-from message import Message
+from intermediate.agent import Agent
+from intermediate.message import Message
 
 
 class Environment:

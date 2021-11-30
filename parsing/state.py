@@ -1,8 +1,8 @@
 from pprint import pprint
 from typing import List, Generator
-from environment import Environment
-from agent import Agent
-from message import Message
+from intermediate.environment import Environment
+from intermediate.agent import Agent
+from intermediate.message import Message
 
 
 class State:

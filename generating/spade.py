@@ -1,4 +1,4 @@
-from agent import Agent
+from intermediate.agent import Agent
 from typing import List
 
 

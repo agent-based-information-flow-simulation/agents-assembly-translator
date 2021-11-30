@@ -1,9 +1,9 @@
-from environment import Environment
-from state import State
-from agent import Agent
-from param import EnumParam, ListParam, InitFloatParam, DistNormalFloatParam
+from intermediate.environment import Environment
+from parsing.state import State
+from intermediate.agent import Agent
+from intermediate.param import EnumParam, ListParam, InitFloatParam, DistNormalFloatParam
 from typing import List
-from utils import is_float, is_valid_enum_list
+from utils.validation import is_float, is_valid_enum_list
 
 
 def op_ENVIRONMENT(state: State) -> None:
