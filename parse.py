@@ -1,5 +1,5 @@
 from state import State
-from op import op_AARG, op_AGENT, op_EAGENT, op_EENVIRONMENT, op_ENVIRONMENT, op_EVAL, op_PRM, op_SPRM
+from op import op_AGENT, op_EAGENT, op_EENVIRONMENT, op_ENVIRONMENT, op_PRM
 from environment import Environment
 from typing import List
 
@@ -20,17 +20,8 @@ def get_environments(lines: List[str], debug: bool) -> List[Environment]:
             case ['EAGENT']:
                 op_EAGENT(state)
                 
-            case ['PRM', name, category]:
-                op_PRM(state, name, category)
-                
-            case ['SPRM', name, subcategory]:
-                op_SPRM(state, name, subcategory)
-                
-            case ['EVAL', name, value]:
-                op_EVAL(state, name, value)
- 
-            case ['AARG', name, value]:
-                op_AARG(state, name, value)
+            case ['PRM', name, category, *args]:
+                op_PRM(state, name, category, args)
                 
             case _:
                 state.panic(f'Unknown tokens: {tokens}')
