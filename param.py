@@ -8,6 +8,7 @@ class InitFloatParam:
         self.value: str = value
         
     def print(self) -> None:
+        print(self.__class__)
         pprint(self.__dict__)
 
 
@@ -18,6 +19,7 @@ class DistNormalFloatParam:
         self.std_dev: str = std_dev
 
     def print(self) -> None:
+        print(self.__class__)
         pprint(self.__dict__)
 
 
@@ -27,6 +29,7 @@ class EnumParam:
         self.enums: List[Tuple[str, str]] = [enum_pair for enum_pair in zip(*[iter(enums)] * 2)]
         
     def print(self) -> None:
+        print(self.__class__)
         pprint(self.__dict__)
 
 
@@ -35,4 +38,5 @@ class ListParam:
         self.name: str = name
         
     def print(self) -> None:
+        print(self.__class__)
         pprint(self.__dict__)
