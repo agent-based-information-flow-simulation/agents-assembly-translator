@@ -23,8 +23,8 @@ class Agent:
         self.lists[list_param.name] = list_param
 
     def param_exists(self, name: str) -> bool:
-        # if name in (*list(self.init_floats), *list(self.dist_normal_floats), *list(self.enums), *list(self, self.lists)):
-        #     return True
+        if name in (*list(self.init_floats), *list(self.dist_normal_floats), *list(self.enums), *list(self.lists)):
+            return True
         return False
 
     def print(self) -> None:
