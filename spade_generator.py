@@ -32,7 +32,7 @@ def generate_agent(agent_name: str, agent_body: Agent) -> List[str]:
             weights.append(weight)
         names = f'[{", ".join(names)}]'
         weights = f'[{", ".join(weights)}]'
-        code.append(f'        self.{param.name} = r.choices({names}, {weights})\n')
+        code.append(f'        self.{param.name} = r.choices({names}, {weights})[0]\n')
     
     for param in agent_body.lists.values():
         code.append(f'        self.{param.name} = []\n')
