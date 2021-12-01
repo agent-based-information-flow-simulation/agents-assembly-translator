@@ -1,9 +1,9 @@
 from typing import List
 
 from intermediate.environment import Environment
-from parsing.op import (op_ACTION, op_AGENT, op_EACTION, op_EAGENT,
-                        op_EENVIRONMENT, op_ENVIRONMENT, op_ESETUPBEHAV, op_GT,
-                        op_LTE, op_MULT, op_PRM, op_SETUPBEHAV, op_SUBT)
+from parsing.op import (op_ACTION, op_AGENT, op_DECL, op_EACTION, op_EAGENT,
+                        op_EBEHAV, op_EENVIRONMENT, op_ENVIRONMENT, op_FI,
+                        op_GT, op_LTE, op_MULT, op_PRM, op_SETUPBEHAV, op_SUBT)
 from parsing.state import State
 
 
@@ -29,8 +29,8 @@ def get_environments(lines: List[str], debug: bool) -> List[Environment]:
             case ['SETUPBEHAV', name]:
                 op_SETUPBEHAV(state, name)
                 
-            case ['ESETUPBEHAV']:
-                op_ESETUPBEHAV(state)
+            case ['EBEHAV']:
+                op_EBEHAV(state)
                 
             case ['ACTION', name]:
                 op_ACTION(state, name)
@@ -38,11 +38,17 @@ def get_environments(lines: List[str], debug: bool) -> List[Environment]:
             case ['EACTION']:
                 op_EACTION(state)
                 
+            case ['DECL', name, value]:
+                op_DECL(state, name, value)
+                
             case ['GT', arg1, arg2]:
                 op_GT(state, arg1, arg2)
                 
             case ['LTE', arg1, arg2]:
                 op_LTE(state, arg1, arg2)
+                
+            case ['FI']:
+                op_FI(state)
                 
             case ['MULT', arg1, arg2]:
                 op_MULT(state, arg1, arg2)

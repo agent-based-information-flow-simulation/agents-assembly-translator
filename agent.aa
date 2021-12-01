@@ -41,7 +41,7 @@ FI
 EACTION
 
 # We escape SETUPBEHAV scope with ESETUPBEHAV
-ESETUPBEHAV
+EBEHAV
 
 # We escape AGENT scope with EAGENT directive
 EAGENT

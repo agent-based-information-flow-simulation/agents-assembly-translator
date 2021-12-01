@@ -1,7 +1,9 @@
 from pprint import pprint
 from typing import Generator, List
 
+from intermediate.action import Action
 from intermediate.agent import Agent
+from intermediate.behaviour import Behaviour
 from intermediate.environment import Environment
 from intermediate.message import Message
 
@@ -15,6 +17,10 @@ class State:
         self.in_environment: bool = False
         self.in_agent: bool = False
         self.in_message: bool = False
+        self.in_behaviour: bool = False
+        self.in_action: bool = False
+        self.in_block_declarations: bool = False
+        self.nested_blocks_count: int = 0
         
     @property
     def last_environment(self) -> Environment:
@@ -23,6 +29,14 @@ class State:
     @property
     def last_agent(self) -> Agent:
         return self.last_environment.last_agent
+    
+    @property
+    def last_behaviour(self) -> Behaviour:
+        return self.last_environment.last_agent.last_behaviour
+    
+    @property
+    def last_action(self) -> Action:
+        return self.last_environment.last_agent.last_behaviour.last_action
     
     @property
     def last_message(self) -> Message:
@@ -46,6 +60,14 @@ class State:
             self.panic('Missing EAGENT')
         elif self.in_message:
             self.panic('Missing EMESSAGE')
+        elif self.in_behaviour:
+            self.panic('Missing EBEHAV')
+        elif self.in_action:
+            self.panic('Missing EACTION')
+        elif self.nested_blocks_count > 0:
+            self.panic('Unclosed blocks')
+        elif self.nested_blocks_count < 0:
+            self.panic('Blocks closed too many times')
 
     def panic(self, reason: str) -> None:
         if self.debug:

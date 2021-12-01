@@ -1,6 +1,7 @@
 from typing import List
 
 from intermediate.agent import Agent
+from intermediate.behaviour import Behaviour
 from intermediate.environment import Environment
 from intermediate.param import (DistNormalFloatParam, EnumParam,
                                 InitFloatParam, ListParam)
@@ -61,10 +62,15 @@ def op_PRM(state: State, name: str, category: str, args: List[str]) -> None:
 
 
 def op_SETUPBEHAV(state: State, name: str):
-    ...
-    
+    match state.in_agent, state.in_behaviour:
+        case True, False if not state.last_agent.behaviour_exists(name):
+            state.last_agent.add_setup_behaviour(Behaviour(name))
+            state.in_behaviour = True
+        case _:
+            state.panic(f'Incorrect operation SETUPBEHAV {name}')
 
-def op_ESETUPBEHAV(state: State):
+
+def op_EBEHAV(state: State):
     ...
     
 
@@ -74,6 +80,10 @@ def op_ACTION(state: State, name: str):
     
 def op_EACTION(state: State):
     ...
+
+
+def op_DECL(state: State, name: str, value: str):
+    ...
     
 
 def op_GT(state: State, arg1: str, arg2: str):
@@ -81,6 +91,9 @@ def op_GT(state: State, arg1: str, arg2: str):
     
     
 def op_LTE(state: State, arg1: str, arg2: str):
+    ...
+    
+def op_FI(state: State):
     ...
     
     
