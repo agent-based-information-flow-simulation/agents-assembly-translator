@@ -75,13 +75,17 @@ class Block:
     def __init__(self, names_declared_in_parent: List[str] = []):
         self.declarations: Dict[str, Declaration] = {}
         self.instructions: List[Expression | Block] = []
-        self._names_declared_in_parent = names_declared_in_parent
+        self._names_declared_in_parent: List[str] = names_declared_in_parent
+    
+    @property 
+    def declared_names(self) -> List[str]:
+        return [ *list(self.declarations), *self._names_declared_in_parent ]
         
     def add_declaration(self, declaration: Declaration) -> None:
         self.declarations[declaration.name] = declaration
         
     def declaration_exists(self, name: str) -> bool:
-        return name in self._names_declared_in_parent or name in self.declarations
+        return name in self.declared_names
         
     def add_instruction(self, instruction: Expression | Block) -> None:
         self.instructions.append(instruction)
@@ -127,7 +131,7 @@ class Action:
         self.current_block.add_instruction(expression)
         
     def start_block(self) -> None:
-        new_block = Block(list(self.current_block.declarations))
+        new_block = Block(self.current_block.declared_names)
         self.current_block.add_instruction(new_block)
         self._block_stack.append(new_block)
     

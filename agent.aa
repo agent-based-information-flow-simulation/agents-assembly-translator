@@ -35,6 +35,11 @@ ENVIRONMENT
 
                 LTE minutes_spent_daily_on_youtube, threshold
                     SUBT fakenews_susceptibility, num_connections
+                    DECL temp_var, 2137
+
+                    GT fakenews_susceptibility, temp_var
+                        MULT fakenews_susceptibility, num_connections
+                    EBLOCK
                 EBLOCK
 
             # We escape ACTION scope with EACTION
