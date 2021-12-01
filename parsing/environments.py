@@ -2,7 +2,7 @@ from typing import List
 
 from intermediate.environment import Environment
 from parsing.op import (op_ACTION, op_AGENT, op_DECL, op_EACTION, op_EAGENT,
-                        op_EBEHAV, op_EENVIRONMENT, op_ENVIRONMENT, op_FI,
+                        op_EBEHAV, op_EBLOCK, op_EENVIRONMENT, op_ENVIRONMENT,
                         op_GT, op_LTE, op_MULT, op_PRM, op_SETUPBEHAV, op_SUBT)
 from parsing.state import State
 
@@ -47,8 +47,8 @@ def get_environments(lines: List[str], debug: bool) -> List[Environment]:
             case ['LTE', arg1, arg2]:
                 op_LTE(state, arg1, arg2)
                 
-            case ['FI']:
-                op_FI(state)
+            case ['EBLOCK']:
+                op_EBLOCK(state)
                 
             case ['MULT', arg1, arg2]:
                 op_MULT(state, arg1, arg2)

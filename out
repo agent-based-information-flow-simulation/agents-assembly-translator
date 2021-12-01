@@ -3,7 +3,7 @@ import spade
 from numpy.random import normal
 
 
-class AverageUser(spade.agent.Agent):
+class average_user(spade.agent.Agent):
     def __init__(self, jid, password, location, connections):
         super().__init__(jid, password, verify_security=False)
         self.minutes_spent_daily_on_youtube = 205.7

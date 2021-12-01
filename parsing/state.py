@@ -19,7 +19,6 @@ class State:
         self.in_message: bool = False
         self.in_behaviour: bool = False
         self.in_action: bool = False
-        self.in_block_declarations: bool = False
         self.nested_blocks_count: int = 0
         
     @property

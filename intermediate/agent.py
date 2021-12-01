@@ -6,6 +6,8 @@ from intermediate.param import (DistNormalFloatParam, EnumParam,
 
 
 class Agent:
+    RESERVED_PARAMS = ('connCount')
+    
     def __init__(self, name: str):
         self.name: str = name
         self.init_floats: Dict[str, InitFloatParam] = {}
@@ -36,6 +38,8 @@ class Agent:
         self._last_modified_behaviours = self.setup_behaviours
 
     def param_exists(self, name: str) -> bool:
+        if name in Agent.RESERVED_PARAMS:
+            return True
         if name in (*list(self.init_floats), *list(self.dist_normal_floats), *list(self.enums), *list(self.lists)):
             return True
         return False

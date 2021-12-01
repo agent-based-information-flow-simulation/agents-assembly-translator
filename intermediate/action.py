@@ -1,37 +1,52 @@
 from __future__ import annotations
 
 from pprint import pprint
-from typing import Dict, List, Tuple
+from typing import Dict, List
+
+# TODO: fix circular imports
+# from intermediate.agent import Agent
 
 
-class Statement:
+class Expression:
     def __init__(self, arg1: str, arg2: str):
         self.arg1: str = arg1
         self.arg2: str = arg2
         
 
-class GreaterThan(Statement):
+class GreaterThan(Expression):
     def __init__(self, arg1: str, arg2: str):
         super().__init__(arg1, arg2)
  
         
-class LessThanOrEqual(Statement):
+class LessThanOrEqual(Expression):
     def __init__(self, arg1: str, arg2: str):
         super().__init__(arg1, arg2)
 
 
-class Declaration:    
-    def __init__(self, name: str, value: str):
-        self.name: str = name
+class VariableValue:
+    # TODO: after fixing circular imports add Agent type    
+    def __init__(self, value: str, agent):
         self.value: str = value
+        self.is_value_from_agent: bool = agent.param_exists(value)
+
+    def print(self) -> None:
+        print('VariableValue')
+        pprint(self.__dict__)
+
+class Declaration(VariableValue):
+    # TODO: after fixing circular imports add Agent type    
+    def __init__(self, name: str, value: str, agent):
+        super().__init__(value, agent)
+        self.name: str = name
         
     def print(self) -> None:
-        print(f'Declaration: {self.name} = {self.value}')
+        print(f'Declaration: {self.name}')
+        super().print()
 
 class Block:    
-    def __init__(self, parent_declarations_copy: Dict[str, Declaration]):
+    def __init__(self, parent_declarations_copy: Dict[str, Declaration] = {}):
         self.declarations: Dict[str, Declaration] = parent_declarations_copy
-        self.instructions: List[Statement | Block] = []
+        self.instructions: List[Expression | Block] = []
         # self._is_in_declarations = True
         
     def add_declaration(self, declaration: Declaration) -> None:
@@ -40,7 +55,7 @@ class Block:
     def declaration_exists(self, name: str) -> bool:
         return name in self.declarations
         
-    def add_instruction(self, instruction: Statement | Block) -> None:
+    def add_instruction(self, instruction: Expression | Block) -> None:
         self.instructions.append(instruction)
         # self._is_in_declarations = False
         
@@ -55,7 +70,7 @@ class Block:
 class Action:
     def __init__(self, name: str):
         self.name: str = name
-        self._block_stack = [Block({})]
+        self._block_stack = [Block()]
         
     @property
     def main_block(self) -> Block:
@@ -64,6 +79,9 @@ class Action:
     @property
     def current_block(self) -> Block:
         return self._block_stack[-1]
+    
+    def is_name_in_scope(self, name: str):
+        return self.current_block.declaration_exists(name)
     
     def add_declaration(self, declaration: Declaration) -> None:
         self.current_block.add_declaration(declaration)
@@ -74,8 +92,8 @@ class Action:
     # def is_in_declarations(self) -> bool:
     #     return self.current_block._in_declarations
     
-    def add_statement(self, statement: Statement) -> None:
-        self.current_block.add_instruction(statement)
+    def add_expression(self, expression: Expression) -> None:
+        self.current_block.add_instruction(expression)
         
     def start_block(self) -> None:
         new_block = Block(dict(self.current_block.declarations.items()))
