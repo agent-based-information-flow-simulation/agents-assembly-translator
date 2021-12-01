@@ -60,6 +60,15 @@ class Multiply(Expression):
     def print(self) -> None:
         print('Multiply')
         super().print()
+        
+        
+class Subtract(Expression):
+    def __init__(self, arg1: str, arg2: str):
+        super().__init__(arg1, arg2)
+
+    def print(self) -> None:
+        print('Subtract')
+        super().print()
 
 
 class Block:    
