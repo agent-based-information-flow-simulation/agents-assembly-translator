@@ -3,74 +3,96 @@ from __future__ import annotations
 from pprint import pprint
 from typing import Dict, List
 
-# TODO: fix circular imports
-# from intermediate.agent import Agent
 
-
-class Expression:
-    def __init__(self, arg1: str, arg2: str):
-        self.arg1: str = arg1
-        self.arg2: str = arg2
-        
-
-class GreaterThan(Expression):
-    def __init__(self, arg1: str, arg2: str):
-        super().__init__(arg1, arg2)
- 
-        
-class LessThanOrEqual(Expression):
-    def __init__(self, arg1: str, arg2: str):
-        super().__init__(arg1, arg2)
-
-
-class VariableValue:
-    # TODO: after fixing circular imports add Agent type    
-    def __init__(self, value: str, agent):
+class VariableValue: 
+    def __init__(self, value: str):
         self.value: str = value
-        self.is_value_from_agent: bool = agent.param_exists(value)
+        self.is_value_from_agent: bool = False
 
     def print(self) -> None:
         print('VariableValue')
         pprint(self.__dict__)
 
-class Declaration(VariableValue):
-    # TODO: after fixing circular imports add Agent type    
-    def __init__(self, name: str, value: str, agent):
-        super().__init__(value, agent)
+
+class Declaration(VariableValue):  
+    def __init__(self, name: str, value: str):
+        super().__init__(value)
         self.name: str = name
         
     def print(self) -> None:
         print(f'Declaration: {self.name}')
         super().print()
 
+
+class Expression:
+    def __init__(self, arg1: str, arg2: str):
+        self.arg1: VariableValue = VariableValue(arg1)
+        self.arg2: VariableValue = VariableValue(arg2)
+  
+    def print(self) -> None:
+        print('Expression')
+        self.arg1.print()
+        self.arg2.print()
+
+
+class GreaterThan(Expression):
+    def __init__(self, arg1: str, arg2: str):
+        super().__init__(arg1, arg2)
+ 
+    def print(self) -> None:
+        print('GreaterThan')
+        super().print()
+
+
+class LessThanOrEqual(Expression):
+    def __init__(self, arg1: str, arg2: str):
+        super().__init__(arg1, arg2)
+
+    def print(self) -> None:
+        print('LessThanOrEqual')
+        super().print()
+        
+
+class Multiply(Expression):
+    def __init__(self, arg1: str, arg2: str):
+        super().__init__(arg1, arg2)
+
+    def print(self) -> None:
+        print('Multiply')
+        super().print()
+
+
 class Block:    
-    def __init__(self, parent_declarations_copy: Dict[str, Declaration] = {}):
-        self.declarations: Dict[str, Declaration] = parent_declarations_copy
+    def __init__(self, names_declared_in_parent: List[str] = []):
+        self.declarations: Dict[str, Declaration] = {}
         self.instructions: List[Expression | Block] = []
-        # self._is_in_declarations = True
+        self._names_declared_in_parent = names_declared_in_parent
         
     def add_declaration(self, declaration: Declaration) -> None:
         self.declarations[declaration.name] = declaration
         
     def declaration_exists(self, name: str) -> bool:
-        return name in self.declarations
+        return name in self._names_declared_in_parent or name in self.declarations
         
     def add_instruction(self, instruction: Expression | Block) -> None:
         self.instructions.append(instruction)
-        # self._is_in_declarations = False
         
     def print(self) -> None:
         print(f'Block')
+        print(f'Names from parent:')
+        print(self._names_declared_in_parent)
         for declaration in self.declarations.values():
             declaration.print()
         for instruction in self.instructions:
             instruction.print()
+        print('(EndBlock)')
 
 
 class Action:
-    def __init__(self, name: str):
+    def __init__(self, name: str, agent_param_names: List[str]):
         self.name: str = name
-        self._block_stack = [Block()]
+        self._block_stack: List[Block] = [Block()]
+        self._agent_param_names: List[str] = agent_param_names
         
     @property
     def main_block(self) -> Block:
@@ -80,23 +102,23 @@ class Action:
     def current_block(self) -> Block:
         return self._block_stack[-1]
     
-    def is_name_in_scope(self, name: str):
-        return self.current_block.declaration_exists(name)
+    def is_name_in_scope(self, name: str) -> bool:
+        return name in self._agent_param_names or self.current_block.declaration_exists(name)
     
     def add_declaration(self, declaration: Declaration) -> None:
+        if declaration.value in self._agent_param_names:
+            declaration.is_value_from_agent = True
         self.current_block.add_declaration(declaration)
     
-    def declaration_exists(self, name: str) -> bool:
-        return self.current_block.declaration_exists(name)
-        
-    # def is_in_declarations(self) -> bool:
-    #     return self.current_block._in_declarations
-    
     def add_expression(self, expression: Expression) -> None:
+        if expression.arg1.value in self._agent_param_names:
+            expression.arg1.is_value_from_agent = True
+        if expression.arg2.value in self._agent_param_names:
+            expression.arg2.is_value_from_agent = True
         self.current_block.add_instruction(expression)
         
     def start_block(self) -> None:
-        new_block = Block(dict(self.current_block.declarations.items()))
+        new_block = Block(list(self.current_block.declarations))
         self.current_block.add_instruction(new_block)
         self._block_stack.append(new_block)
     

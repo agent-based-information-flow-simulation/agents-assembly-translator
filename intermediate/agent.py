@@ -1,4 +1,4 @@
-from typing import Dict, Tuple
+from typing import Dict, List
 
 from intermediate.behaviour import Behaviour
 from intermediate.param import (DistNormalFloatParam, EnumParam,
@@ -6,7 +6,7 @@ from intermediate.param import (DistNormalFloatParam, EnumParam,
 
 
 class Agent:
-    RESERVED_PARAMS = ('connCount')
+    RESERVED_PARAMS = [ 'connCount' ]
     
     def __init__(self, name: str):
         self.name: str = name
@@ -20,6 +20,21 @@ class Agent:
     @property
     def last_behaviour(self) -> Behaviour:
         return self._last_modified_behaviours[list(self._last_modified_behaviours.keys())[-1]]
+    
+    @property
+    def param_names(self) -> List[str]:
+        return [ *Agent.RESERVED_PARAMS,
+                 *list(self.init_floats), 
+                 *list(self.dist_normal_floats), 
+                 *list(self.enums), 
+                 *list(self.lists) ]
+        
+    @property
+    def behaviour_names(self) -> List[str]:
+        return [ *list(self.setup_behaviours) ]
+    
+    def is_immutable(self, name: str) -> bool:
+        return name in Agent.RESERVED_PARAMS
         
     def add_init_float(self, float_param: InitFloatParam) -> None:
         self.init_floats[float_param.name] = float_param
@@ -38,17 +53,11 @@ class Agent:
         self._last_modified_behaviours = self.setup_behaviours
 
     def param_exists(self, name: str) -> bool:
-        if name in Agent.RESERVED_PARAMS:
-            return True
-        if name in (*list(self.init_floats), *list(self.dist_normal_floats), *list(self.enums), *list(self.lists)):
-            return True
-        return False
+        return name in self.param_names
     
     def behaviour_exists(self, name: str) -> bool:
-        if name in (*list(self.setup_behaviours), ):
-            return True
-        return False
-
+        return name in self.behaviour_names
+    
     def print(self) -> None:
         print(f'Agent {self.name}')
         for init_float_param in self.init_floats.values():
