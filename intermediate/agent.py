@@ -33,8 +33,8 @@ class Agent:
     def behaviour_names(self) -> List[str]:
         return [ *list(self.setup_behaviours) ]
     
-    def is_immutable(self, name: str) -> bool:
-        return name in Agent.RESERVED_PARAMS
+    def is_mutable(self, name: str) -> bool:
+        return name not in Agent.RESERVED_PARAMS
         
     def add_init_float(self, float_param: InitFloatParam) -> None:
         self.init_floats[float_param.name] = float_param

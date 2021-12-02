@@ -135,7 +135,7 @@ def handle_mutating_statement(state: State, op: str, arg1: str, arg2: str) -> No
     state.require(state.in_action, 'Not inside action')
     state.require(state.last_action.is_name_in_scope(arg1), f'{arg1} not in scope')
     state.require(state.last_action.is_name_in_scope(arg2), f'{arg2} not in scope')
-    state.require_not(state.last_agent.is_immutable(arg1), f'{arg1} is immutable')
+    state.require(state.last_agent.is_mutable(arg1), f'{arg1} is immutable')
     
     match op:
         case 'MULT':
