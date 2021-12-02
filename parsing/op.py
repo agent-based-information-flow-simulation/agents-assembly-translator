@@ -1,11 +1,12 @@
 from typing import List
 
-from intermediate.action import (Action, Declaration, IfEqual, IfGreaterThan,
-                                 IfGreaterThanOrEqual, IfLessThan,
-                                 IfLessThanOrEqual, IfNotEqual, Multiply,
-                                 Subtract, WhileEqual, WhileGreaterThan,
-                                 WhileGreaterThanOrEqual, WhileLessThan,
-                                 WhileLessThanOrEqual, WhileNotEqual)
+from intermediate.action import (Action, Add, Declaration, Divide, IfEqual,
+                                 IfGreaterThan, IfGreaterThanOrEqual,
+                                 IfLessThan, IfLessThanOrEqual, IfNotEqual,
+                                 Multiply, Subtract, WhileEqual,
+                                 WhileGreaterThan, WhileGreaterThanOrEqual,
+                                 WhileLessThan, WhileLessThanOrEqual,
+                                 WhileNotEqual)
 from intermediate.agent import Agent
 from intermediate.behaviour import Behaviour
 from intermediate.param import (DistNormalFloatParam, EnumParam,
@@ -145,9 +146,13 @@ def handle_mutating_statement(state: State, op: str, arg1: str, arg2: str) -> No
     state.require(state.last_agent.is_mutable(arg1), f'{arg1} is immutable.', 'If you want to use its value try saving it into a variable declared using DECL.')
     
     match op:
-        case 'MULT':
-            state.last_action.add_instruction(Multiply(arg1, arg2))
+        case 'ADD':
+            state.last_action.add_instruction(Add(arg1, arg2))
         case 'SUBT':
             state.last_action.add_instruction(Subtract(arg1, arg2))
+        case 'MULT':
+            state.last_action.add_instruction(Multiply(arg1, arg2))
+        case 'DIV':
+            state.last_action.add_instruction(Divide(arg1, arg2))
         case _:
             state.panic(f'Unexpected error: {op} {arg1} {arg2}')

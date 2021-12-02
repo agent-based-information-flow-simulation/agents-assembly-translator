@@ -73,18 +73,22 @@ AGENT average_user
 
             WLT tmp, 10
                 DECL a, 0
+                MULT tmp, 2
             EBLOCK
 
             WLTE tmp, 10
                 DECL a, 0
+                ADD tmp, 1
             EBLOCK
 
             WE tmp, 10
                 DECL a, 0
+                SUBT tmp, 1
             EBLOCK
 
             WNE tmp, 10
                 DECL a, 0
+                DIV tmp, 2
             EBLOCK
 
         # We escape ACTION scope with EACTION

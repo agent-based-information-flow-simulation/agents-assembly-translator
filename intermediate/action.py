@@ -150,7 +150,25 @@ class Multiply(Instruction):
     def print(self) -> None:
         print('Multiply')
         super().print()
+        
+        
+class Divide(Instruction):
+    def __init__(self, arg1: str, arg2: str):
+        super().__init__(arg1, arg2)
 
+    def print(self) -> None:
+        print('Divide')
+        super().print()
+
+
+class Add(Instruction):
+    def __init__(self, arg1: str, arg2: str):
+        super().__init__(arg1, arg2)
+
+    def print(self) -> None:
+        print('Add')
+        super().print()
+        
 
 class Subtract(Instruction):
     def __init__(self, arg1: str, arg2: str):

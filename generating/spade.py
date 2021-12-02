@@ -1,8 +1,12 @@
 from typing import List
 
-from intermediate.action import (Block, Declaration, IfEqual, IfGreaterThan, IfGreaterThanOrEqual, IfLessThan,
-                                 IfLessThanOrEqual, IfNotEqual, Multiply, Subtract,
-                                 VariableValue, WhileEqual, WhileGreaterThan, WhileGreaterThanOrEqual, WhileLessThan, WhileLessThanOrEqual, WhileNotEqual)
+from intermediate.action import (Add, Block, Declaration, Divide, IfEqual,
+                                 IfGreaterThan, IfGreaterThanOrEqual,
+                                 IfLessThan, IfLessThanOrEqual, IfNotEqual,
+                                 Multiply, Subtract, VariableValue, WhileEqual,
+                                 WhileGreaterThan, WhileGreaterThanOrEqual,
+                                 WhileLessThan, WhileLessThanOrEqual,
+                                 WhileNotEqual)
 from intermediate.agent import Agent
 from intermediate.behaviour import Behaviour
 from parsing.state import ParsedData
@@ -124,10 +128,14 @@ class SpadeCode:
                     self.add_line(f'while {arg1} == {arg2}:')
                 elif isinstance(statement, WhileNotEqual):
                     self.add_line(f'while {arg1} != {arg2}:')
+                elif isinstance(statement, Add):
+                    self.add_line(f'{arg1} += {arg2}')
                 elif isinstance(statement, Subtract):
                     self.add_line(f'{arg1} -= {arg2}')
                 elif isinstance(statement, Multiply):
                     self.add_line(f'{arg1} *= {arg2}')
+                elif isinstance(statement, Divide):
+                    self.add_line(f'{arg1} /= {arg2}')
 
     def generate_agent(self, agent: Agent) -> None:
         self.add_line(f'class {agent.name}(spade.agent.Agent):')

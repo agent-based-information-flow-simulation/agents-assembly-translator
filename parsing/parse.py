@@ -44,7 +44,7 @@ def parse_lines(lines: List[str], debug: bool) -> ParsedData:
             case ['WGT' | 'WGTE' | 'WLT' | 'WLTE' | 'WE' | 'WNE' as op, arg1, arg2]:
                 handle_non_mutating_statement(state, op, arg1, arg2)
                 
-            case ['MULT' | 'SUBT' as op, arg1, arg2]:
+            case [ 'ADD' | 'SUBT' | 'MULT' | 'DIV' as op, arg1, arg2]:
                 handle_mutating_statement(state, op, arg1, arg2)
  
             case _:
