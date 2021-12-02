@@ -63,8 +63,8 @@ class SpadeCode:
     def add_agent_setup(self, agent: Agent) -> None:
         self.add_line('def setup(self):')
         self.indent_right()
-        for setup_behaviour in agent.setup_behaviours:
-            self.add_line(f'self.add_behaviour(self.{setup_behaviour}())')
+        for setup_behaviour in agent.setup_behaviours.values():
+            self.add_line(f'self.add_behaviour(self.{setup_behaviour.name}())')
         self.indent_left()
             
     def add_agent_behaviour(self, behaviour: Behaviour, behaviour_type: str) -> None:
@@ -78,8 +78,8 @@ class SpadeCode:
         self.add_line('')
         self.add_line('async def run(self):')
         self.indent_right()
-        for action_name in behaviour.actions:
-            self.add_line(f'await self.{action_name}()')
+        for action in behaviour.actions.values():
+            self.add_line(f'await self.{action.name}()')
         self.indent_left()
         self.indent_left()
         
