@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
-from typing import Tuple
 from datetime import datetime, timedelta
+from typing import Tuple
 
 from generating.spade import generate_agent, get_imports
 from parsing.environments import get_environments
