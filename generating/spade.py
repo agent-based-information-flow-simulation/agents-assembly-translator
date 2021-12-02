@@ -79,7 +79,7 @@ class SpadeCode:
         self.add_line('async def run(self):')
         self.indent_right()
         for action_name in behaviour.actions:
-            self.add_line(f'self.{action_name}()')
+            self.add_line(f'await self.{action_name}()')
         self.indent_left()
         self.indent_left()
         

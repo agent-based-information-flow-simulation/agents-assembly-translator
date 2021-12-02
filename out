@@ -29,4 +29,4 @@ class average_user(spade.agent.Agent):
                     self.agent.fakenews_susceptibility *= num_connections
         
         async def run(self):
-            self.check_minutes_spent_daily_on_youtube()
+            await self.check_minutes_spent_daily_on_youtube()
