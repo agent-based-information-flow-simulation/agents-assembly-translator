@@ -72,29 +72,21 @@ class State:
     def verify_end_state(self) -> None:
         if self.in_agent:
             self.panic('Missing EAGENT')
-        elif self.in_message:
-            self.panic('Missing EMESSAGE')
-        elif self.in_behaviour:
-            self.panic('Missing EBEHAV')
-        elif self.in_action:
-            self.panic('Missing EACTION')
             
     def get_parsed_data(self) -> ParsedData:
         self.verify_end_state()
         return ParsedData(list(self.agents.values()), list(self.messages.values()))
 
-    def panic(self, reason: str) -> None:
+    def panic(self, reason: str, suggestion: str = '') -> None:
         if self.debug:
             pprint(self.__dict__)
             self.print()
         print(f'🔥 Error in line {self.line_num}: {self.lines[self.line_num - 1].strip()}')
         print(reason)
+        if suggestion:
+            print(suggestion)
         exit(1)
 
-    def require(self, expr: bool, msg_on_error: str):
+    def require(self, expr: bool, msg_on_error: str, suggestion_on_error: str = '') -> None:
         if not expr:
-            self.panic(msg_on_error)
-            
-    def require_not(self, expr: bool, msg_on_error: str):
-        if expr:
-            self.panic(msg_on_error)
+            self.panic(msg_on_error, suggestion_on_error)
