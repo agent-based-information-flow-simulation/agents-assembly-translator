@@ -1,7 +1,7 @@
 from typing import List
 
-from intermediate.action import (Action, Declaration, GreaterThan,
-                                 LessThanOrEqual, Multiply, Subtract)
+from intermediate.action import (Action, Declaration, IfGreaterThan, IfLessThanOrEqual,
+                                 Multiply, Subtract)
 from intermediate.agent import Agent
 from intermediate.behaviour import Behaviour
 from intermediate.param import (DistNormalFloatParam, EnumParam,
@@ -104,10 +104,10 @@ def handle_non_mutating_statement(state: State, op: str, arg1: str, arg2: str) -
     state.require(state.last_action.is_name_in_scope(arg2) or is_float(arg2), f'{arg2} is not in the current scope.')
     
     match op:
-        case 'GT':
-            state.last_action.add_instruction(GreaterThan(arg1, arg2))
-        case 'LTE':
-            state.last_action.add_instruction(LessThanOrEqual(arg1, arg2))
+        case 'IGT':
+            state.last_action.add_instruction(IfGreaterThan(arg1, arg2))
+        case 'ILTE':
+            state.last_action.add_instruction(IfLessThanOrEqual(arg1, arg2))
         case _:
             state.panic(f'Unexpected error: {op} {arg1} {arg2}')
     

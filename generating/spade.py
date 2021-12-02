@@ -1,5 +1,5 @@
 from typing import List
-from intermediate.action import Block, Declaration, GreaterThan, LessThanOrEqual, Multiply, Subtract, VariableValue
+from intermediate.action import Block, Declaration, IfGreaterThan, IfLessThanOrEqual, Multiply, Subtract, VariableValue
 
 from intermediate.agent import Agent
 from intermediate.behaviour import Behaviour
@@ -97,9 +97,9 @@ class SpadeCode:
             else:
                 arg1 = self.is_from_agent(statement.arg1) + statement.arg1.value
                 arg2 = self.is_from_agent(statement.arg2) + statement.arg2.value
-                if isinstance(statement, GreaterThan):
+                if isinstance(statement, IfGreaterThan):
                     self.add_line(f'if {arg1} > {arg2}:')
-                elif isinstance(statement, LessThanOrEqual):
+                elif isinstance(statement, IfLessThanOrEqual):
                     self.add_line(f'if {arg1} <= {arg2}:')
                 elif isinstance(statement, Subtract):
                     self.add_line(f'{arg1} -= {arg2}')

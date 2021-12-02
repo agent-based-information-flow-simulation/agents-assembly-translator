@@ -38,7 +38,7 @@ def parse_lines(lines: List[str], debug: bool) -> ParsedData:
             case ['EBLOCK']:
                 op_EBLOCK(state)
                 
-            case ['GT' | 'LTE' as op, arg1, arg2]:
+            case ['IGT' | 'ILTE' as op, arg1, arg2]:
                 handle_non_mutating_statement(state, op, arg1, arg2)
                 
             case ['MULT' | 'SUBT' as op, arg1, arg2]:

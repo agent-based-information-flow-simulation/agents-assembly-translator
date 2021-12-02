@@ -35,23 +35,23 @@ class Instruction:
         self.arg2.print()
 
 
-class GreaterThan(Instruction):
+class IfGreaterThan(Instruction):
     def __init__(self, arg1: str, arg2: str):
         super().__init__(arg1, arg2)
  
     def print(self) -> None:
-        print('GreaterThan')
+        print('IfGreaterThan')
         super().print()
 
 
-class LessThanOrEqual(Instruction):
+class IfLessThanOrEqual(Instruction):
     def __init__(self, arg1: str, arg2: str):
         super().__init__(arg1, arg2)
 
     def print(self) -> None:
-        print('LessThanOrEqual')
+        print('IfLessThanOrEqual')
         super().print()
-        
+
 
 class Multiply(Instruction):
     def __init__(self, arg1: str, arg2: str):
