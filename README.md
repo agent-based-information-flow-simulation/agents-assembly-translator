@@ -45,11 +45,10 @@ python translate.py --help
     * `action.py` - action representation
     * `agent.py` - agent representation
     * `behaviour.py` - behaviour representation
-    * `environment.py` - environment representation
     * `message.py` - message representation
     * `param.py` - parameters representation
 * `parsing`
-    * `environments.py` - parsing environments from `*.aa` files
+    * `parse.py` - parsing environments from `*.aa` files
     * `op.py` - Agents Assembly operations
     * `state.py` - state definition used for the parsing process
 * `utils`
