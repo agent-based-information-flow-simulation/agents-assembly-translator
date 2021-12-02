@@ -24,18 +24,18 @@ class Declaration(VariableValue):
         super().print()
 
 
-class Expression:
+class Instruction:
     def __init__(self, arg1: str, arg2: str):
         self.arg1: VariableValue = VariableValue(arg1)
         self.arg2: VariableValue = VariableValue(arg2)
   
     def print(self) -> None:
-        print('Expression')
+        print('Instruction')
         self.arg1.print()
         self.arg2.print()
 
 
-class GreaterThan(Expression):
+class GreaterThan(Instruction):
     def __init__(self, arg1: str, arg2: str):
         super().__init__(arg1, arg2)
  
@@ -44,7 +44,7 @@ class GreaterThan(Expression):
         super().print()
 
 
-class LessThanOrEqual(Expression):
+class LessThanOrEqual(Instruction):
     def __init__(self, arg1: str, arg2: str):
         super().__init__(arg1, arg2)
 
@@ -53,7 +53,7 @@ class LessThanOrEqual(Expression):
         super().print()
         
 
-class Multiply(Expression):
+class Multiply(Instruction):
     def __init__(self, arg1: str, arg2: str):
         super().__init__(arg1, arg2)
 
@@ -62,7 +62,7 @@ class Multiply(Expression):
         super().print()
         
         
-class Subtract(Expression):
+class Subtract(Instruction):
     def __init__(self, arg1: str, arg2: str):
         super().__init__(arg1, arg2)
 
@@ -74,7 +74,7 @@ class Subtract(Expression):
 class Block:    
     def __init__(self, names_declared_in_parent: List[str] = []):
         self.declarations: Dict[str, Declaration] = {}
-        self.instructions: List[Expression | Block] = []
+        self.statements: List[Instruction | Block] = []
         self._names_declared_in_parent: List[str] = names_declared_in_parent
     
     @property 
@@ -87,8 +87,8 @@ class Block:
     def declaration_exists(self, name: str) -> bool:
         return name in self.declared_names
         
-    def add_instruction(self, instruction: Expression | Block) -> None:
-        self.instructions.append(instruction)
+    def add_statement(self, statement: Instruction | Block) -> None:
+        self.statements.append(statement)
         
     def print(self) -> None:
         print(f'Block')
@@ -96,7 +96,7 @@ class Block:
         print(self._names_declared_in_parent)
         for declaration in self.declarations.values():
             declaration.print()
-        for instruction in self.instructions:
+        for instruction in self.statements:
             instruction.print()
         print('(EndBlock)')
 
@@ -123,16 +123,16 @@ class Action:
             declaration.is_value_from_agent = True
         self.current_block.add_declaration(declaration)
     
-    def add_expression(self, expression: Expression) -> None:
-        if expression.arg1.value in self._agent_param_names:
-            expression.arg1.is_value_from_agent = True
-        if expression.arg2.value in self._agent_param_names:
-            expression.arg2.is_value_from_agent = True
-        self.current_block.add_instruction(expression)
+    def add_instruction(self, instruction: Instruction) -> None:
+        if instruction.arg1.value in self._agent_param_names:
+            instruction.arg1.is_value_from_agent = True
+        if instruction.arg2.value in self._agent_param_names:
+            instruction.arg2.is_value_from_agent = True
+        self.current_block.add_statement(instruction)
         
     def start_block(self) -> None:
         new_block = Block(self.current_block.declared_names)
-        self.current_block.add_instruction(new_block)
+        self.current_block.add_statement(new_block)
         self._block_stack.append(new_block)
     
     def end_block(self) -> None:

@@ -1,9 +1,10 @@
 from typing import List
 
 from intermediate.environment import Environment
-from parsing.op import (op_ACTION, op_AGENT, op_DECL, op_EACTION, op_EAGENT,
-                        op_EBEHAV, op_EBLOCK, op_EENVIRONMENT, op_ENVIRONMENT,
-                        op_GT, op_LTE, op_MULT, op_PRM, op_SETUPBEHAV, op_SUBT)
+from parsing.op import (handle_mutating_statement,
+                        handle_non_mutating_statement, op_ACTION, op_AGENT,
+                        op_DECL, op_EACTION, op_EAGENT, op_EBEHAV, op_EBLOCK,
+                        op_EENVIRONMENT, op_ENVIRONMENT, op_PRM, op_SETUPBEHAV)
 from parsing.state import State
 
 
@@ -41,20 +42,14 @@ def get_environments(lines: List[str], debug: bool) -> List[Environment]:
             case ['DECL', name, value]:
                 op_DECL(state, name, value)
                 
-            case ['GT', arg1, arg2]:
-                op_GT(state, arg1, arg2)
-                
-            case ['LTE', arg1, arg2]:
-                op_LTE(state, arg1, arg2)
-                
             case ['EBLOCK']:
                 op_EBLOCK(state)
                 
-            case ['MULT', arg1, arg2]:
-                op_MULT(state, arg1, arg2)
+            case ['GT' | 'LTE' as op, arg1, arg2]:
+                handle_non_mutating_statement(state, op, arg1, arg2)
                 
-            case ['SUBT', arg1, arg2]:
-                op_SUBT(state, arg1, arg2)
+            case ['MULT' | 'SUBT' as op, arg1, arg2]:
+                handle_mutating_statement(state, op, arg1, arg2)
  
             case _:
                 state.panic(f'Unknown tokens: {tokens}')

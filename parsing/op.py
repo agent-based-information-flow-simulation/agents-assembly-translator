@@ -106,47 +106,41 @@ def op_DECL(state: State, name: str, value: str):
     state.last_action.add_declaration(Declaration(name, value))
 
 
-def op_GT(state: State, arg1: str, arg2: str):            
-    state.require(state.in_action, 'Not inside action')
-    state.require(state.last_action.is_name_in_scope(arg1), f'{arg1} not in scope')
-    state.require(state.last_action.is_name_in_scope(arg2), f'{arg2} not in scope')
-    
-    state.last_action.add_expression(GreaterThan(arg1, arg2))
-    state.last_action.start_block()
-    state.nested_blocks_count += 1
-    
-
-def op_LTE(state: State, arg1: str, arg2: str):    
-    state.require(state.in_action, 'Not inside action')     
-    state.require(state.last_action.is_name_in_scope(arg1), f'{arg1} not in scope')
-    state.require(state.last_action.is_name_in_scope(arg2), f'{arg2} not in scope')
-    
-    state.last_action.add_expression(LessThanOrEqual(arg1, arg2))
-    state.last_action.start_block()
-    state.nested_blocks_count += 1
-    
-
 def op_EBLOCK(state: State):            
     state.require(state.in_action, 'Not inside action')
     state.require(state.nested_blocks_count > 0, 'No more blocks to close')
     
     state.last_action.end_block()
     state.nested_blocks_count -= 1
-
     
-def op_MULT(state: State, arg1: str, arg2: str):        
+    
+def handle_non_mutating_statement(state: State, op: str, arg1: str, arg2: str) -> None:
+    state.require(state.in_action, 'Not inside action')     
+    state.require(state.last_action.is_name_in_scope(arg1), f'{arg1} not in scope')
+    state.require(state.last_action.is_name_in_scope(arg2), f'{arg2} not in scope')
+    
+    match op:
+        case 'GT':
+            state.last_action.add_instruction(GreaterThan(arg1, arg2))
+        case 'LTE':
+            state.last_action.add_instruction(LessThanOrEqual(arg1, arg2))
+        case _:
+            state.panic(f'Unexpected error: {op} {arg1} {arg2}')
+    
+    state.last_action.start_block()
+    state.nested_blocks_count += 1
+
+
+def handle_mutating_statement(state: State, op: str, arg1: str, arg2: str) -> None:
     state.require(state.in_action, 'Not inside action')
     state.require(state.last_action.is_name_in_scope(arg1), f'{arg1} not in scope')
     state.require(state.last_action.is_name_in_scope(arg2), f'{arg2} not in scope')
     state.require_not(state.last_agent.is_immutable(arg1), f'{arg1} is immutable')
     
-    state.last_action.add_expression(Multiply(arg1, arg2))
-
-
-def op_SUBT(state: State, arg1: str, arg2: str):
-    state.require(state.in_action, 'Not inside action')
-    state.require(state.last_action.is_name_in_scope(arg1), f'{arg1} not in scope')
-    state.require(state.last_action.is_name_in_scope(arg2), f'{arg2} not in scope')
-    state.require_not(state.last_agent.is_immutable(arg1), f'{arg1} is immutable')
-    
-    state.last_action.add_expression(Subtract(arg1, arg2))
+    match op:
+        case 'MULT':
+            state.last_action.add_instruction(Multiply(arg1, arg2))
+        case 'SUBT':
+            state.last_action.add_instruction(Subtract(arg1, arg2))
+        case _:
+            state.panic(f'Unexpected error: {op} {arg1} {arg2}')
