@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pprint import pprint
-from typing import Dict, List
+from typing import List
 
 
 class VariableValue: 
@@ -72,31 +72,24 @@ class Subtract(Instruction):
 
 
 class Block:    
-    def __init__(self, names_declared_in_parent: List[str] = []):
+    def __init__(self, names_declared_in_parent: List[str]):
         self.statements: List[Declaration | Instruction | Block] = []
-        self._declared_names: List[str] = []
-        self._names_declared_in_parent: List[str] = names_declared_in_parent
-    
-    @property 
-    def declared_names(self) -> List[str]:
-        return [ *self._declared_names, *self._names_declared_in_parent ]
+        self._declared_names: List[str] = list(names_declared_in_parent)
         
     def add_declaration(self, declaration: Declaration) -> None:
         self._declared_names.append(declaration.name)
         self.statements.append(declaration)
         
-    def declaration_exists(self, name: str) -> bool:
-        return name in self.declared_names
+    def is_name_in_scope(self, name: str) -> bool:
+        return name in self._declared_names
         
     def add_statement(self, statement: Instruction | Block) -> None:
         self.statements.append(statement)
         
     def print(self) -> None:
         print(f'Block')
-        print(f'Names from parent:')
-        print(self._names_declared_in_parent)
-        for declaration in self.declarations.values():
-            declaration.print()
+        print(f'Names in scope')
+        print(self._declared_names)
         for instruction in self.statements:
             instruction.print()
         print('(EndBlock)')
@@ -105,8 +98,8 @@ class Block:
 class Action:
     def __init__(self, name: str, agent_param_names: List[str]):
         self.name: str = name
-        self._block_stack: List[Block] = [Block()]
-        self._agent_param_names: List[str] = agent_param_names
+        self._block_stack: List[Block] = [Block(agent_param_names)]
+        self._agent_param_names = agent_param_names
         self._nested_blocks_count: int = 0
         
     @property
@@ -118,7 +111,7 @@ class Action:
         return self._block_stack[-1]
     
     def is_name_in_scope(self, name: str) -> bool:
-        return name in self._agent_param_names or self.current_block.declaration_exists(name)
+        return self.current_block.is_name_in_scope(name)
     
     def add_declaration(self, declaration: Declaration) -> None:
         if declaration.value in self._agent_param_names:
@@ -133,7 +126,7 @@ class Action:
         self.current_block.add_statement(instruction)
         
     def start_block(self) -> None:
-        new_block = Block(self.current_block.declared_names)
+        new_block = Block(self.current_block._declared_names)
         self.current_block.add_statement(new_block)
         self._block_stack.append(new_block)
         self._nested_blocks_count += 1

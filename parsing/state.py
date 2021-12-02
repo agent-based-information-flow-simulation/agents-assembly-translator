@@ -75,6 +75,8 @@ class State:
             
     def get_parsed_data(self) -> ParsedData:
         self.verify_end_state()
+        if self.debug:
+            self.print()
         return ParsedData(list(self.agents.values()), list(self.messages.values()))
 
     def panic(self, reason: str, suggestion: str = '') -> None:

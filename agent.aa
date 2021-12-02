@@ -35,8 +35,6 @@ AGENT average_user
                 GT fakenews_susceptibility, temp_var
                     MULT fakenews_susceptibility, num_connections
                 EBLOCK
-
-                DECL temp_var_xd, 2137
             EBLOCK
 
         # We escape ACTION scope with EACTION
