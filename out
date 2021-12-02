@@ -12,3 +12,21 @@ class average_user(spade.agent.Agent):
         self.is_online = r.choices(["yes", "no"], [95, 5])[0]
         self.friends = []
         self.spam = []
+    
+    def setup(self):
+        self.add_behaviour(self.setup_agent())
+    
+    class setup_agent(spade.behaviour.OneShotBehaviour):
+        async def check_minutes_spent_daily_on_youtube(self):
+            threshold = 100
+            num_connections = self.agent.connCount
+            if self.agent.minutes_spent_daily_on_youtube > threshold:
+                self.agent.fakenews_susceptibility *= num_connections
+            if self.agent.minutes_spent_daily_on_youtube <= threshold:
+                temp_var = 2137
+                self.agent.fakenews_susceptibility -= num_connections
+                if self.agent.fakenews_susceptibility > temp_var:
+                    self.agent.fakenews_susceptibility *= num_connections
+        
+        async def run(self):
+            self.check_minutes_spent_daily_on_youtube()
