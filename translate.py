@@ -1,9 +1,9 @@
 from argparse import ArgumentParser
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Tuple
 
-from generating.spade import generate_agent, get_imports
-from parsing.environments import get_environments
+from generating.spade import SpadeCode
+from parsing.parse import parse_lines
 
 
 def get_args() -> Tuple[str, str, bool]:
@@ -19,17 +19,10 @@ def main(input_path: str, output_path: str, debug: bool) -> None:
     with open(input_path, 'r') as f:
         lines = f.readlines()
     start_time = datetime.now()
-    environments = get_environments(lines, debug)
-    code_lines = get_imports()
-    for environment in environments:
-        if debug:
-            environment.print()
-        for agent_name, agent_def in environment.agents.items():
-            agent_code = generate_agent(agent_name, agent_def)
-            code_lines.extend(agent_code)
+    spade_code = SpadeCode(parse_lines(lines, debug))
     end_time = datetime.now()
     with open(output_path, 'w') as f:
-        for code_line in code_lines:
+        for code_line in spade_code.code_lines:
             f.write(code_line)
     time_delta = (end_time - start_time).total_seconds()
     print(f'({time_delta}s) Your results are saved in the file "{output_path}" 😎')
