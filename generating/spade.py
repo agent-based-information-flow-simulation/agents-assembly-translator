@@ -1,5 +1,5 @@
 from typing import List
-from intermediate.action import Block, GreaterThan, LessThanOrEqual, Multiply, Subtract, VariableValue
+from intermediate.action import Block, Declaration, GreaterThan, LessThanOrEqual, Multiply, Subtract, VariableValue
 
 from intermediate.agent import Agent
 from intermediate.behaviour import Behaviour
@@ -86,14 +86,14 @@ class SpadeCode:
     def is_from_agent(self, var: VariableValue) -> str:
         return 'self.agent.' if var.is_value_from_agent else ''
         
-    def add_block(self, block: Block) -> None:
-        for declaration in block.declarations.values():
-            self.add_line(f'{declaration.name} = {self.is_from_agent(declaration)}{declaration.value}')
+    def add_block(self, block: Block) -> None:            
         for statement in block.statements:
             if isinstance(statement, Block):
                 self.indent_right()
                 self.add_block(statement)
                 self.indent_left()
+            elif isinstance(statement, Declaration):
+                self.add_line(f'{statement.name} = {self.is_from_agent(statement)}{statement.value}')
             else:
                 arg1 = self.is_from_agent(statement.arg1) + statement.arg1.value
                 arg2 = self.is_from_agent(statement.arg2) + statement.arg2.value

@@ -23,10 +23,11 @@ class average_user(spade.agent.Agent):
             if self.agent.minutes_spent_daily_on_youtube > threshold:
                 self.agent.fakenews_susceptibility *= num_connections
             if self.agent.minutes_spent_daily_on_youtube <= threshold:
-                temp_var = 2137
                 self.agent.fakenews_susceptibility -= num_connections
+                temp_var = 2137
                 if self.agent.fakenews_susceptibility > temp_var:
                     self.agent.fakenews_susceptibility *= num_connections
+                temp_var_xd = 2137
         
         async def run(self):
             await self.check_minutes_spent_daily_on_youtube()

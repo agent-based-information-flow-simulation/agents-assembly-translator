@@ -73,16 +73,17 @@ class Subtract(Instruction):
 
 class Block:    
     def __init__(self, names_declared_in_parent: List[str] = []):
-        self.declarations: Dict[str, Declaration] = {}
-        self.statements: List[Instruction | Block] = []
+        self.statements: List[Declaration | Instruction | Block] = []
+        self._declared_names: List[str] = []
         self._names_declared_in_parent: List[str] = names_declared_in_parent
     
     @property 
     def declared_names(self) -> List[str]:
-        return [ *list(self.declarations), *self._names_declared_in_parent ]
+        return [ *self._declared_names, *self._names_declared_in_parent ]
         
     def add_declaration(self, declaration: Declaration) -> None:
-        self.declarations[declaration.name] = declaration
+        self._declared_names.append(declaration.name)
+        self.statements.append(declaration)
         
     def declaration_exists(self, name: str) -> bool:
         return name in self.declared_names
