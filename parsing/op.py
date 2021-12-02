@@ -67,7 +67,7 @@ def op_PRM(state: State, name: str, category: str, args: List[str]) -> None:
             state.panic(f'Incorrect operation: PRM {name} {category} {args}')
     
 
-def op_SETUPBEHAV(state: State, name: str):    
+def op_SETUPBEHAV(state: State, name: str) -> None:    
     state.require(state.in_agent, 'Not inside agent')
     state.require_not(state.in_behaviour, 'Already inside behaviour')
     state.require_not(state.last_agent.behaviour_exists(name), f'Behaviour {name} already exists in agent')
@@ -76,14 +76,14 @@ def op_SETUPBEHAV(state: State, name: str):
     state.last_agent.add_setup_behaviour(Behaviour(name))
     
 
-def op_EBEHAV(state: State):            
+def op_EBEHAV(state: State) -> None:            
     state.require(state.in_behaviour, 'Not inside behaviour')
     state.require_not(state.in_action, 'Inside action')
     
     state.in_behaviour = False
     
 
-def op_ACTION(state: State, name: str):
+def op_ACTION(state: State, name: str) -> None:
     state.require(state.in_behaviour, 'Not inside behaviour')
     state.require_not(state.in_action, 'Already inside action')
     state.require_not(state.last_behaviour.action_exists(name), f'Action {name} already exists in behaviour')
@@ -92,21 +92,21 @@ def op_ACTION(state: State, name: str):
     state.last_behaviour.add_action(Action(name, state.last_agent.param_names))
             
     
-def op_EACTION(state: State):            
+def op_EACTION(state: State) -> None:            
     state.require(state.in_action, 'Not inside action')
     state.require(state.last_action._nested_blocks_count == 0, 'There are unclosed blocks')
     
     state.in_action = False
 
 
-def op_DECL(state: State, name: str, value: str):            
+def op_DECL(state: State, name: str, value: str) -> None:            
     state.require(state.in_action, 'Not inside action')
     state.require_not(state.last_action.is_name_in_scope(name), f'{name} already in scope')
     
     state.last_action.add_declaration(Declaration(name, value))
 
 
-def op_EBLOCK(state: State):            
+def op_EBLOCK(state: State) -> None:            
     state.require(state.in_action, 'Not inside action')
     state.require(state.last_action._nested_blocks_count > 0, 'No more blocks to close')
     
