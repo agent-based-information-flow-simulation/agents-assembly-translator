@@ -1,7 +1,11 @@
 from typing import List
 
-from intermediate.action import (Action, Declaration, IfGreaterThan, IfLessThanOrEqual,
-                                 Multiply, Subtract)
+from intermediate.action import (Action, Declaration, IfEqual, IfGreaterThan,
+                                 IfGreaterThanOrEqual, IfLessThan,
+                                 IfLessThanOrEqual, IfNotEqual, Multiply,
+                                 Subtract, WhileEqual, WhileGreaterThan,
+                                 WhileGreaterThanOrEqual, WhileLessThan,
+                                 WhileLessThanOrEqual, WhileNotEqual)
 from intermediate.agent import Agent
 from intermediate.behaviour import Behaviour
 from intermediate.param import (DistNormalFloatParam, EnumParam,
@@ -106,8 +110,28 @@ def handle_non_mutating_statement(state: State, op: str, arg1: str, arg2: str) -
     match op:
         case 'IGT':
             state.last_action.add_instruction(IfGreaterThan(arg1, arg2))
+        case 'IGTE':
+            state.last_action.add_instruction(IfGreaterThanOrEqual(arg1, arg2))
+        case 'ILT':
+            state.last_action.add_instruction(IfLessThan(arg1, arg2))
         case 'ILTE':
             state.last_action.add_instruction(IfLessThanOrEqual(arg1, arg2))
+        case 'IE':
+            state.last_action.add_instruction(IfEqual(arg1, arg2))
+        case 'INE':
+            state.last_action.add_instruction(IfNotEqual(arg1, arg2))
+        case 'WGT':
+            state.last_action.add_instruction(WhileGreaterThan(arg1, arg2))
+        case 'WGTE':
+            state.last_action.add_instruction(WhileGreaterThanOrEqual(arg1, arg2))
+        case 'WLT':
+            state.last_action.add_instruction(WhileLessThan(arg1, arg2))
+        case 'WLTE':
+            state.last_action.add_instruction(WhileLessThanOrEqual(arg1, arg2))
+        case 'WE':
+            state.last_action.add_instruction(WhileEqual(arg1, arg2))
+        case 'WNE':
+            state.last_action.add_instruction(WhileNotEqual(arg1, arg2))
         case _:
             state.panic(f'Unexpected error: {op} {arg1} {arg2}')
     

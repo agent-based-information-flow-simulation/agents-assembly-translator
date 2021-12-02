@@ -42,6 +42,24 @@ class IfGreaterThan(Instruction):
     def print(self) -> None:
         print('IfGreaterThan')
         super().print()
+        
+        
+class IfGreaterThanOrEqual(Instruction):
+    def __init__(self, arg1: str, arg2: str):
+        super().__init__(arg1, arg2)
+ 
+    def print(self) -> None:
+        print('IfGreaterThanOrEqual')
+        super().print()
+
+
+class IfLessThan(Instruction):
+    def __init__(self, arg1: str, arg2: str):
+        super().__init__(arg1, arg2)
+
+    def print(self) -> None:
+        print('IfLessThan')
+        super().print()
 
 
 class IfLessThanOrEqual(Instruction):
@@ -50,6 +68,78 @@ class IfLessThanOrEqual(Instruction):
 
     def print(self) -> None:
         print('IfLessThanOrEqual')
+        super().print()
+        
+        
+class IfEqual(Instruction):
+    def __init__(self, arg1: str, arg2: str):
+        super().__init__(arg1, arg2)
+
+    def print(self) -> None:
+        print('IfEqual')
+        super().print()
+        
+        
+class IfNotEqual(Instruction):
+    def __init__(self, arg1: str, arg2: str):
+        super().__init__(arg1, arg2)
+
+    def print(self) -> None:
+        print('IfNotEqual')
+        super().print()
+
+        
+class WhileGreaterThan(Instruction):
+    def __init__(self, arg1: str, arg2: str):
+        super().__init__(arg1, arg2)
+
+    def print(self) -> None:
+        print('WhileGreaterThan')
+        super().print()
+
+  
+class WhileGreaterThanOrEqual(Instruction):
+    def __init__(self, arg1: str, arg2: str):
+        super().__init__(arg1, arg2)
+
+    def print(self) -> None:
+        print('WhileGreaterThanOrEqual')
+        super().print()
+
+
+class WhileLessThan(Instruction):
+    def __init__(self, arg1: str, arg2: str):
+        super().__init__(arg1, arg2)
+
+    def print(self) -> None:
+        print('WhileLessThan')
+        super().print()
+        
+        
+class WhileLessThanOrEqual(Instruction):
+    def __init__(self, arg1: str, arg2: str):
+        super().__init__(arg1, arg2)
+
+    def print(self) -> None:
+        print('WhileLessThanOrEqual')
+        super().print()
+
+
+class WhileEqual(Instruction):
+    def __init__(self, arg1: str, arg2: str):
+        super().__init__(arg1, arg2)
+
+    def print(self) -> None:
+        print('WhileEqual')
+        super().print()
+
+
+class WhileNotEqual(Instruction):
+    def __init__(self, arg1: str, arg2: str):
+        super().__init__(arg1, arg2)
+
+    def print(self) -> None:
+        print('WhileNotEqual')
         super().print()
 
 
@@ -60,8 +150,8 @@ class Multiply(Instruction):
     def print(self) -> None:
         print('Multiply')
         super().print()
-        
-        
+
+
 class Subtract(Instruction):
     def __init__(self, arg1: str, arg2: str):
         super().__init__(arg1, arg2)

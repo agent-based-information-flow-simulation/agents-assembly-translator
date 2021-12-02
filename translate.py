@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
 from datetime import datetime
-from typing import Tuple, List
+from typing import List, Tuple
 
 from generating.spade import SpadeCode
 from parsing.parse import parse_lines

@@ -37,6 +37,56 @@ AGENT average_user
                 EBLOCK
             EBLOCK
 
+            DECL tmp, 0
+            
+            IGT tmp, 10
+                DECL a, 0
+            EBLOCK
+
+            IGTE tmp, 10
+                DECL a, 0
+            EBLOCK
+
+            ILT tmp, 10
+                DECL a, 0
+            EBLOCK
+
+            ILTE tmp, 10
+                DECL a, 0
+            EBLOCK
+
+            IE tmp, 10
+                DECL a, 0
+            EBLOCK
+
+            INE tmp, 10
+                DECL a, 0
+            EBLOCK
+
+            WGT tmp, 10
+                DECL a, 0
+            EBLOCK
+
+            WGTE tmp, 10
+                DECL a, 0
+            EBLOCK
+
+            WLT tmp, 10
+                DECL a, 0
+            EBLOCK
+
+            WLTE tmp, 10
+                DECL a, 0
+            EBLOCK
+
+            WE tmp, 10
+                DECL a, 0
+            EBLOCK
+
+            WNE tmp, 10
+                DECL a, 0
+            EBLOCK
+
         # We escape ACTION scope with EACTION
         EACTION
 

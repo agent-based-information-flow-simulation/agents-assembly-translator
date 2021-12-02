@@ -27,6 +27,31 @@ class average_user(spade.agent.Agent):
                 temp_var = 2137
                 if self.agent.fakenews_susceptibility > temp_var:
                     self.agent.fakenews_susceptibility *= num_connections
+            tmp = 0
+            if tmp > 10:
+                a = 0
+            if tmp >= 10:
+                a = 0
+            if tmp < 10:
+                a = 0
+            if tmp <= 10:
+                a = 0
+            if tmp == 10:
+                a = 0
+            if tmp != 10:
+                a = 0
+            while tmp > 10:
+                a = 0
+            while tmp >= 10:
+                a = 0
+            while tmp < 10:
+                a = 0
+            while tmp <= 10:
+                a = 0
+            while tmp == 10:
+                a = 0
+            while tmp != 10:
+                a = 0
         
         async def run(self):
             await self.check_minutes_spent_daily_on_youtube()

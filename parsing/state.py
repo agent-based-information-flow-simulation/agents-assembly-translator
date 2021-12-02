@@ -1,5 +1,5 @@
 from pprint import pprint
-from typing import Generator, List, Dict
+from typing import Dict, Generator, List
 
 from intermediate.action import Action
 from intermediate.agent import Agent

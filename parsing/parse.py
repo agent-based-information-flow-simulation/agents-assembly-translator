@@ -4,7 +4,7 @@ from parsing.op import (handle_mutating_statement,
                         handle_non_mutating_statement, op_ACTION, op_AGENT,
                         op_DECL, op_EACTION, op_EAGENT, op_EBEHAV, op_EBLOCK,
                         op_PRM, op_SETUPBEHAV)
-from parsing.state import State, ParsedData
+from parsing.state import ParsedData, State
 
 
 def parse_lines(lines: List[str], debug: bool) -> ParsedData:
@@ -38,7 +38,10 @@ def parse_lines(lines: List[str], debug: bool) -> ParsedData:
             case ['EBLOCK']:
                 op_EBLOCK(state)
                 
-            case ['IGT' | 'ILTE' as op, arg1, arg2]:
+            case ['IGT' | 'IGTE' | 'ILT' | 'ILTE' | 'IE' | 'INE' as op, arg1, arg2]:
+                handle_non_mutating_statement(state, op, arg1, arg2)
+                
+            case ['WGT' | 'WGTE' | 'WLT' | 'WLTE' | 'WE' | 'WNE' as op, arg1, arg2]:
                 handle_non_mutating_statement(state, op, arg1, arg2)
                 
             case ['MULT' | 'SUBT' as op, arg1, arg2]:

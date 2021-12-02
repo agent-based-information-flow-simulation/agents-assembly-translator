@@ -1,9 +1,12 @@
 from typing import List
-from intermediate.action import Block, Declaration, IfGreaterThan, IfLessThanOrEqual, Multiply, Subtract, VariableValue
 
+from intermediate.action import (Block, Declaration, IfEqual, IfGreaterThan, IfGreaterThanOrEqual, IfLessThan,
+                                 IfLessThanOrEqual, IfNotEqual, Multiply, Subtract,
+                                 VariableValue, WhileEqual, WhileGreaterThan, WhileGreaterThanOrEqual, WhileLessThan, WhileLessThanOrEqual, WhileNotEqual)
 from intermediate.agent import Agent
 from intermediate.behaviour import Behaviour
 from parsing.state import ParsedData
+
 
 class SpadeCode:
     INDENT_SIZE = 4
@@ -99,8 +102,28 @@ class SpadeCode:
                 arg2 = self.is_from_agent(statement.arg2) + statement.arg2.value
                 if isinstance(statement, IfGreaterThan):
                     self.add_line(f'if {arg1} > {arg2}:')
+                elif isinstance(statement, IfGreaterThanOrEqual):
+                    self.add_line(f'if {arg1} >= {arg2}:')
+                elif isinstance(statement, IfLessThan):
+                    self.add_line(f'if {arg1} < {arg2}:')
                 elif isinstance(statement, IfLessThanOrEqual):
                     self.add_line(f'if {arg1} <= {arg2}:')
+                elif isinstance(statement, IfEqual):
+                    self.add_line(f'if {arg1} == {arg2}:')
+                elif isinstance(statement, IfNotEqual):
+                    self.add_line(f'if {arg1} != {arg2}:')
+                elif isinstance(statement, WhileGreaterThan):
+                    self.add_line(f'while {arg1} > {arg2}:')
+                elif isinstance(statement, WhileGreaterThanOrEqual):
+                    self.add_line(f'while {arg1} >= {arg2}:')
+                elif isinstance(statement, WhileLessThan):
+                    self.add_line(f'while {arg1} < {arg2}:')
+                elif isinstance(statement, WhileLessThanOrEqual):
+                    self.add_line(f'while {arg1} <= {arg2}:')
+                elif isinstance(statement, WhileEqual):
+                    self.add_line(f'while {arg1} == {arg2}:')
+                elif isinstance(statement, WhileNotEqual):
+                    self.add_line(f'while {arg1} != {arg2}:')
                 elif isinstance(statement, Subtract):
                     self.add_line(f'{arg1} -= {arg2}')
                 elif isinstance(statement, Multiply):
