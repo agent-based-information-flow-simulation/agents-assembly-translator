@@ -89,12 +89,12 @@ def op_ACTION(state: State, name: str):
     state.require_not(state.last_behaviour.action_exists(name), f'Action {name} already exists in behaviour')
     
     state.in_action = True
-    state.last_agent.last_behaviour.add_action(Action(name, state.last_agent.param_names))
+    state.last_behaviour.add_action(Action(name, state.last_agent.param_names))
             
     
 def op_EACTION(state: State):            
     state.require(state.in_action, 'Not inside action')
-    state.require(state.nested_blocks_count == 0, 'There are unclosed blocks')
+    state.require(state.last_action._nested_blocks_count == 0, 'There are unclosed blocks')
     
     state.in_action = False
 
@@ -108,10 +108,9 @@ def op_DECL(state: State, name: str, value: str):
 
 def op_EBLOCK(state: State):            
     state.require(state.in_action, 'Not inside action')
-    state.require(state.nested_blocks_count > 0, 'No more blocks to close')
+    state.require(state.last_action._nested_blocks_count > 0, 'No more blocks to close')
     
     state.last_action.end_block()
-    state.nested_blocks_count -= 1
     
     
 def handle_non_mutating_statement(state: State, op: str, arg1: str, arg2: str) -> None:
@@ -128,7 +127,6 @@ def handle_non_mutating_statement(state: State, op: str, arg1: str, arg2: str) -
             state.panic(f'Unexpected error: {op} {arg1} {arg2}')
     
     state.last_action.start_block()
-    state.nested_blocks_count += 1
 
 
 def handle_mutating_statement(state: State, op: str, arg1: str, arg2: str) -> None:

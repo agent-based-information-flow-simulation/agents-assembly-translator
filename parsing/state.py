@@ -19,7 +19,6 @@ class State:
         self.in_message: bool = False
         self.in_behaviour: bool = False
         self.in_action: bool = False
-        self.nested_blocks_count: int = 0
         
     @property
     def last_environment(self) -> Environment:
@@ -63,8 +62,6 @@ class State:
             self.panic('Missing EBEHAV')
         elif self.in_action:
             self.panic('Missing EACTION')
-        elif self.nested_blocks_count > 0:
-            self.panic('Unclosed blocks')
 
     def panic(self, reason: str) -> None:
         if self.debug:

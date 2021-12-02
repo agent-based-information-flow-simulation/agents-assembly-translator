@@ -106,6 +106,7 @@ class Action:
         self.name: str = name
         self._block_stack: List[Block] = [Block()]
         self._agent_param_names: List[str] = agent_param_names
+        self._nested_blocks_count: int = 0
         
     @property
     def main_block(self) -> Block:
@@ -134,9 +135,11 @@ class Action:
         new_block = Block(self.current_block.declared_names)
         self.current_block.add_statement(new_block)
         self._block_stack.append(new_block)
+        self._nested_blocks_count += 1
     
     def end_block(self) -> None:
         self._block_stack.pop()
+        self._nested_blocks_count -= 1
         
     def print(self) -> None:
         print(f'Action {self.name}')
