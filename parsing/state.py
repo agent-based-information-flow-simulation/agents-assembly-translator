@@ -68,7 +68,7 @@ class State:
             for environment in self.environments:
                 environment.print()
             pprint(self.__dict__)
-        print(f'Line {self.line_num}: {self.lines[self.line_num - 1].strip()}')
+        print(f'🔥 Error in line {self.line_num}: {self.lines[self.line_num - 1].strip()}')
         print(reason)
         exit(1)
 

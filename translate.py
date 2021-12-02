@@ -1,5 +1,6 @@
 from argparse import ArgumentParser
 from typing import Tuple
+from datetime import datetime, timedelta
 
 from generating.spade import generate_agent, get_imports
 from parsing.environments import get_environments
@@ -17,6 +18,7 @@ def get_args() -> Tuple[str, str, bool]:
 def main(input_path: str, output_path: str, debug: bool) -> None:
     with open(input_path, 'r') as f:
         lines = f.readlines()
+    start_time = datetime.now()
     environments = get_environments(lines, debug)
     code_lines = get_imports()
     for environment in environments:
@@ -25,9 +27,12 @@ def main(input_path: str, output_path: str, debug: bool) -> None:
         for agent_name, agent_def in environment.agents.items():
             agent_code = generate_agent(agent_name, agent_def)
             code_lines.extend(agent_code)
+    end_time = datetime.now()
     with open(output_path, 'w') as f:
         for code_line in code_lines:
             f.write(code_line)
+    time_delta = (end_time - start_time).total_seconds()
+    print(f'({time_delta}s) Your results are saved in the file "{output_path}" 😎')
 
 
 if __name__ == '__main__':
