@@ -1,21 +1,101 @@
-# lines beggining with # sign are ignored
-# top level directive ENVIRONMENT ends with EENVIRONMENT describes single Agent ENVIRONMENT
-# inside environment multiple definitons of AGENT and MESSAGE are allowed in any order
-ENVIRONMENT
-
 # AGENT directive is followed by a non-whitespace UID token
 # which corresponds to the agent class name
-AGENT AverageUser
+AGENT average_user
 
-# instruction PRM declares a parameter of name $arg1, type $arg2 and optional arguments $arg[3:]
-PRM minutes_spent_daily_on_youtube, float, init, 205.7
-PRM fakenews_susceptibility, float, dist_normal, 15, 32
-PRM prefered_website, enum, facebook, 100, twitter, 0
-PRM is_online, enum, yes, 95, no, 5
-PRM friends, list, conn_list
-PRM spam, list, msg_list
+    # instruction PRM declares a parameter of name $arg1, type $arg2 and optional arguments $arg[3:]
+    PRM minutes_spent_daily_on_youtube, float, init, 205.7
+    PRM fakenews_susceptibility, float, dist_normal, 15, 32
+    PRM prefered_website, enum, facebook, 100, twitter, 0
+    PRM is_online, enum, yes, 95, no, 5
+    PRM friends, list, conn_list
+    PRM spam, list, msg_list
+
+    # SETUPBEHAV directive is followed by a non-whitespace token
+    # which corresponds to the OnSetup behaviour name
+    SETUPBEHAV setup_agent
+
+        # ACTION directive is followed by a non-whitespace token
+        # which corresponds to action name
+        ACTION check_minutes_spent_daily_on_youtube
+
+            # ACTION scope starts with declaration of all local variables
+            DECL threshold, 100
+            # note that second argument might be a named systemic variable
+            DECL num_connections, connCount
+
+            # after all declarations other actions are supported: example
+            IGT minutes_spent_daily_on_youtube, threshold
+                MULT fakenews_susceptibility, num_connections
+            EBLOCK
+
+            ILTE minutes_spent_daily_on_youtube, threshold
+                SUBT fakenews_susceptibility, num_connections
+                DECL temp_var, 2137
+
+                IGT fakenews_susceptibility, temp_var
+                    MULT fakenews_susceptibility, num_connections
+                EBLOCK
+            EBLOCK
+
+            DECL tmp, 0
+            
+            IGT tmp, 10
+                DECL a, 0
+            EBLOCK
+
+            IGTE tmp, 10
+                DECL a, 0
+            EBLOCK
+
+            ILT tmp, 10
+                DECL a, 0
+            EBLOCK
+
+            ILTE tmp, 10
+                DECL a, 0
+            EBLOCK
+
+            IE tmp, 10
+                DECL a, 0
+            EBLOCK
+
+            INE tmp, 10
+                DECL a, 0
+            EBLOCK
+
+            WGT tmp, 10
+                DECL a, 0
+            EBLOCK
+
+            WGTE tmp, 10
+                DECL a, 0
+            EBLOCK
+
+            WLT tmp, 10
+                DECL a, 0
+                MULT tmp, 2
+            EBLOCK
+
+            WLTE tmp, 10
+                DECL a, 0
+                ADD tmp, 1
+            EBLOCK
+
+            WE tmp, 10
+                DECL a, 0
+                SUBT tmp, 1
+            EBLOCK
+
+            WNE tmp, 10
+                DECL a, 0
+                DIV tmp, 2
+            EBLOCK
+
+        # We escape ACTION scope with EACTION
+        EACTION
+
+    # We escape SETUPBEHAV scope with ESETUPBEHAV
+    EBEHAV
 
 # We escape AGENT scope with EAGENT directive
 EAGENT
- 
-EENVIRONMENT

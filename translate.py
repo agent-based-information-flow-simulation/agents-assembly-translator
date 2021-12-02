@@ -1,7 +1,9 @@
-from typing import Tuple
 from argparse import ArgumentParser
-from parse import get_environments
-from spade_generator import generate_agent, get_imports
+from datetime import datetime
+from typing import List, Tuple
+
+from generating.spade import SpadeCode
+from parsing.parse import parse_lines
 
 
 def get_args() -> Tuple[str, str, bool]:
@@ -13,20 +15,25 @@ def get_args() -> Tuple[str, str, bool]:
     return args.input_path, args.output_path, args.debug
 
 
-def main(input_path: str, output_path: str, debug: bool) -> None:
+def get_input(input_path: str) -> List[str]:
     with open(input_path, 'r') as f:
         lines = f.readlines()
-    environments = get_environments(lines, debug)
-    code_lines = get_imports()
-    for environment in environments:
-        if debug:
-            environment.print()
-        for agent_name, agent_def in environment.agents.items():
-            agent_code = generate_agent(agent_name, agent_def)
-            code_lines.extend(agent_code)
+    return lines
+
+
+def save_output(output_path: str, code: List[str]) -> None:
     with open(output_path, 'w') as f:
-        for code_line in code_lines:
+        for code_line in code:
             f.write(code_line)
+
+
+def main(input_path: str, output_path: str, debug: bool) -> None:
+    lines = get_input(input_path)
+    start_time = datetime.now()
+    spade_code = SpadeCode(parse_lines(lines, debug))
+    time_delta = (datetime.now() - start_time).total_seconds()
+    save_output(output_path, spade_code.code_lines)
+    print(f'({time_delta}s) Your results are saved in the file "{output_path}" 😎')
 
 
 if __name__ == '__main__':

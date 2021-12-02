@@ -3,7 +3,7 @@ import spade
 from numpy.random import normal
 
 
-class AverageUser(spade.agent.Agent):
+class average_user(spade.agent.Agent):
     def __init__(self, jid, password, location, connections):
         super().__init__(jid, password, verify_security=False)
         self.minutes_spent_daily_on_youtube = 205.7
@@ -12,3 +12,50 @@ class AverageUser(spade.agent.Agent):
         self.is_online = r.choices(["yes", "no"], [95, 5])[0]
         self.friends = []
         self.spam = []
+    
+    def setup(self):
+        self.add_behaviour(self.setup_agent())
+    
+    class setup_agent(spade.behaviour.OneShotBehaviour):
+        async def check_minutes_spent_daily_on_youtube(self):
+            threshold = 100
+            num_connections = self.agent.connCount
+            if self.agent.minutes_spent_daily_on_youtube > threshold:
+                self.agent.fakenews_susceptibility *= num_connections
+            if self.agent.minutes_spent_daily_on_youtube <= threshold:
+                self.agent.fakenews_susceptibility -= num_connections
+                temp_var = 2137
+                if self.agent.fakenews_susceptibility > temp_var:
+                    self.agent.fakenews_susceptibility *= num_connections
+            tmp = 0
+            if tmp > 10:
+                a = 0
+            if tmp >= 10:
+                a = 0
+            if tmp < 10:
+                a = 0
+            if tmp <= 10:
+                a = 0
+            if tmp == 10:
+                a = 0
+            if tmp != 10:
+                a = 0
+            while tmp > 10:
+                a = 0
+            while tmp >= 10:
+                a = 0
+            while tmp < 10:
+                a = 0
+                tmp *= 2
+            while tmp <= 10:
+                a = 0
+                tmp += 1
+            while tmp == 10:
+                a = 0
+                tmp -= 1
+            while tmp != 10:
+                a = 0
+                tmp /= 2
+        
+        async def run(self):
+            await self.check_minutes_spent_daily_on_youtube()

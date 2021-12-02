@@ -8,6 +8,7 @@ numpy = "*"
 spade = {git = "https://github.com/agent-based-information-flow-simulation/spade"}
 
 [dev-packages]
+isort = "*"
 
 [requires]
 python_version = "3.10"

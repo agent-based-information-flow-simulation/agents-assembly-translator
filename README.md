@@ -39,13 +39,18 @@ python translate.py --help
 
 ## Structure <a name = "structure"></a>
 
-* `agent.py` - intermediate agent representation
-* `environment.py` - intermediate environment representation
-* `message.py` - intermediate message representation
-* `op.py` - Agents Assembly operations
-* `param.py` - intermediate parameters representation
-* `parse.py` - parsing environments from `*.aa` files
-* `spade_generator.py` - generating SPADE code from the intermediate representation
-* `state.py` - state definition used for the parsing process
+* `generating`
+    * `spade.py` - SPADE code generation from the intermediate representation
+* `intermediate`
+    * `action.py` - action representation
+    * `agent.py` - agent representation
+    * `behaviour.py` - behaviour representation
+    * `message.py` - message representation
+    * `param.py` - parameters representation
+* `parsing`
+    * `parse.py` - parsing environments from `*.aa` files
+    * `op.py` - Agents Assembly operations
+    * `state.py` - state definition used for the parsing process
+* `utils`
+    * `validation.py` - variables validation
 * `translate.py` - entrypoint
-* `utils.py` - set of helper functions
