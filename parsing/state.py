@@ -71,27 +71,7 @@ class State:
         print(f'Line {self.line_num}: {self.lines[self.line_num - 1].strip()}')
         print(reason)
         exit(1)
-        
-    # def require_in(self, state: bool, msg_on_error: str) -> None:
-    #     if not state:
-    #         self.panic(msg_on_error)
-            
-    # def require_not_in(self, state: bool, msg_on_error: str) -> None:
-    #     if state:
-    #         self.panic(msg_on_error)
-            
-    # def require_agent_doesnt_exist(self, agent_name: str, msg_on_error: str) -> None:
-    #     if self.last_environment.agent_exists(agent_name):
-    #         self.panic(msg_on_error)
-            
-    # def require_agent_param_doesnt_exist(self, param_name: str, msg_on_error: str) -> None:
-    #     if self.last_agent.param_exists(param_name):
-    #         self.panic(msg_on_error)
-            
-    # def require_agent_behaviour_doesnt_exist(self, behaviour_name: str, msg_on_error: str) -> None:
-    #     if self.last_agent.behaviour_exists(behaviour_name):
-    #         self.panic(msg_on_error)
-            
+
     def require(self, expr: bool, msg_on_error: str):
         if not expr:
             self.panic(msg_on_error)
@@ -99,25 +79,3 @@ class State:
     def require_not(self, expr: bool, msg_on_error: str):
         if expr:
             self.panic(msg_on_error)
-
-
-# class Require:
-#     def __init__(self, state: State):
-#         self.state = state
-
-#     def in_state(self, required_state: bool, msg_on_error: str):
-#         if not required_state:
-#             self.state.panic(f'Invalid state: {msg_on_error}')
-    
-#     @classmethod
-#     def in_block_scope(state: State, arg_name: str):
-#         if not state.last_action.is_name_in_scope(arg_name):
-#             state.panic(f'{arg_name} not in scope')
-        
-#     @classmethod
-#     def mutable(state: State, arg_name: str):
-#         if not state.last_agent.is_immutable(arg_name):
-#             state.panic(f'{arg_name} is immutable')
-        
-#     @classmethod
-#     def require_
