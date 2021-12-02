@@ -1,54 +1,47 @@
-# lines beggining with # sign are ignored
-# top level directive ENVIRONMENT ends with EENVIRONMENT describes single Agent ENVIRONMENT
-# inside environment multiple definitons of AGENT and MESSAGE are allowed in any order
-ENVIRONMENT
+# AGENT directive is followed by a non-whitespace UID token
+# which corresponds to the agent class name
+AGENT average_user
 
-    # AGENT directive is followed by a non-whitespace UID token
-    # which corresponds to the agent class name
-    AGENT average_user
+    # instruction PRM declares a parameter of name $arg1, type $arg2 and optional arguments $arg[3:]
+    PRM minutes_spent_daily_on_youtube, float, init, 205.7
+    PRM fakenews_susceptibility, float, dist_normal, 15, 32
+    PRM prefered_website, enum, facebook, 100, twitter, 0
+    PRM is_online, enum, yes, 95, no, 5
+    PRM friends, list, conn_list
+    PRM spam, list, msg_list
 
-        # instruction PRM declares a parameter of name $arg1, type $arg2 and optional arguments $arg[3:]
-        PRM minutes_spent_daily_on_youtube, float, init, 205.7
-        PRM fakenews_susceptibility, float, dist_normal, 15, 32
-        PRM prefered_website, enum, facebook, 100, twitter, 0
-        PRM is_online, enum, yes, 95, no, 5
-        PRM friends, list, conn_list
-        PRM spam, list, msg_list
+    # SETUPBEHAV directive is followed by a non-whitespace token
+    # which corresponds to the OnSetup behaviour name
+    SETUPBEHAV setup_agent
 
-        # SETUPBEHAV directive is followed by a non-whitespace token
-        # which corresponds to the OnSetup behaviour name
-        SETUPBEHAV setup_agent
+        # ACTION directive is followed by a non-whitespace token
+        # which corresponds to action name
+        ACTION check_minutes_spent_daily_on_youtube
 
-            # ACTION directive is followed by a non-whitespace token
-            # which corresponds to action name
-            ACTION check_minutes_spent_daily_on_youtube
+            # ACTION scope starts with declaration of all local variables
+            DECL threshold, 100
+            # note that second argument might be a named systemic variable
+            DECL num_connections, connCount
 
-                # ACTION scope starts with declaration of all local variables
-                DECL threshold, 100
-                # note that second argument might be a named systemic variable
-                DECL num_connections, connCount
+            # after all declarations other actions are supported: example
+            GT minutes_spent_daily_on_youtube, threshold
+                MULT fakenews_susceptibility, num_connections
+            EBLOCK
 
-                # after all declarations other actions are supported: example
-                GT minutes_spent_daily_on_youtube, threshold
+            LTE minutes_spent_daily_on_youtube, threshold
+                SUBT fakenews_susceptibility, num_connections
+                DECL temp_var, 2137
+
+                GT fakenews_susceptibility, temp_var
                     MULT fakenews_susceptibility, num_connections
                 EBLOCK
+            EBLOCK
 
-                LTE minutes_spent_daily_on_youtube, threshold
-                    SUBT fakenews_susceptibility, num_connections
-                    DECL temp_var, 2137
+        # We escape ACTION scope with EACTION
+        EACTION
 
-                    GT fakenews_susceptibility, temp_var
-                        MULT fakenews_susceptibility, num_connections
-                    EBLOCK
-                EBLOCK
+    # We escape SETUPBEHAV scope with ESETUPBEHAV
+    EBEHAV
 
-            # We escape ACTION scope with EACTION
-            EACTION
-
-        # We escape SETUPBEHAV scope with ESETUPBEHAV
-        EBEHAV
-
-    # We escape AGENT scope with EAGENT directive
-    EAGENT
-
-EENVIRONMENT
+# We escape AGENT scope with EAGENT directive
+EAGENT

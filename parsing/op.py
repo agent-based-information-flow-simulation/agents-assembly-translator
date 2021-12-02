@@ -4,34 +4,18 @@ from intermediate.action import (Action, Declaration, GreaterThan,
                                  LessThanOrEqual, Multiply, Subtract)
 from intermediate.agent import Agent
 from intermediate.behaviour import Behaviour
-from intermediate.environment import Environment
 from intermediate.param import (DistNormalFloatParam, EnumParam,
                                 InitFloatParam, ListParam)
 from parsing.state import State
 from utils.validation import is_float, is_valid_enum_list
 
 
-def op_ENVIRONMENT(state: State) -> None:    
-    state.require_not(state.in_environment, 'Already inside an environment. Try defining new agents (AGENT).')
-    
-    state.in_environment = True
-    state.add_environment(Environment())
-
-
-def op_EENVIRONMENT(state: State) -> None:
-    state.require(state.in_environment, 'Not inside any environment.')
-    state.require_not(state.in_agent, 'Cannot end an environment inside an agent. First end current agent (EAGENT).')
-    
-    state.in_environment = False
-
-
 def op_AGENT(state: State, name: str) -> None:    
-    state.require(state.in_environment, 'Not inside any environment. Define agents inside environments (ENVIRONMENT).')
     state.require_not(state.in_agent, 'Already inside an agent. First end current agent (EAGENT).')
-    state.require_not(state.last_environment.agent_exists(name), f'Agent {name} already exists in the current environment.')
+    state.require_not(state.agent_exists(name), f'Agent {name} already exists in the current environment.')
     
     state.in_agent = True
-    state.last_environment.add_agent(Agent(name))
+    state.add_agent(Agent(name))
 
 
 def op_EAGENT(state: State) -> None:    
