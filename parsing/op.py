@@ -1,7 +1,9 @@
-from typing import List
+from __future__ import annotations
 
-from intermediate.action import (Action, Add, Declaration, Divide, IfEqual,
-                                 IfGreaterThan, IfGreaterThanOrEqual,
+from typing import TYPE_CHECKING, List
+
+from intermediate.action import (Action, Add, AddElement, Declaration, Divide,
+                                 IfEqual, IfGreaterThan, IfGreaterThanOrEqual,
                                  IfLessThan, IfLessThanOrEqual, IfNotEqual,
                                  Multiply, Subtract, WhileEqual,
                                  WhileGreaterThan, WhileGreaterThanOrEqual,
@@ -11,13 +13,17 @@ from intermediate.agent import Agent
 from intermediate.behaviour import Behaviour
 from intermediate.param import (DistNormalFloatParam, EnumParam,
                                 InitFloatParam, ListParam)
-from parsing.state import State
+from parsing.argument import Argument
 from utils.validation import is_float, is_valid_enum_list
+
+if TYPE_CHECKING:
+    from parsing.state import State
 
 
 def op_AGENT(state: State, name: str) -> None:    
     state.require(not state.in_agent, 'Already inside an agent.', 'First end current agent using EAGENT.')
     state.require(not state.agent_exists(name), f'Agent {name} already exists in the current environment.')
+    state.require(not name[0].isdigit(), f'{name} is not correct.', 'Names cannot start with a digit.')
     
     state.in_agent = True
     state.add_agent(Agent(name))
@@ -34,6 +40,7 @@ def op_PRM(state: State, name: str, category: str, args: List[str]) -> None:
     state.require(state.in_agent, 'Cannot define parameters outside agent scope.', 'Try defining new agents using AGENT.')
     state.require(not state.in_behaviour, 'Cannot define agent parameters inside a behaviour.', 'Parameters must appear after AGENT.')
     state.require(not state.last_agent.param_exists(name), f'Parameter {name} already exists inside current agent.')
+    state.require(not name[0].isdigit(), f'{name} is not correct.', 'Names cannot start with a digit.')
     
     match category, args:
         case 'float', ['init', val]:
@@ -60,6 +67,7 @@ def op_SETUPBEHAV(state: State, name: str) -> None:
     state.require(state.in_agent, 'Cannot define behaviours outside agents.', 'Try defining new agents using AGENT.')
     state.require(not state.in_behaviour, 'Cannot define behaviours inside other behaviours.', 'First end current behaviour using EBEHAV.')
     state.require(not state.last_agent.behaviour_exists(name), f'Behaviour {name} already exists in current agent.')
+    state.require(not name[0].isdigit(), f'{name} is not correct.', 'Names cannot start with a digit.')
     
     state.in_behaviour = True
     state.last_agent.add_setup_behaviour(Behaviour(name))
@@ -76,9 +84,10 @@ def op_ACTION(state: State, name: str) -> None:
     state.require(state.in_behaviour, 'Actions must be definied inside behaviours.', 'Try defining new behaviours using BEHAV.')
     state.require(not state.in_action, 'Cannot define an action in another action.', 'Try finishing current action using EACTION.')
     state.require(not state.last_behaviour.action_exists(name), f'Action {name} already exists in current behaviour.')
+    state.require(not name[0].isdigit(), f'{name} is not correct.', 'Names cannot start with a digit.')
     
     state.in_action = True
-    state.last_behaviour.add_action(Action(name, state.last_agent.param_names))
+    state.last_behaviour.add_action(Action(name))
 
 
 def op_EACTION(state: State) -> None:            
@@ -90,10 +99,13 @@ def op_EACTION(state: State) -> None:
 
 def op_DECL(state: State, name: str, value: str) -> None:            
     state.require(state.in_action, 'Cannot declare variables outside actions.')
-    state.require(not state.last_action.is_name_in_scope(name), f'{name} is already in current scope.')
-    state.require(state.last_action.is_name_in_scope(value) or is_float(value), f'{value} not found in current scope.')
+    state.require(not name[0].isdigit(), f'{name} is not correct.', 'Names cannot start with a digit.')
+    lhs = Argument(state, name)
+    state.require(lhs.is_name_available, f'{name} is already in current scope.')
+    rhs = Argument(state, value)
+    state.require(lhs.declaration_context(rhs), 'Mismatched types.', f'ARG1 {lhs.explain()}, ARG2 {rhs.explain()}')
     
-    state.last_action.add_declaration(Declaration(name, value))
+    state.last_action.add_declaration(Declaration(lhs, rhs))
 
 
 def op_EBLOCK(state: State) -> None:            
@@ -102,57 +114,79 @@ def op_EBLOCK(state: State) -> None:
     
     state.last_action.end_block()
 
-    
-def handle_non_mutating_statement(state: State, op: str, arg1: str, arg2: str) -> None:
+
+def handle_unordered_conditional_statement(state: State, op: str, arg1: str, arg2: str) -> None:
     state.require(state.in_action, 'Not inside any action.', f'{op} can be used inside actions.')     
-    state.require(state.last_action.is_name_in_scope(arg1) or is_float(arg1), f'{arg1} is not in the current scope.')
-    state.require(state.last_action.is_name_in_scope(arg2) or is_float(arg2), f'{arg2} is not in the current scope.')
+    lhs = Argument(state, arg1)
+    rhs = Argument(state, arg2)
+    state.require(lhs.unordered_comparaison_context(rhs), 'Mismatched types in unordered comparaison.', f'ARG1 {lhs.explain()}, ARG2 {rhs.explain()}')
+    
+    match op:
+        case 'IE':
+            state.last_action.add_instruction(IfEqual(lhs, rhs))
+        case 'INE':
+            state.last_action.add_instruction(IfNotEqual(lhs, rhs))
+        case 'WE':
+            state.last_action.add_instruction(WhileEqual(lhs, rhs))
+        case 'WNE':
+            state.last_action.add_instruction(WhileNotEqual(lhs, rhs))
+        case _:
+            state.panic(f'Unexpected error: {op} {arg1} {arg2}')
+    
+    state.last_action.start_block()
+    
+    
+def handle_ordered_conditional_statement(state: State, op: str, arg1: str, arg2: str) -> None:
+    state.require(state.in_action, 'Not inside any action.', f'{op} can be used inside actions.')     
+    lhs = Argument(state, arg1)
+    rhs = Argument(state, arg2)
+    state.require(lhs.ordered_comparaison_context(rhs), 'Mismatched types in ordered comparaison.', f'ARG1 {lhs.explain()}, ARG2 {rhs.explain()}')
     
     match op:
         case 'IGT':
-            state.last_action.add_instruction(IfGreaterThan(arg1, arg2))
+            state.last_action.add_instruction(IfGreaterThan(lhs, rhs))
         case 'IGTE':
-            state.last_action.add_instruction(IfGreaterThanOrEqual(arg1, arg2))
+            state.last_action.add_instruction(IfGreaterThanOrEqual(lhs, rhs))
         case 'ILT':
-            state.last_action.add_instruction(IfLessThan(arg1, arg2))
+            state.last_action.add_instruction(IfLessThan(lhs, rhs))
         case 'ILTE':
-            state.last_action.add_instruction(IfLessThanOrEqual(arg1, arg2))
-        case 'IE':
-            state.last_action.add_instruction(IfEqual(arg1, arg2))
-        case 'INE':
-            state.last_action.add_instruction(IfNotEqual(arg1, arg2))
+            state.last_action.add_instruction(IfLessThanOrEqual(lhs, rhs))
         case 'WGT':
-            state.last_action.add_instruction(WhileGreaterThan(arg1, arg2))
+            state.last_action.add_instruction(WhileGreaterThan(lhs, rhs))
         case 'WGTE':
-            state.last_action.add_instruction(WhileGreaterThanOrEqual(arg1, arg2))
+            state.last_action.add_instruction(WhileGreaterThanOrEqual(lhs, rhs))
         case 'WLT':
-            state.last_action.add_instruction(WhileLessThan(arg1, arg2))
+            state.last_action.add_instruction(WhileLessThan(lhs, rhs))
         case 'WLTE':
-            state.last_action.add_instruction(WhileLessThanOrEqual(arg1, arg2))
-        case 'WE':
-            state.last_action.add_instruction(WhileEqual(arg1, arg2))
-        case 'WNE':
-            state.last_action.add_instruction(WhileNotEqual(arg1, arg2))
+            state.last_action.add_instruction(WhileLessThanOrEqual(lhs, rhs))
         case _:
             state.panic(f'Unexpected error: {op} {arg1} {arg2}')
     
     state.last_action.start_block()
 
 
-def handle_mutating_statement(state: State, op: str, arg1: str, arg2: str) -> None:
+def handle_math_statement(state: State, op: str, arg1: str, arg2: str) -> None:
     state.require(state.in_action, 'Not inside any action', f'{op} can be used inside actions.')
-    state.require(state.last_action.is_name_in_scope(arg1) or is_float(arg1), f'{arg1} is not in the current scope.')
-    state.require(state.last_action.is_name_in_scope(arg2) or is_float(arg2), f'{arg2} is not in the current scope.')
-    state.require(state.last_agent.is_mutable(arg1), f'{arg1} is immutable.', 'If you want to use its value try saving it into a variable declared using DECL.')
-    
+    lhs = Argument(state, arg1)
+    rhs = Argument(state, arg2)
+    state.require(lhs.math_context(rhs), 'Mismatched types in math statement.', f'ARG1 {lhs.explain()}, ARG2 {rhs.explain()}')
     match op:
         case 'ADD':
-            state.last_action.add_instruction(Add(arg1, arg2))
+            state.last_action.add_instruction(Add(lhs, rhs))
         case 'SUBT':
-            state.last_action.add_instruction(Subtract(arg1, arg2))
+            state.last_action.add_instruction(Subtract(lhs, rhs))
         case 'MULT':
-            state.last_action.add_instruction(Multiply(arg1, arg2))
+            state.last_action.add_instruction(Multiply(lhs, rhs))
         case 'DIV':
-            state.last_action.add_instruction(Divide(arg1, arg2))
+            state.last_action.add_instruction(Divide(lhs, rhs))
         case _:
             state.panic(f'Unexpected error: {op} {arg1} {arg2}')
+
+
+def op_ADDELEM(state: State, arg1: str, arg2: str) -> None:            
+    state.require(state.in_action, 'Not inside any action.', f'ADDELEM can be used inside actions.')
+    lhs = Argument(state, arg1)
+    rhs = Argument(state, arg2)
+    state.require(lhs.array_addition_context(rhs), 'Mismatched types in enum/list modification context.', f'ARG1 {lhs.explain()}, ARG2 {rhs.explain()}')
+    
+    state.last_action.add_instruction(AddElement(lhs, rhs))

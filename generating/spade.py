@@ -1,16 +1,21 @@
-from typing import List
+from __future__ import annotations
 
-from intermediate.action import (Add, Block, Declaration, Divide, IfEqual,
+from typing import TYPE_CHECKING, List
+
+from intermediate.action import (Add, AddElement, Block, Declaration, Divide, IfEqual,
                                  IfGreaterThan, IfGreaterThanOrEqual,
                                  IfLessThan, IfLessThanOrEqual, IfNotEqual,
-                                 Multiply, Subtract, VariableValue, WhileEqual,
+                                 Multiply, Subtract, WhileEqual,
                                  WhileGreaterThan, WhileGreaterThanOrEqual,
                                  WhileLessThan, WhileLessThanOrEqual,
                                  WhileNotEqual)
-from intermediate.agent import Agent
-from intermediate.behaviour import Behaviour
-from parsing.state import ParsedData
 
+if TYPE_CHECKING:
+    from intermediate.agent import Agent
+    from intermediate.behaviour import Behaviour
+    from parsing.argument import Argument
+    from parsing.state import ParsedData
+    
 
 class SpadeCode:
     INDENT_SIZE = 4
@@ -70,6 +75,8 @@ class SpadeCode:
     def add_agent_setup(self, agent: Agent) -> None:
         self.add_line('def setup(self):')
         self.indent_right()
+        if not agent.setup_behaviours.values():
+            self.add_line('...')
         for setup_behaviour in agent.setup_behaviours.values():
             self.add_line(f'self.add_behaviour(self.{setup_behaviour.name}())')
         self.indent_left()
@@ -77,6 +84,8 @@ class SpadeCode:
     def add_agent_behaviour(self, behaviour: Behaviour, behaviour_type: str) -> None:
         self.add_line(f'class {behaviour.name}({behaviour_type}):')
         self.indent_right()
+        if not behaviour.actions.values():
+            self.add_line('...')
         for action in behaviour.actions.values():
             self.add_line(f'async def {action.name}(self):')
             self.indent_right()
@@ -85,25 +94,50 @@ class SpadeCode:
             self.add_line('')
         self.add_line('async def run(self):')
         self.indent_right()
+        if not behaviour.actions.values():
+            self.add_line('...')
         for action in behaviour.actions.values():
             self.add_line(f'await self.{action.name}()')
         self.indent_left()
         self.indent_left()
         
-    def is_from_agent(self, var: VariableValue) -> str:
-        return 'self.agent.' if var.is_value_from_agent else ''
+    def agent_param(self, arg: Argument) -> str:
+        return 'self.agent.' if arg.is_agent_param else ''
+    
+    def parse_instruction_arg(self, arg: Argument) -> str:
+        if arg.is_agent_param:
+            return 'self.agent.' + arg.expr
+        # num value
+        elif arg.is_enum:
+            return f'\"{arg.expr}\"'
+        # float
+        else:
+            return arg.expr
         
-    def add_block(self, block: Block) -> None:            
+    def add_block(self, block: Block) -> None:
+        if not block.statements:
+            self.add_line('...')
+            
         for statement in block.statements:
             if isinstance(statement, Block):
                 self.indent_right()
                 self.add_block(statement)
                 self.indent_left()
+                
             elif isinstance(statement, Declaration):
-                self.add_line(f'{statement.name} = {self.is_from_agent(statement)}{statement.value}')
+                self.add_line(f'{statement.name} = {self.agent_param(statement.value)}{statement.value.expr}')
+                
+            elif isinstance(statement, AddElement):
+                line = f'self.agent.{statement.arg1.expr}'
+                if statement.arg1.is_list:  
+                    line += f'.append({statement.arg2.expr})'
+                elif statement.arg1.is_enum:
+                    line += f' = \"{statement.arg2.expr}\"'
+                self.add_line(line)
+                
             else:
-                arg1 = self.is_from_agent(statement.arg1) + statement.arg1.value
-                arg2 = self.is_from_agent(statement.arg2) + statement.arg2.value
+                arg1 = self.parse_instruction_arg(statement.arg1)
+                arg2 = self.parse_instruction_arg(statement.arg2)
                 if isinstance(statement, IfGreaterThan):
                     self.add_line(f'if {arg1} > {arg2}:')
                 elif isinstance(statement, IfGreaterThanOrEqual):
