@@ -1,6 +1,6 @@
 from typing import List
 
-from parsing.op import (handle_conditional_statement, handle_math_statement,
+from parsing.op import (handle_math_statement, handle_ordered_conditional_statement, handle_unordered_conditional_statement,
                         op_ACTION, op_AGENT,
                         op_DECL, op_EACTION, op_EAGENT, op_EBEHAV, op_EBLOCK,
                         op_PRM, op_SETUPBEHAV)
@@ -38,11 +38,11 @@ def parse_lines(lines: List[str], debug: bool) -> ParsedData:
             case ['EBLOCK']:
                 op_EBLOCK(state)
                 
-            case ['IGT' | 'IGTE' | 'ILT' | 'ILTE' | 'IE' | 'INE' as op, arg1, arg2]:
-                handle_conditional_statement(state, op, arg1, arg2)
+            case [ 'IE' | 'INE' |   'WE' | 'WNE' as op, arg1, arg2]:
+                handle_unordered_conditional_statement(state, op, arg1, arg2)
                 
-            case ['WGT' | 'WGTE' | 'WLT' | 'WLTE' | 'WE' | 'WNE' as op, arg1, arg2]:
-                handle_conditional_statement(state, op, arg1, arg2)
+            case ['IGT' | 'IGTE' | 'ILT' | 'ILTE' | 'WGT' | 'WGTE' | 'WLT' | 'WLTE' as op, arg1, arg2]:
+                handle_ordered_conditional_statement(state, op, arg1, arg2)
                 
             case [ 'ADD' | 'SUBT' | 'MULT' | 'DIV' as op, arg1, arg2]:
                 handle_math_statement(state, op, arg1, arg2)
