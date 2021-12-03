@@ -99,7 +99,7 @@ def op_DECL(state: State, name: str, value: str) -> None:
     lhs = Argument(state, name)
     state.require(lhs.is_name_available, f'{name} is already in current scope.')
     rhs = Argument(state, value)
-    state.require(lhs.declaration_context(rhs), 'Mismatched types.', f'(lhs: {lhs.explain()}) (rhs: {rhs.explain()})')
+    state.require(lhs.declaration_context(rhs), 'Mismatched types.', f'ARG1 {lhs.explain()}, ARG2 {rhs.explain()}')
     
     state.last_action.add_declaration(Declaration(lhs, rhs))
 
@@ -115,7 +115,7 @@ def handle_conditional_statement(state: State, op: str, arg1: str, arg2: str) ->
     state.require(state.in_action, 'Not inside any action.', f'{op} can be used inside actions.')     
     lhs = Argument(state, arg1)
     rhs = Argument(state, arg2)
-    state.require(lhs.comparaison_context(rhs), 'Mismatched types.', f'(lhs: {lhs.explain()}) (rhs: {rhs.explain()})')
+    state.require(lhs.comparaison_context(rhs), 'Mismatched types.', f'ARG1 {lhs.explain()}, ARG2 {rhs.explain()}')
     
     match op:
         case 'IGT':
@@ -147,15 +147,12 @@ def handle_conditional_statement(state: State, op: str, arg1: str, arg2: str) ->
     
     state.last_action.start_block()
 
-## HERE
+
 def handle_math_statement(state: State, op: str, arg1: str, arg2: str) -> None:
     state.require(state.in_action, 'Not inside any action', f'{op} can be used inside actions.')
-    # state.require(state.last_action.is_name_in_scope(arg1) or is_float(arg1), f'{arg1} is not in the current scope.')
-    # state.require(state.last_action.is_name_in_scope(arg2) or is_float(arg2), f'{arg2} is not in the current scope.')
-    # state.require(state.last_agent.is_mutable(arg1), f'{arg1} is immutable.', 'If you want to use its value try saving it into a variable declared using DECL.')
     lhs = Argument(state, arg1)
     rhs = Argument(state, arg2)
-    state.require(lhs.math_context(rhs), 'Mismatched types.', f'(lhs: {lhs.explain()}) (rhs: {rhs.explain()})')
+    state.require(lhs.math_context(rhs), 'Mismatched types.', 'Mismatched types.', f'ARG1 {lhs.explain()}, ARG2 {rhs.explain()}')
     match op:
         case 'ADD':
             state.last_action.add_instruction(Add(lhs, rhs))
