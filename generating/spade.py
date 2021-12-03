@@ -3,12 +3,13 @@ from typing import List
 from intermediate.action import (Add, Block, Declaration, Divide, IfEqual,
                                  IfGreaterThan, IfGreaterThanOrEqual,
                                  IfLessThan, IfLessThanOrEqual, IfNotEqual,
-                                 Multiply, Subtract, VariableValue, WhileEqual,
+                                 Multiply, Subtract, WhileEqual,
                                  WhileGreaterThan, WhileGreaterThanOrEqual,
                                  WhileLessThan, WhileLessThanOrEqual,
                                  WhileNotEqual)
 from intermediate.agent import Agent
 from intermediate.behaviour import Behaviour
+from parsing.argument import Argument
 from parsing.state import ParsedData
 
 
@@ -90,8 +91,16 @@ class SpadeCode:
         self.indent_left()
         self.indent_left()
         
-    def is_from_agent(self, var: VariableValue) -> str:
-        return 'self.agent.' if var.is_value_from_agent else ''
+    def is_agent_param(self, arg: Argument) -> str:
+        return 'self.agent.' if arg.is_agent_param else ''
+    
+    def parse_arg(self, arg: Argument) -> str:
+        if arg.is_agent_param:
+            return 'self.agent.' + arg.arg
+        elif arg.is_enum:
+            return f'\"{arg.arg}\"'
+        else:
+            return arg.arg
         
     def add_block(self, block: Block) -> None:            
         for statement in block.statements:
@@ -100,10 +109,10 @@ class SpadeCode:
                 self.add_block(statement)
                 self.indent_left()
             elif isinstance(statement, Declaration):
-                self.add_line(f'{statement.name} = {self.is_from_agent(statement)}{statement.value}')
+                self.add_line(f'{statement.name} = {self.is_agent_param(statement.value)}{statement.value.arg}')
             else:
-                arg1 = self.is_from_agent(statement.arg1) + statement.arg1.value
-                arg2 = self.is_from_agent(statement.arg2) + statement.arg2.value
+                arg1 = self.parse_arg(statement.arg1)
+                arg2 = self.parse_arg(statement.arg2)
                 if isinstance(statement, IfGreaterThan):
                     self.add_line(f'if {arg1} > {arg2}:')
                 elif isinstance(statement, IfGreaterThanOrEqual):

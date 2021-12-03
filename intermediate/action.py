@@ -3,31 +3,44 @@ from __future__ import annotations
 from pprint import pprint
 from typing import List
 
+# from parsing.argument import Argument
+import parsing
 
-class VariableValue: 
-    def __init__(self, value: str):
-        self.value: str = value
-        self.is_value_from_agent: bool = False
+# class VariableValue: 
+#     def __init__(self, value: str):
+#         self.value: str = value
+#         self.is_value_from_agent: bool = False
 
-    def print(self) -> None:
-        print('VariableValue')
-        pprint(self.__dict__)
+#     def print(self) -> None:
+#         print('VariableValue')
+#         pprint(self.__dict__)
 
 
-class Declaration(VariableValue):  
-    def __init__(self, name: str, value: str):
-        super().__init__(value)
-        self.name: str = name
+# class Declaration(VariableValue):  
+#     def __init__(self, name: str, value: str):
+#         super().__init__(value)
+#         self.name: str = name
+        
+#     def print(self) -> None:
+#         print(f'Declaration: {self.name}')
+#         super().print()
+
+
+class Declaration():  
+    def __init__(self, name: parsing.Argument, value: parsing.Argument):
+        self.name: str = name.arg
+        self.value: parsing.Argument = value
         
     def print(self) -> None:
         print(f'Declaration: {self.name}')
-        super().print()
+        # self.name.print()
+        self.value.print()
 
 
 class Instruction:
-    def __init__(self, arg1: str, arg2: str):
-        self.arg1: VariableValue = VariableValue(arg1)
-        self.arg2: VariableValue = VariableValue(arg2)
+    def __init__(self, arg1: parsing.Argument, arg2: parsing.Argument):
+        self.arg1: parsing.Argument = arg1
+        self.arg2: parsing.Argument = arg2
   
     def print(self) -> None:
         print('Instruction')
@@ -188,7 +201,7 @@ class Block:
         self._declared_names.append(declaration.name)
         self.statements.append(declaration)
         
-    def is_name_in_scope(self, name: str) -> bool:
+    def is_name_in_scope_declarations(self, name: str) -> bool:
         return name in self._declared_names
         
     def add_statement(self, statement: Instruction | Block) -> None:
@@ -204,10 +217,9 @@ class Block:
 
 
 class Action:
-    def __init__(self, name: str, agent_param_names: List[str]):
+    def __init__(self, name: str):
         self.name: str = name
-        self._block_stack: List[Block] = [Block(agent_param_names)]
-        self._agent_param_names = agent_param_names
+        self._block_stack: List[Block] = [Block([])]
         self._nested_blocks_count: int = 0
         
     @property
@@ -218,19 +230,13 @@ class Action:
     def current_block(self) -> Block:
         return self._block_stack[-1]
     
-    def is_name_in_scope(self, name: str) -> bool:
-        return self.current_block.is_name_in_scope(name)
+    def is_name_declared_in_action(self, name: str) -> bool:
+        return self.current_block.is_name_in_scope_declarations(name)
     
     def add_declaration(self, declaration: Declaration) -> None:
-        if declaration.value in self._agent_param_names:
-            declaration.is_value_from_agent = True
         self.current_block.add_declaration(declaration)
     
     def add_instruction(self, instruction: Instruction) -> None:
-        if instruction.arg1.value in self._agent_param_names:
-            instruction.arg1.is_value_from_agent = True
-        if instruction.arg2.value in self._agent_param_names:
-            instruction.arg2.is_value_from_agent = True
         self.current_block.add_statement(instruction)
         
     def start_block(self) -> None:

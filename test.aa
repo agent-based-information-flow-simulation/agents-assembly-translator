@@ -1,0 +1,13 @@
+agent test
+    prm yes, float, init, 5
+    prm no, list, conn_list
+    prm enum1, enum, yes, 50, no 50
+    prm enum2, enum, yes, 30, maybe, 70
+
+    setupbehav setup_test
+        action test
+            ie yes, no
+            eblock
+        eaction
+    ebehav
+eagent

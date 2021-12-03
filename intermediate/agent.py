@@ -6,7 +6,7 @@ from intermediate.param import (DistNormalFloatParam, EnumParam,
 
 
 class Agent:
-    RESERVED_PARAMS = [ 'connCount' ]
+    RESERVED_FLOAT_PARAMS = [ 'connCount' ]
     
     def __init__(self, name: str):
         self.name: str = name
@@ -23,7 +23,7 @@ class Agent:
     
     @property
     def param_names(self) -> List[str]:
-        return [ *Agent.RESERVED_PARAMS,
+        return [ *Agent.RESERVED_FLOAT_PARAMS,
                  *list(self.init_floats), 
                  *list(self.dist_normal_floats), 
                  *list(self.enums), 
@@ -33,8 +33,8 @@ class Agent:
     def behaviour_names(self) -> List[str]:
         return [ *list(self.setup_behaviours) ]
     
-    def is_mutable(self, name: str) -> bool:
-        return name not in Agent.RESERVED_PARAMS
+    # def is_mutable(self, name: str) -> bool:
+    #     return name not in Agent.RESERVED_FLOAT_PARAMS
         
     def add_init_float(self, float_param: InitFloatParam) -> None:
         self.init_floats[float_param.name] = float_param
