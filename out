@@ -6,28 +6,29 @@ from numpy.random import normal
 class test(spade.agent.Agent):
     def __init__(self, jid, password, location, connections):
         super().__init__(jid, password, verify_security=False)
-        self.yes = 5
-        self.enum1 = r.choices(["yes"], [100])[0]
-        self.enum2 = r.choices(["yes", "maybe"], [30, 70])[0]
-        self.no = []
+        self.susceptability = 30.5
+        self.social_media_addiction = normal(0, 30)
+        self.is_online = r.choices(["yes", "no"], [80, 20])[0]
+        self.is_dead = r.choices(["yes", "no_way", "maybe"], [0, 90, 10])[0]
     
     def setup(self):
-        self.add_behaviour(self.setup_test())
+        self.add_behaviour(self.run_on_start())
     
-    class setup_test(spade.behaviour.OneShotBehaviour):
-        async def test(self):
-            tmp = 20
-            if self.agent.yes == tmp:
-                ...
+    class run_on_start(spade.behaviour.OneShotBehaviour):
+        async def check_addiction(self):
+            big = 5
+            if self.agent.social_media_addiction > big:
+                self.agent.susceptability += 15
+            i = 1
+            while i <= 10:
+                self.agent.is_online = "yes"
+                if self.agent.is_online != "no_way":
+                    factorial = 1
+                    factor = 2
+                    while factorial < 1000:
+                        factorial *= factor
+                        factor += 1
+                i += 1
         
         async def run(self):
-            await self.test()
-
-
-class aa(spade.agent.Agent):
-    def __init__(self, jid, password, location, connections):
-        super().__init__(jid, password, verify_security=False)
-    
-    def setup(self):
-        ...
-    
+            await self.check_addiction()

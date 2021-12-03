@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List
 
-from intermediate.action import (Add, Block, Declaration, Divide, IfEqual,
+from intermediate.action import (Add, AddElement, Block, Declaration, Divide, IfEqual,
                                  IfGreaterThan, IfGreaterThanOrEqual,
                                  IfLessThan, IfLessThanOrEqual, IfNotEqual,
                                  Multiply, Subtract, WhileEqual,
@@ -101,10 +101,10 @@ class SpadeCode:
         self.indent_left()
         self.indent_left()
         
-    def is_agent_param(self, arg: Argument) -> str:
+    def agent_param(self, arg: Argument) -> str:
         return 'self.agent.' if arg.is_agent_param else ''
     
-    def parse_arg(self, arg: Argument) -> str:
+    def parse_instruction_arg(self, arg: Argument) -> str:
         if arg.is_agent_param:
             return 'self.agent.' + arg.expr
         # num value
@@ -123,11 +123,21 @@ class SpadeCode:
                 self.indent_right()
                 self.add_block(statement)
                 self.indent_left()
+                
             elif isinstance(statement, Declaration):
-                self.add_line(f'{statement.name} = {self.is_agent_param(statement.value)}{statement.value.expr}')
+                self.add_line(f'{statement.name} = {self.agent_param(statement.value)}{statement.value.expr}')
+                
+            elif isinstance(statement, AddElement):
+                line = f'self.agent.{statement.arg1.expr}'
+                if statement.arg1.is_list:  
+                    line += f'.append({statement.arg2.expr})'
+                elif statement.arg1.is_enum:
+                    line += f' = \"{statement.arg2.expr}\"'
+                self.add_line(line)
+                
             else:
-                arg1 = self.parse_arg(statement.arg1)
-                arg2 = self.parse_arg(statement.arg2)
+                arg1 = self.parse_instruction_arg(statement.arg1)
+                arg2 = self.parse_instruction_arg(statement.arg2)
                 if isinstance(statement, IfGreaterThan):
                     self.add_line(f'if {arg1} > {arg2}:')
                 elif isinstance(statement, IfGreaterThanOrEqual):
