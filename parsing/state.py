@@ -59,6 +59,7 @@ class State:
             uncommented = line.split('#')[0]
             tokens = [token.strip() for token in uncommented.replace(',', ' ').split()]
             if tokens:
+                tokens[0] = tokens[0].upper()
                 yield tokens
                 
     def print(self) -> None:

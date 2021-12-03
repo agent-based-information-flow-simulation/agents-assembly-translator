@@ -1,101 +1,126 @@
 # AGENT directive is followed by a non-whitespace UID token
 # which corresponds to the agent class name
-AGENT average_user
+agent average_user
 
     # instruction PRM declares a parameter of name $arg1, type $arg2 and optional arguments $arg[3:]
-    PRM minutes_spent_daily_on_youtube, float, init, 205.7
-    PRM fakenews_susceptibility, float, dist_normal, 15, 32
-    PRM prefered_website, enum, facebook, 100, twitter, 0
-    PRM is_online, enum, yes, 95, no, 5
-    PRM friends, list, conn_list
-    PRM spam, list, msg_list
+    prm minutes_spent_daily_on_youtube, float, init, 205.7
+    prm fakenews_susceptibility, float, dist_normal, 15, 32
+    prm prefered_website, enum, facebook, 100, twitter, 0
+    prm is_online, enum, yes, 95, no, 5
+    prm friends, list, conn_list
+    prm spam, list, msg_list
 
     # SETUPBEHAV directive is followed by a non-whitespace token
     # which corresponds to the OnSetup behaviour name
-    SETUPBEHAV setup_agent
+    setupbehav setup_agent
 
         # ACTION directive is followed by a non-whitespace token
         # which corresponds to action name
-        ACTION check_minutes_spent_daily_on_youtube
+        action check_minutes_spent_daily_on_youtube
 
             # ACTION scope starts with declaration of all local variables
-            DECL threshold, 100
+            decl threshold, 100
             # note that second argument might be a named systemic variable
-            DECL num_connections, connCount
+            decl num_connections, connCount
 
             # after all declarations other actions are supported: example
-            IGT minutes_spent_daily_on_youtube, threshold
-                MULT fakenews_susceptibility, num_connections
-            EBLOCK
+            igt minutes_spent_daily_on_youtube, threshold
+                mult fakenews_susceptibility, num_connections
+            eblock
 
-            ILTE minutes_spent_daily_on_youtube, threshold
-                SUBT fakenews_susceptibility, num_connections
-                DECL temp_var, 2137
+            ilte minutes_spent_daily_on_youtube, threshold
+                subt fakenews_susceptibility, num_connections
+                decl temp_var, 2137
 
-                IGT fakenews_susceptibility, temp_var
-                    MULT fakenews_susceptibility, num_connections
-                EBLOCK
-            EBLOCK
+                igt fakenews_susceptibility, temp_var
+                    mult fakenews_susceptibility, num_connections
+                eblock
+            eblock
 
-            DECL tmp, 0
+            decl tmp, 0
             
-            IGT tmp, 10
-                DECL a, 0
-            EBLOCK
+            igt tmp, 10
+                decl a, 0
+            eblock
 
-            IGTE tmp, 10
-                DECL a, 0
-            EBLOCK
+            igte tmp, 10
+                decl a, 0
+            eblock
 
-            ILT tmp, 10
-                DECL a, 0
-            EBLOCK
+            ilt tmp, 10
+                decl a, 0
+            eblock
 
-            ILTE tmp, 10
-                DECL a, 0
-            EBLOCK
+            ilte tmp, 10
+                decl a, 0
+            eblock
 
-            IE tmp, 10
-                DECL a, 0
-            EBLOCK
+            ie tmp, 10
+                decl a, 0
+            eblock
 
-            INE tmp, 10
-                DECL a, 0
-            EBLOCK
+            ine tmp, 10
+                decl a, 0
+            eblock
 
-            WGT tmp, 10
-                DECL a, 0
-            EBLOCK
+            wgt tmp, 10
+                decl a, 0
+            eblock
 
-            WGTE tmp, 10
-                DECL a, 0
-            EBLOCK
+            wgte tmp, 10
+                decl a, 0
+            eblock
 
-            WLT tmp, 10
-                DECL a, 0
-                MULT tmp, 2
-            EBLOCK
+            wlt tmp, 10
+                decl a, 0
+                mult tmp, 2
+            eblock
 
-            WLTE tmp, 10
-                DECL a, 0
-                ADD tmp, 1
-            EBLOCK
+            wlte tmp, 10
+                decl a, 0
+                add tmp, 1
+            eblock
 
-            WE tmp, 10
-                DECL a, 0
-                SUBT tmp, 1
-            EBLOCK
+            we tmp, 10
+                decl a, 0
+                subt tmp, 1
+            eblock
 
-            WNE tmp, 10
-                DECL a, 0
-                DIV tmp, 2
-            EBLOCK
+            wne tmp, 10
+                decl a, 0
+                div tmp, 2
+            eblock
 
         # We escape ACTION scope with EACTION
-        EACTION
+        eaction
+
+        action find_100th_prime
+            decl num_found, 0
+            decl curr, 1
+            wlte num_found, 100
+                decl divisor, curr
+                subt divisor, 1
+                decl num_divisors, 0
+                wgt divisor, 1
+                    decl curr_copy, curr
+                    wgt curr_copy, 0
+                        subt curr_copy, divisor
+                    eblock
+                    ie curr_copy, 0
+                        add num_divisors, 1
+                    eblock
+                    subt divisor, 1
+                eblock
+                ie num_divisors, 0
+                    add num_found, 1
+                eblock
+                add curr, 1
+            eblock
+            decl prime_100th, curr
+        eaction
 
     # We escape SETUPBEHAV scope with ESETUPBEHAV
-    EBEHAV
+    ebehav
 
 # We escape AGENT scope with EAGENT directive
-EAGENT
+eagent
