@@ -13,14 +13,19 @@ class ArgumentType:
         self.is_list: bool = is_list
         self.is_mutable: bool = is_mutable
     
-    def explain(self) -> Dict[str, bool]:
-        return {
-            'is_agent_param': self.is_agent_param,
-            'is_enum': self.is_enum,
-            'is_float': self.is_float,
-            'is_list': self.is_list,
-            'is_mutable': self.is_mutable,
-        }
+    def explain(self) -> str:
+        types = '('
+        if self.is_agent_param:
+            types += 'agent parameter, '
+        if self.is_enum:
+            types += 'enum, '
+        if self.is_float:
+            types += 'float, '
+        if self.is_list:
+            types += 'list, '
+        types += 'mutable' if self.is_mutable else 'immutable'
+        types += ')'
+        return types
     
     def print(self) -> None:
         print('ArgumentType')
@@ -30,8 +35,8 @@ class ArgumentType:
 class Argument:
     """Doesn't panic. Use in the action context."""
     
-    def __init__(self, state: State, arg: str):
-        self.arg: str = arg
+    def __init__(self, state: State, expr: str):
+        self.expr: str = expr
         self.types: Dict[str, ArgumentType] = {}
         self.type_in_op: str = ''
         self.is_name_available: bool = True
@@ -54,26 +59,26 @@ class Argument:
         return self.types[self.type_in_op].is_list
         
     def _set_types(self, state: State) -> None:
-        if self.arg in state.last_agent.RESERVED_FLOAT_PARAMS:
+        if self.expr in state.last_agent.RESERVED_FLOAT_PARAMS:
             self.types['float'] = ArgumentType(True, False, True, False, False)
             self.is_name_available = False
-        elif self.arg in state.last_agent.init_floats or self.arg in state.last_agent.dist_normal_floats:
+        elif self.expr in state.last_agent.init_floats or self.expr in state.last_agent.dist_normal_floats:
             self.types['float'] = ArgumentType(True, False, True, False, True)
             self.is_name_available = False
-        elif self.arg in state.last_agent.enums:
-            self.types[f'{self.arg}_enum'] = ArgumentType(True, True, False, False, True)
+        elif self.expr in state.last_agent.enums:
+            self.types[f'{self.expr}_enum'] = ArgumentType(True, True, False, False, True)
             self.is_name_available = False
-        elif self.arg in state.last_agent.lists:
+        elif self.expr in state.last_agent.lists:
             self.types['list'] = ArgumentType(True, False, False, True, True)
             self.is_name_available = False
-        elif state.last_action.is_name_declared_in_action(self.arg):
+        elif state.last_action.is_name_declared_in_action(self.expr):
             self.types['float'] = ArgumentType(False, False, True, False, True)
             self.is_name_available = False
-        elif is_float(self.arg):
+        elif is_float(self.expr):
             self.types['float'] = ArgumentType(False, False, True, False, False)
         for enum_param in state.last_agent.enums.values():
             for enum_value, _ in enum_param.enums:
-                if self.arg == enum_value:
+                if self.expr == enum_value:
                     self.types[f'{enum_param.name}_enum'] = ArgumentType(False, True, False, False, False)
         
     def declaration_context(self, rhs: Argument) -> bool:
@@ -104,14 +109,16 @@ class Argument:
             return True
         return False
     
-    def explain(self) -> Dict[str, Dict[str, bool]]:
-        types: Dict[str, Dict[str, bool]] = {}
+    def explain(self) -> str:
+        types = f'{self.expr}: [ '
         for type_name, argument_type in self.types.items():
-            types[type_name] = argument_type.explain()
+            types += f'{type_name} ' + argument_type.explain() + ', '
+        types = types.rstrip().rsplit(',', 1)[0]
+        types += ' ]'
         return types
     
     def print(self) -> None:
-        print(f'Argument {self.arg}')
+        print(f'Argument {self.expr}')
         print(f'Type in op: {self.type_in_op}')
         print(f'Is name available: {self.is_name_available}')
         for _type in self.types.values():

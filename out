@@ -7,7 +7,7 @@ class test(spade.agent.Agent):
     def __init__(self, jid, password, location, connections):
         super().__init__(jid, password, verify_security=False)
         self.yes = 5
-        self.enum1 = r.choices(["yes", "no"], [50, 50])[0]
+        self.enum1 = r.choices(["yes"], [100])[0]
         self.enum2 = r.choices(["yes", "maybe"], [30, 70])[0]
         self.no = []
     
@@ -16,7 +16,8 @@ class test(spade.agent.Agent):
     
     class setup_test(spade.behaviour.OneShotBehaviour):
         async def test(self):
-            if "yes" == "no":
+            tmp = 20
+            if self.agent.yes == tmp:
                 ...
         
         async def run(self):

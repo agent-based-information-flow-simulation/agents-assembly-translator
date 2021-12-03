@@ -102,13 +102,13 @@ class SpadeCode:
     
     def parse_arg(self, arg: Argument) -> str:
         if arg.is_agent_param:
-            return 'self.agent.' + arg.arg
+            return 'self.agent.' + arg.expr
         # num value
         elif arg.is_enum:
-            return f'\"{arg.arg}\"'
+            return f'\"{arg.expr}\"'
         # float
         else:
-            return arg.arg
+            return arg.expr
         
     def add_block(self, block: Block) -> None:
         if not block.statements:
@@ -120,7 +120,7 @@ class SpadeCode:
                 self.add_block(statement)
                 self.indent_left()
             elif isinstance(statement, Declaration):
-                self.add_line(f'{statement.name} = {self.is_agent_param(statement.value)}{statement.value.arg}')
+                self.add_line(f'{statement.name} = {self.is_agent_param(statement.value)}{statement.value.expr}')
             else:
                 arg1 = self.parse_arg(statement.arg1)
                 arg2 = self.parse_arg(statement.arg2)

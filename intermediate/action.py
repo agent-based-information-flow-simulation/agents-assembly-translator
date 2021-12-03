@@ -3,37 +3,15 @@ from __future__ import annotations
 from pprint import pprint
 from typing import List
 
-# from parsing.argument import Argument
 import parsing
-
-# class VariableValue: 
-#     def __init__(self, value: str):
-#         self.value: str = value
-#         self.is_value_from_agent: bool = False
-
-#     def print(self) -> None:
-#         print('VariableValue')
-#         pprint(self.__dict__)
-
-
-# class Declaration(VariableValue):  
-#     def __init__(self, name: str, value: str):
-#         super().__init__(value)
-#         self.name: str = name
-        
-#     def print(self) -> None:
-#         print(f'Declaration: {self.name}')
-#         super().print()
-
 
 class Declaration():  
     def __init__(self, name: parsing.Argument, value: parsing.Argument):
-        self.name: str = name.arg
+        self.name: str = name.expr
         self.value: parsing.Argument = value
         
     def print(self) -> None:
         print(f'Declaration: {self.name}')
-        # self.name.print()
         self.value.print()
 
 
