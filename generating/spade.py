@@ -71,6 +71,8 @@ class SpadeCode:
     def add_agent_setup(self, agent: Agent) -> None:
         self.add_line('def setup(self):')
         self.indent_right()
+        if not agent.setup_behaviours.values():
+            self.add_line('...')
         for setup_behaviour in agent.setup_behaviours.values():
             self.add_line(f'self.add_behaviour(self.{setup_behaviour.name}())')
         self.indent_left()
@@ -78,6 +80,8 @@ class SpadeCode:
     def add_agent_behaviour(self, behaviour: Behaviour, behaviour_type: str) -> None:
         self.add_line(f'class {behaviour.name}({behaviour_type}):')
         self.indent_right()
+        if not behaviour.actions.values():
+            self.add_line('...')
         for action in behaviour.actions.values():
             self.add_line(f'async def {action.name}(self):')
             self.indent_right()
@@ -86,6 +90,8 @@ class SpadeCode:
             self.add_line('')
         self.add_line('async def run(self):')
         self.indent_right()
+        if not behaviour.actions.values():
+            self.add_line('...')
         for action in behaviour.actions.values():
             self.add_line(f'await self.{action.name}()')
         self.indent_left()
@@ -97,12 +103,17 @@ class SpadeCode:
     def parse_arg(self, arg: Argument) -> str:
         if arg.is_agent_param:
             return 'self.agent.' + arg.arg
+        # num value
         elif arg.is_enum:
             return f'\"{arg.arg}\"'
+        # float
         else:
             return arg.arg
         
-    def add_block(self, block: Block) -> None:            
+    def add_block(self, block: Block) -> None:
+        if not block.statements:
+            self.add_line('...')
+            
         for statement in block.statements:
             if isinstance(statement, Block):
                 self.indent_right()

@@ -17,6 +17,16 @@ class test(spade.agent.Agent):
     class setup_test(spade.behaviour.OneShotBehaviour):
         async def test(self):
             if "yes" == "no":
+                ...
         
         async def run(self):
             await self.test()
+
+
+class aa(spade.agent.Agent):
+    def __init__(self, jid, password, location, connections):
+        super().__init__(jid, password, verify_security=False)
+    
+    def setup(self):
+        ...
+    
