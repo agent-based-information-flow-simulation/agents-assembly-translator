@@ -82,7 +82,7 @@ class SpadeCode:
             self.indent_right()
             self.add_block(action.main_block)
             self.indent_left()
-        self.add_line('')
+            self.add_line('')
         self.add_line('async def run(self):')
         self.indent_right()
         for action in behaviour.actions.values():

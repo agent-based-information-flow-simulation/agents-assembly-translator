@@ -57,5 +57,25 @@ class average_user(spade.agent.Agent):
                 a = 0
                 tmp /= 2
         
+        async def find_100th_prime(self):
+            num_found = 0
+            curr = 1
+            while num_found <= 100:
+                divisor = curr
+                divisor -= 1
+                num_divisors = 0
+                while divisor > 1:
+                    curr_copy = curr
+                    while curr_copy > 0:
+                        curr_copy -= divisor
+                    if curr_copy == 0:
+                        num_divisors += 1
+                    divisor -= 1
+                if num_divisors == 0:
+                    num_found += 1
+                curr += 1
+            prime_100th = curr
+        
         async def run(self):
             await self.check_minutes_spent_daily_on_youtube()
+            await self.find_100th_prime()
