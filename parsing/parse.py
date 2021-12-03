@@ -38,7 +38,7 @@ def parse_lines(lines: List[str], debug: bool) -> ParsedData:
             case ['EBLOCK']:
                 op_EBLOCK(state)
                 
-            case [ 'IE' | 'INE' |   'WE' | 'WNE' as op, arg1, arg2]:
+            case [ 'IE' | 'INE' | 'WE' | 'WNE' as op, arg1, arg2]:
                 handle_unordered_conditional_statement(state, op, arg1, arg2)
                 
             case ['IGT' | 'IGTE' | 'ILT' | 'ILTE' | 'WGT' | 'WGTE' | 'WLT' | 'WLTE' as op, arg1, arg2]:
