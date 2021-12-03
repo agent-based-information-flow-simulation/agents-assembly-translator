@@ -42,7 +42,7 @@ def parse_lines(lines: List[str], debug: bool) -> ParsedData:
             case [ 'IE' | 'INE' | 'WE' | 'WNE' as op, arg1, arg2 ]:
                 handle_unordered_conditional_statement(state, op, arg1, arg2)
                 
-            case ['IGT' | 'IGTE' | 'ILT' | 'ILTE' | 'WGT' | 'WGTE' | 'WLT' | 'WLTE' as op, arg1, arg2 ]:
+            case [ 'IGT' | 'IGTE' | 'ILT' | 'ILTE' | 'WGT' | 'WGTE' | 'WLT' | 'WLTE' as op, arg1, arg2 ]:
                 handle_ordered_conditional_statement(state, op, arg1, arg2)
                 
             case [ 'ADD' | 'SUBT' | 'MULT' | 'DIV' as op, arg1, arg2 ]:
