@@ -6,6 +6,7 @@
 - [Getting Started](#getting_started)
 - [Usage](#usage)
 - [Structure](#structure)
+- [Design](#Design)
 
 ## About <a name = "about"></a>
 
@@ -54,3 +55,21 @@ python translate.py --help
 * `utils`
     * `validation.py` - variables validation
 * `translate.py` - entrypoint
+
+## Design <a name = "design"></a>
+* `Agent`
+    * `Parameters`
+        * `Type`
+        * `Values`
+    * `Behaviours`
+        * `Type`
+        * `Actions`
+            * `Blocks`
+                * `Declarations`
+                    * `Name`
+                    * `Argument`
+                        * `Types`
+                * `Instructions`
+                    * `Arguments`
+                        * `Types`
+                * `Blocks`
