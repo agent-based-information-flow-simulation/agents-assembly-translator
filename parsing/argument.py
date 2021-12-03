@@ -35,6 +35,11 @@ class ArgumentType:
 class Argument:
     """Doesn't panic. Use in the action context."""
     
+    FLOAT = 'float'
+    ENUM = 'enum'
+    LIST = 'list'
+    ENUM_VALUE_SUFFIX = '_enum_value'
+    
     def __init__(self, state: State, expr: str):
         self.expr: str = expr
         self.types: Dict[str, ArgumentType] = {}
@@ -44,75 +49,92 @@ class Argument:
         
     @property
     def is_agent_param(self) -> bool:
+        if not self.type_in_op:
+            print(f'Warning: context not set for {self.expr}')
         return self.types[self.type_in_op].is_agent_param
     
     @property
     def is_enum(self) -> bool:
+        if not self.type_in_op:
+            print(f'Warning: context not set for {self.expr}')
         return self.types[self.type_in_op].is_enum
     
     @property
     def is_float(self) -> bool:
+        if not self.type_in_op:
+            print(f'Warning: context not set for {self.expr}')
         return self.types[self.type_in_op].is_float
     
     @property
     def is_list(self) -> bool:
+        if not self.type_in_op:
+            print(f'Warning: context not set for {self.expr}')
         return self.types[self.type_in_op].is_list
         
     def _set_types(self, state: State) -> None:
         if self.expr in state.last_agent.RESERVED_FLOAT_PARAMS:
-            self.types['float'] = ArgumentType(True, False, True, False, False)
+            self.types[Argument.FLOAT] = ArgumentType(True, False, True, False, False)
             self.is_name_available = False
         elif self.expr in state.last_agent.init_floats or self.expr in state.last_agent.dist_normal_floats:
-            self.types['float'] = ArgumentType(True, False, True, False, True)
+            self.types[Argument.FLOAT] = ArgumentType(True, False, True, False, True)
             self.is_name_available = False
         elif self.expr in state.last_agent.enums:
-            self.types['enum'] = ArgumentType(True, True, False, False, True)
+            self.types[Argument.ENUM] = ArgumentType(True, True, False, False, True)
             self.is_name_available = False
         elif self.expr in state.last_agent.lists:
-            self.types['list'] = ArgumentType(True, False, False, True, True)
+            self.types[Argument.LIST] = ArgumentType(True, False, False, True, True)
             self.is_name_available = False
         elif state.last_action.is_name_declared_in_action(self.expr):
-            self.types['float'] = ArgumentType(False, False, True, False, True)
+            self.types[Argument.FLOAT] = ArgumentType(False, False, True, False, True)
             self.is_name_available = False
         elif is_float(self.expr):
-            self.types['float'] = ArgumentType(False, False, True, False, False)
+            self.types[Argument.FLOAT] = ArgumentType(False, False, True, False, False)
         for enum_param in state.last_agent.enums.values():
             for enum_value, _ in enum_param.enums:
                 if self.expr == enum_value:
-                    self.types[f'{enum_param.name}_enum_value'] = ArgumentType(False, True, False, False, False)
+                    self.types[f'{enum_param.name}{Argument.ENUM_VALUE_SUFFIX}'] = ArgumentType(False, True, False, False, False)
         
     def declaration_context(self, rhs: Argument) -> bool:
-        if 'float' in rhs.types:
-            self.type_in_op = 'float'
-            rhs.type_in_op = 'float'
+        if Argument.FLOAT in rhs.types:
+            self.type_in_op = Argument.FLOAT 
+            rhs.type_in_op = Argument.FLOAT
             return True
         return False
     
-    def comparaison_context(self, rhs: Argument) -> bool:
-        lhs_enum_values = [_type for _type in self.types if "_enum_value" in _type]
-        rhs_enum_values = [_type for _type in rhs.types if "_enum_value" in _type]
-           
-        if 'float' in self.types and 'float' in rhs.types:
-            self.type_in_op = 'float'
-            rhs.type_in_op = 'float'
-        elif 'enum' in self.types and 'enum' in rhs.types:
-            self.type_in_op = 'enum'
-            rhs.type_in_op = 'enum'
-        elif 'enum' in self.types and rhs_enum_values:
-            self.type_in_op = 'enum'
+    def unordered_comparaison_context(self, rhs: Argument) -> bool:
+        lhs_enum_values = [_type for _type in self.types if Argument.ENUM_VALUE_SUFFIX in _type]
+        rhs_enum_values = [_type for _type in rhs.types if Argument.ENUM_VALUE_SUFFIX in _type]
+        available_types = set(self.types).intersection(set(rhs.types))
+        if Argument.FLOAT in available_types:
+            self.type_in_op = Argument.FLOAT
+            rhs.type_in_op = Argument.FLOAT
+        elif Argument.ENUM in available_types:
+            self.type_in_op = Argument.ENUM
+            rhs.type_in_op = Argument.ENUM
+        elif Argument.ENUM in self.types and rhs_enum_values:
+            self.type_in_op = Argument.ENUM
             rhs.type_in_op = rhs_enum_values[0]
-        elif lhs_enum_values and 'enum' in rhs.types:
+        elif lhs_enum_values and Argument.ENUM in rhs.types:
             self.type_in_op = lhs_enum_values[0]
-            rhs.type_in_op = 'enum'
+            rhs.type_in_op = Argument.ENUM
+        else:
+            return False
+        return True
+    
+    def ordered_comparaison_context(self, rhs: Argument) -> bool:
+        available_types = set(self.types).intersection(set(rhs.types))
+        if Argument.FLOAT in available_types:
+            self.type_in_op = Argument.FLOAT
+            rhs.type_in_op = Argument.FLOAT
         else:
             return False
         return True
     
     def math_context(self, rhs: Argument) -> bool:
         available_types = set(self.types).intersection(set(rhs.types))
-        if 'float' in available_types and self.types['float'].is_mutable:
-            self.type_in_op = 'float'
-            rhs.type_in_op = 'float'
+        if Argument.FLOAT in available_types and self.types[Argument.FLOAT].is_mutable:
+            self.type_in_op = Argument.FLOAT
+            rhs.type_in_op = Argument.FLOAT
             return True
         return False
     
