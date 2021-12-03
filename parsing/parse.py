@@ -12,40 +12,40 @@ def parse_lines(lines: List[str], debug: bool) -> ParsedData:
     state = State(lines, debug)
     for tokens in state.tokens_from_lines():
         match tokens:                                        
-            case ['AGENT', name]:
+            case [ 'AGENT', name ]:
                 op_AGENT(state, name)
             
-            case ['EAGENT']:
+            case [ 'EAGENT' ]:
                 op_EAGENT(state)
                 
-            case ['PRM', name, category, *args]:
+            case [ 'PRM', name, category, *args ]:
                 op_PRM(state, name, category, args)
                 
-            case ['SETUPBEHAV', name]:
+            case [ 'SETUPBEHAV', name ]:
                 op_SETUPBEHAV(state, name)
                 
-            case ['EBEHAV']:
+            case [ 'EBEHAV' ]:
                 op_EBEHAV(state)
                 
-            case ['ACTION', name]:
+            case [ 'ACTION', name ]:
                 op_ACTION(state, name)
                 
-            case ['EACTION']:
+            case [ 'EACTION' ]:
                 op_EACTION(state)
                 
-            case ['DECL', name, value]:
+            case [ 'DECL', name, value ]:
                 op_DECL(state, name, value)
                 
-            case ['EBLOCK']:
+            case [ 'EBLOCK' ]:
                 op_EBLOCK(state)
                 
-            case [ 'IE' | 'INE' | 'WE' | 'WNE' as op, arg1, arg2]:
+            case [ 'IE' | 'INE' | 'WE' | 'WNE' as op, arg1, arg2 ]:
                 handle_unordered_conditional_statement(state, op, arg1, arg2)
                 
-            case ['IGT' | 'IGTE' | 'ILT' | 'ILTE' | 'WGT' | 'WGTE' | 'WLT' | 'WLTE' as op, arg1, arg2]:
+            case ['IGT' | 'IGTE' | 'ILT' | 'ILTE' | 'WGT' | 'WGTE' | 'WLT' | 'WLTE' as op, arg1, arg2 ]:
                 handle_ordered_conditional_statement(state, op, arg1, arg2)
                 
-            case [ 'ADD' | 'SUBT' | 'MULT' | 'DIV' as op, arg1, arg2]:
+            case [ 'ADD' | 'SUBT' | 'MULT' | 'DIV' as op, arg1, arg2 ]:
                 handle_math_statement(state, op, arg1, arg2)
  
             case _:
