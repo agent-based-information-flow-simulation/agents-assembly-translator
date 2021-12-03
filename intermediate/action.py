@@ -5,6 +5,7 @@ from typing import List
 
 import parsing
 
+
 class Declaration():  
     def __init__(self, name: parsing.Argument, value: parsing.Argument):
         self.name: str = name.expr

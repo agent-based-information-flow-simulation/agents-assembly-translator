@@ -1,6 +1,8 @@
 from __future__ import annotations
+
 from pprint import pprint
 from typing import Dict
+
 from parsing.state import State
 from utils.validation import is_float
 

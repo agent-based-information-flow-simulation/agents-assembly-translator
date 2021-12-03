@@ -11,9 +11,9 @@ from intermediate.agent import Agent
 from intermediate.behaviour import Behaviour
 from intermediate.param import (DistNormalFloatParam, EnumParam,
                                 InitFloatParam, ListParam)
+from parsing.argument import Argument
 from parsing.state import State
 from utils.validation import is_float, is_valid_enum_list
-from parsing.argument import Argument
 
 
 def op_AGENT(state: State, name: str) -> None:    

@@ -1,9 +1,10 @@
 from typing import List
 
-from parsing.op import (handle_math_statement, handle_ordered_conditional_statement, handle_unordered_conditional_statement,
-                        op_ACTION, op_AGENT,
-                        op_DECL, op_EACTION, op_EAGENT, op_EBEHAV, op_EBLOCK,
-                        op_PRM, op_SETUPBEHAV)
+from parsing.op import (handle_math_statement,
+                        handle_ordered_conditional_statement,
+                        handle_unordered_conditional_statement, op_ACTION,
+                        op_AGENT, op_DECL, op_EACTION, op_EAGENT, op_EBEHAV,
+                        op_EBLOCK, op_PRM, op_SETUPBEHAV)
 from parsing.state import ParsedData, State
 
 
