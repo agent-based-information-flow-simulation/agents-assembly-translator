@@ -17,6 +17,7 @@ A translator from Agents Assembly to SPADE (Python).
 ### Prerequisites
 
 ```
+Python 3.10
 pipenv
 ```
 
