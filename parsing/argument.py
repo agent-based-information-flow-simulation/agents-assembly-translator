@@ -66,7 +66,7 @@ class Argument:
             self.types['float'] = ArgumentType(True, False, True, False, True)
             self.is_name_available = False
         elif self.expr in state.last_agent.enums:
-            self.types[f'{self.expr}_enum'] = ArgumentType(True, True, False, False, True)
+            self.types['enum'] = ArgumentType(True, True, False, False, True)
             self.is_name_available = False
         elif self.expr in state.last_agent.lists:
             self.types['list'] = ArgumentType(True, False, False, True, True)
@@ -79,7 +79,7 @@ class Argument:
         for enum_param in state.last_agent.enums.values():
             for enum_value, _ in enum_param.enums:
                 if self.expr == enum_value:
-                    self.types[f'{enum_param.name}_enum'] = ArgumentType(False, True, False, False, False)
+                    self.types[f'{enum_param.name}_enum_value'] = ArgumentType(False, True, False, False, False)
         
     def declaration_context(self, rhs: Argument) -> bool:
         if 'float' in rhs.types:
@@ -89,16 +89,23 @@ class Argument:
         return False
     
     def comparaison_context(self, rhs: Argument) -> bool:
-        available_types = set(self.types).intersection(set(rhs.types)) - {'list'}
-        if not available_types:
-            return False
-        if 'float' in available_types:
+        lhs_enum_values = [_type for _type in self.types if "_enum_value" in _type]
+        rhs_enum_values = [_type for _type in rhs.types if "_enum_value" in _type]
+           
+        if 'float' in self.types and 'float' in rhs.types:
             self.type_in_op = 'float'
             rhs.type_in_op = 'float'
+        elif 'enum' in self.types and 'enum' in rhs.types:
+            self.type_in_op = 'enum'
+            rhs.type_in_op = 'enum'
+        elif 'enum' in self.types and rhs_enum_values:
+            self.type_in_op = 'enum'
+            rhs.type_in_op = rhs_enum_values[0]
+        elif lhs_enum_values and 'enum' in rhs.types:
+            self.type_in_op = lhs_enum_values[0]
+            rhs.type_in_op = 'enum'
         else:
-            available_type = available_types.pop()
-            self.type_in_op = available_type
-            rhs.type_in_op = available_type
+            return False
         return True
     
     def math_context(self, rhs: Argument) -> bool:
