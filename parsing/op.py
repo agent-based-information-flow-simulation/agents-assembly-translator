@@ -1,7 +1,9 @@
-from typing import List
+from __future__ import annotations
 
-from intermediate.action import (Action, Add, Declaration, Divide, IfEqual,
-                                 IfGreaterThan, IfGreaterThanOrEqual,
+from typing import TYPE_CHECKING, List
+
+from intermediate.action import (Action, Add, AddElement, Declaration, Divide,
+                                 IfEqual, IfGreaterThan, IfGreaterThanOrEqual,
                                  IfLessThan, IfLessThanOrEqual, IfNotEqual,
                                  Multiply, Subtract, WhileEqual,
                                  WhileGreaterThan, WhileGreaterThanOrEqual,
@@ -12,8 +14,10 @@ from intermediate.behaviour import Behaviour
 from intermediate.param import (DistNormalFloatParam, EnumParam,
                                 InitFloatParam, ListParam)
 from parsing.argument import Argument
-from parsing.state import State
 from utils.validation import is_float, is_valid_enum_list
+
+if TYPE_CHECKING:
+    from parsing.state import State
 
 
 def op_AGENT(state: State, name: str) -> None:    
@@ -165,7 +169,7 @@ def handle_math_statement(state: State, op: str, arg1: str, arg2: str) -> None:
     state.require(state.in_action, 'Not inside any action', f'{op} can be used inside actions.')
     lhs = Argument(state, arg1)
     rhs = Argument(state, arg2)
-    state.require(lhs.math_context(rhs), 'Mismatched types.', f'ARG1 {lhs.explain()}, ARG2 {rhs.explain()}')
+    state.require(lhs.math_context(rhs), 'Mismatched types in math statement.', f'ARG1 {lhs.explain()}, ARG2 {rhs.explain()}')
     match op:
         case 'ADD':
             state.last_action.add_instruction(Add(lhs, rhs))
@@ -177,3 +181,12 @@ def handle_math_statement(state: State, op: str, arg1: str, arg2: str) -> None:
             state.last_action.add_instruction(Divide(lhs, rhs))
         case _:
             state.panic(f'Unexpected error: {op} {arg1} {arg2}')
+
+
+def op_ADDELEM(state: State, arg1: str, arg2: str) -> None:            
+    state.require(state.in_action, 'Not inside any action.', f'ADDELEM can be used inside actions.')
+    lhs = Argument(state, arg1)
+    rhs = Argument(state, arg2)
+    state.require(lhs.array_addition_context(rhs), 'Mismatched types in enum/list modification context.', f'ARG1 {lhs.explain()}, ARG2 {rhs.explain()}')
+    
+    state.last_action.add_instruction(AddElement(lhs, rhs))

@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 from pprint import pprint
-from typing import Dict
+from typing import TYPE_CHECKING, Dict
 
-from parsing.state import State
 from utils.validation import is_float
+
+if TYPE_CHECKING:
+    from parsing.state import State
 
 
 class ArgumentType:
@@ -137,6 +139,13 @@ class Argument:
         if Argument.FLOAT in available_types and self.types[Argument.FLOAT].is_mutable:
             self.type_in_op = Argument.FLOAT
             rhs.type_in_op = Argument.FLOAT
+            return True
+        return False
+    
+    def array_addition_context(self, rhs: Argument) -> bool:
+        if Argument.ENUM in self.types and f'{self.expr}{Argument.ENUM_VALUE_SUFFIX}' in rhs.types:
+            self.type_in_op = Argument.ENUM
+            rhs.type_in_op = f'{self.expr}{Argument.ENUM_VALUE_SUFFIX}'
             return True
         return False
     

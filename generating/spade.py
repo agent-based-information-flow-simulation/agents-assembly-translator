@@ -1,4 +1,6 @@
-from typing import List
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, List
 
 from intermediate.action import (Add, Block, Declaration, Divide, IfEqual,
                                  IfGreaterThan, IfGreaterThanOrEqual,
@@ -7,11 +9,13 @@ from intermediate.action import (Add, Block, Declaration, Divide, IfEqual,
                                  WhileGreaterThan, WhileGreaterThanOrEqual,
                                  WhileLessThan, WhileLessThanOrEqual,
                                  WhileNotEqual)
-from intermediate.agent import Agent
-from intermediate.behaviour import Behaviour
-from parsing.argument import Argument
-from parsing.state import ParsedData
 
+if TYPE_CHECKING:
+    from intermediate.agent import Agent
+    from intermediate.behaviour import Behaviour
+    from parsing.argument import Argument
+    from parsing.state import ParsedData
+    
 
 class SpadeCode:
     INDENT_SIZE = 4

@@ -1,8 +1,11 @@
-from typing import Dict, List
+from __future__ import annotations
 
-from intermediate.behaviour import Behaviour
-from intermediate.param import (DistNormalFloatParam, EnumParam,
-                                InitFloatParam, ListParam)
+from typing import TYPE_CHECKING, Dict, List
+
+if TYPE_CHECKING:
+    from intermediate.behaviour import Behaviour
+    from intermediate.param import (DistNormalFloatParam, EnumParam,
+                                    InitFloatParam, ListParam)
 
 
 class Agent:

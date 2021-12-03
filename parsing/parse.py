@@ -3,8 +3,8 @@ from typing import List
 from parsing.op import (handle_math_statement,
                         handle_ordered_conditional_statement,
                         handle_unordered_conditional_statement, op_ACTION,
-                        op_AGENT, op_DECL, op_EACTION, op_EAGENT, op_EBEHAV,
-                        op_EBLOCK, op_PRM, op_SETUPBEHAV)
+                        op_ADDELEM, op_AGENT, op_DECL, op_EACTION, op_EAGENT,
+                        op_EBEHAV, op_EBLOCK, op_PRM, op_SETUPBEHAV)
 from parsing.state import ParsedData, State
 
 
@@ -47,7 +47,10 @@ def parse_lines(lines: List[str], debug: bool) -> ParsedData:
                 
             case [ 'ADD' | 'SUBT' | 'MULT' | 'DIV' as op, arg1, arg2 ]:
                 handle_math_statement(state, op, arg1, arg2)
- 
+                
+            case [ 'ADDELEM' | 'ADDE' | 'SETE', arg1, arg2 ]:
+                op_ADDELEM(state, arg1, arg2)
+                
             case _:
                 state.panic(f'Unknown tokens: {tokens}')
 

@@ -1,6 +1,9 @@
-from typing import Dict
+from __future__ import annotations
 
-from intermediate.action import Action
+from typing import TYPE_CHECKING, Dict
+
+if TYPE_CHECKING:
+    from intermediate.action import Action
 
 
 class Behaviour:
