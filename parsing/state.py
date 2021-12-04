@@ -1,10 +1,13 @@
-from pprint import pprint
-from typing import Dict, Generator, List
+from __future__ import annotations
 
-from intermediate.action import Action
-from intermediate.agent import Agent
-from intermediate.behaviour import Behaviour
-from intermediate.message import Message
+from pprint import pprint
+from typing import TYPE_CHECKING, Dict, Generator, List
+
+if TYPE_CHECKING:
+    from intermediate.action import Action
+    from intermediate.agent import Agent
+    from intermediate.behaviour import Behaviour
+    from intermediate.message import Message
 
 
 class ParsedData:

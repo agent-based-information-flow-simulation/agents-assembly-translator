@@ -11,7 +11,7 @@ agent test
             eblock
             decl i, 1
             wlte i, 10
-                sete is_online, yes 
+                set is_dead, maybe 
                 ine is_online, no_way
                     decl factorial, 1
                     decl factor, 2
@@ -22,6 +22,7 @@ agent test
                 eblock
                 add i, 1
             eblock
+            set is_dead, no_way
         eaction
     ebehav
 eagent

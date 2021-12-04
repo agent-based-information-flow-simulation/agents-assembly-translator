@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, List
 from intermediate.action import (Action, Add, AddElement, Declaration, Divide,
                                  IfEqual, IfGreaterThan, IfGreaterThanOrEqual,
                                  IfLessThan, IfLessThanOrEqual, IfNotEqual,
-                                 Multiply, Subtract, WhileEqual,
+                                 Multiply, Set, Subtract, WhileEqual,
                                  WhileGreaterThan, WhileGreaterThanOrEqual,
                                  WhileLessThan, WhileLessThanOrEqual,
                                  WhileNotEqual)
@@ -101,9 +101,8 @@ def op_DECL(state: State, name: str, value: str) -> None:
     state.require(state.in_action, 'Cannot declare variables outside actions.')
     state.require(not name[0].isdigit(), f'{name} is not correct.', 'Names cannot start with a digit.')
     lhs = Argument(state, name)
-    state.require(lhs.is_name_available, f'{name} is already in current scope.')
     rhs = Argument(state, value)
-    state.require(lhs.declaration_context(rhs), 'Mismatched types.', f'ARG1 {lhs.explain()}, ARG2 {rhs.explain()}')
+    state.require(lhs.declaration_context(rhs), 'Mismatched types in the declaration context.', f'ARG1 {lhs.explain()}, ARG2 {rhs.explain()}')
     
     state.last_action.add_declaration(Declaration(lhs, rhs))
 
@@ -119,7 +118,7 @@ def handle_unordered_conditional_statement(state: State, op: str, arg1: str, arg
     state.require(state.in_action, 'Not inside any action.', f'{op} can be used inside actions.')     
     lhs = Argument(state, arg1)
     rhs = Argument(state, arg2)
-    state.require(lhs.unordered_comparaison_context(rhs), 'Mismatched types in unordered comparaison.', f'ARG1 {lhs.explain()}, ARG2 {rhs.explain()}')
+    state.require(lhs.unordered_comparaison_context(rhs), 'Mismatched types in the unordered comparaison context.', f'ARG1 {lhs.explain()}, ARG2 {rhs.explain()}')
     
     match op:
         case 'IE':
@@ -140,7 +139,7 @@ def handle_ordered_conditional_statement(state: State, op: str, arg1: str, arg2:
     state.require(state.in_action, 'Not inside any action.', f'{op} can be used inside actions.')     
     lhs = Argument(state, arg1)
     rhs = Argument(state, arg2)
-    state.require(lhs.ordered_comparaison_context(rhs), 'Mismatched types in ordered comparaison.', f'ARG1 {lhs.explain()}, ARG2 {rhs.explain()}')
+    state.require(lhs.ordered_comparaison_context(rhs), 'Mismatched types in the ordered comparaison context.', f'ARG1 {lhs.explain()}, ARG2 {rhs.explain()}')
     
     match op:
         case 'IGT':
@@ -169,7 +168,7 @@ def handle_math_statement(state: State, op: str, arg1: str, arg2: str) -> None:
     state.require(state.in_action, 'Not inside any action', f'{op} can be used inside actions.')
     lhs = Argument(state, arg1)
     rhs = Argument(state, arg2)
-    state.require(lhs.math_context(rhs), 'Mismatched types in math statement.', f'ARG1 {lhs.explain()}, ARG2 {rhs.explain()}')
+    state.require(lhs.math_context(rhs), 'Mismatched types in the math statement.', f'ARG1 {lhs.explain()}, ARG2 {rhs.explain()}')
     match op:
         case 'ADD':
             state.last_action.add_instruction(Add(lhs, rhs))
@@ -187,6 +186,15 @@ def op_ADDELEM(state: State, arg1: str, arg2: str) -> None:
     state.require(state.in_action, 'Not inside any action.', f'ADDELEM can be used inside actions.')
     lhs = Argument(state, arg1)
     rhs = Argument(state, arg2)
-    state.require(lhs.array_addition_context(rhs), 'Mismatched types in enum/list modification context.', f'ARG1 {lhs.explain()}, ARG2 {rhs.explain()}')
+    state.require(lhs.array_modification_context(rhs), 'Mismatched types in the list modification context.', f'ARG1 {lhs.explain()}, ARG2 {rhs.explain()}')
     
     state.last_action.add_instruction(AddElement(lhs, rhs))
+
+
+def op_SET(state: State, arg1: str, arg2: str) -> None:
+    state.require(state.in_action, 'Not inside any action.', f'SET can be used inside actions.')
+    lhs = Argument(state, arg1)
+    rhs = Argument(state, arg2)
+    state.require(lhs.assignment_context(rhs), 'Mismatched types in the assignment context.', f'ARG1 {lhs.explain()}, ARG2 {rhs.explain()}')
+    
+    state.last_action.add_instruction(Set(lhs, rhs))
