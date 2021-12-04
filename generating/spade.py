@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List
 
-from intermediate.action import (Add, AddElement, Block, Declaration, Divide, IfEqual,
-                                 IfGreaterThan, IfGreaterThanOrEqual,
+from intermediate.action import (Add, AddElement, Block, Declaration, Divide,
+                                 IfEqual, IfGreaterThan, IfGreaterThanOrEqual,
                                  IfLessThan, IfLessThanOrEqual, IfNotEqual,
-                                 Multiply, Subtract, WhileEqual,
+                                 Multiply, Set, Subtract, WhileEqual,
                                  WhileGreaterThan, WhileGreaterThanOrEqual,
                                  WhileLessThan, WhileLessThanOrEqual,
                                  WhileNotEqual)
@@ -128,12 +128,7 @@ class SpadeCode:
                 self.add_line(f'{statement.name} = {self.agent_param(statement.value)}{statement.value.expr}')
                 
             elif isinstance(statement, AddElement):
-                line = f'self.agent.{statement.arg1.expr}'
-                if statement.arg1.is_list:  
-                    line += f'.append({statement.arg2.expr})'
-                elif statement.arg1.is_enum:
-                    line += f' = \"{statement.arg2.expr}\"'
-                self.add_line(line)
+                self.add_line(f'self.agent.{statement.arg1.expr}.append({statement.arg2.expr})')
                 
             else:
                 arg1 = self.parse_instruction_arg(statement.arg1)
@@ -170,6 +165,8 @@ class SpadeCode:
                     self.add_line(f'{arg1} *= {arg2}')
                 elif isinstance(statement, Divide):
                     self.add_line(f'{arg1} /= {arg2}')
+                elif isinstance(statement, Set):
+                    self.add_line(f'{arg1} = {arg2}')
 
     def generate_agent(self, agent: Agent) -> None:
         self.add_line(f'class {agent.name}(spade.agent.Agent):')

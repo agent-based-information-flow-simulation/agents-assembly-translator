@@ -99,7 +99,7 @@ class Argument:
                     self.types[f'{enum_param.name}{Argument.ENUM_VALUE_SUFFIX}'] = ArgumentType(False, True, False, False, False)
         
     def declaration_context(self, rhs: Argument) -> bool:
-        if Argument.FLOAT in rhs.types:
+        if self.is_name_available and Argument.FLOAT in rhs.types:
             self.type_in_op = Argument.FLOAT 
             rhs.type_in_op = Argument.FLOAT
             return True
@@ -142,12 +142,19 @@ class Argument:
             return True
         return False
     
-    def array_addition_context(self, rhs: Argument) -> bool:
-        if Argument.ENUM in self.types and f'{self.expr}{Argument.ENUM_VALUE_SUFFIX}' in rhs.types:
+    def array_modification_context(self, rhs: Argument) -> bool:
+        raise Exception('array modification context not implemented')
+    
+    def assignment_context(self, rhs: Argument) -> bool:
+        if Argument.ENUM in self.types and self.types[Argument.ENUM].is_mutable and f'{self.expr}{Argument.ENUM_VALUE_SUFFIX}' in rhs.types:
             self.type_in_op = Argument.ENUM
             rhs.type_in_op = f'{self.expr}{Argument.ENUM_VALUE_SUFFIX}'
-            return True
-        return False
+        elif Argument.FLOAT in self.types and self.types[Argument.FLOAT].is_mutable and Argument.FLOAT in rhs.types:
+            self.type_in_op = Argument.FLOAT
+            rhs.type_in_op = Argument.FLOAT
+        else:
+            return False
+        return True
     
     def explain(self) -> str:
         types = f'{self.expr}: [ '

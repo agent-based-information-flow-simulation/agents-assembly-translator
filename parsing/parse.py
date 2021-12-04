@@ -1,11 +1,16 @@
-from typing import List
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, List
 
 from parsing.op import (handle_math_statement,
                         handle_ordered_conditional_statement,
                         handle_unordered_conditional_statement, op_ACTION,
                         op_ADDELEM, op_AGENT, op_DECL, op_EACTION, op_EAGENT,
-                        op_EBEHAV, op_EBLOCK, op_PRM, op_SETUPBEHAV)
-from parsing.state import ParsedData, State
+                        op_EBEHAV, op_EBLOCK, op_PRM, op_SET, op_SETUPBEHAV)
+from parsing.state import State
+
+if TYPE_CHECKING:
+    from parsing.state import ParsedData
 
 
 def parse_lines(lines: List[str], debug: bool) -> ParsedData:
@@ -48,8 +53,11 @@ def parse_lines(lines: List[str], debug: bool) -> ParsedData:
             case [ 'ADD' | 'SUBT' | 'MULT' | 'DIV' as op, arg1, arg2 ]:
                 handle_math_statement(state, op, arg1, arg2)
                 
-            case [ 'ADDELEM' | 'ADDE' | 'SETE', arg1, arg2 ]:
+            case [ 'ADDELEM' | 'ADDE', arg1, arg2 ]:
                 op_ADDELEM(state, arg1, arg2)
+                
+            case [ 'SET', arg1, arg2 ]:
+                op_SET(state, arg1, arg2)
                 
             case _:
                 state.panic(f'Unknown tokens: {tokens}')
