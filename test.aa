@@ -1,28 +1,46 @@
-agent test
-    prm social_media_addiction, float, dist_normal, 0, 30
-    prm susceptability, float, init, 30.5
-    prm is_online, enum, yes, 80, no, 20
-    prm is_dead, enum, yes, 0, no_way, 90, maybe, 10
-    setupbehav run_on_start
-        action check_addiction
-            decl big, 5
-            igt social_media_addiction, big 
-                add susceptability, 15
-            eblock
-            decl i, 1
-            wlte i, 10
-                set is_dead, maybe 
-                ine is_online, no_way
-                    decl factorial, 1
-                    decl factor, 2
-                    wlt factorial, 1000
-                        mult factorial, factor
-                        add factor, 1
-                    eblock
-                eblock
-                add i, 1
-            eblock
-            set is_dead, no_way
+message fakenews
+    prm num_photos, float
+emessage
+
+message fakenews_response
+    prm num_seen_photos, float
+emessage
+
+agent test_agent
+    prm susceptability, float, init, 20
+    prm friends, list, conn_list
+    prm friends_msgs, list, msg_list
+
+    behav runs_on_start, setup
+        action modify_susceptability, modify_self
+            add susceptability, 15
+        eaction
+    ebehav
+
+    behav runs_once_after_delay, one_time, 5
+        action modify_susceptability, modify_self
+            mult susceptability, 15
+        eaction
+    ebehav
+
+    behav runs_indefinately, cyclic, 0, 20
+        action spread_fakenews, send_msg, fakenews, query
+            set num_photos, 100
+            send friends
+        eaction
+    ebehav
+
+    behav runs_on_msg_received, msg_rcv, fakenews, query
+        action send_fakenews_response, send_msg, fakenews_response, query
+            decl num_received_photos, 0
+            get num_received_photos, num_photos
+            subt num_received_photos, 10
+            set num_seen_photos, num_received_photos
+            send sender
+        eaction
+
+        action modify_susceptability, modify_self
+            mult susceptability, 3.5
         eaction
     ebehav
 eagent

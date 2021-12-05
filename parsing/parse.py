@@ -6,7 +6,7 @@ from parsing.op import (handle_math_statement,
                         handle_ordered_conditional_statement,
                         handle_unordered_conditional_statement, op_ACTION,
                         op_ADDELEM, op_AGENT, op_DECL, op_EACTION, op_EAGENT,
-                        op_EBEHAV, op_EBLOCK, op_PRM, op_SET, op_SETUPBEHAV)
+                        op_EBEHAV, op_EBLOCK, op_EMESSAGE, op_MESSAGE, op_SET, op_SETUPBEHAV, op_agent_PRM, op_message_PRM)
 from parsing.state import State
 
 if TYPE_CHECKING:
@@ -23,8 +23,17 @@ def parse_lines(lines: List[str], debug: bool) -> ParsedData:
             case [ 'EAGENT' ]:
                 op_EAGENT(state)
                 
+            case [ 'MESSAGE', name ]:
+                op_MESSAGE(state, name)
+            
+            case [ 'EMESSAGE' ]:
+                op_EMESSAGE(state)
+                
+            case [ 'PRM', name, category ]:
+                op_message_PRM(state, name, category)
+                
             case [ 'PRM', name, category, *args ]:
-                op_PRM(state, name, category, args)
+                op_agent_PRM(state, name, category, args)
                 
             case [ 'SETUPBEHAV', name ]:
                 op_SETUPBEHAV(state, name)

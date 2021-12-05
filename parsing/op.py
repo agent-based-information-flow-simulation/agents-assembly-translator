@@ -11,8 +11,9 @@ from intermediate.action import (Action, Add, AddElement, Declaration, Divide,
                                  WhileNotEqual)
 from intermediate.agent import Agent
 from intermediate.behaviour import Behaviour
+from intermediate.message import Message
 from intermediate.param import (DistNormalFloatParam, EnumParam,
-                                InitFloatParam, ListParam)
+                                InitFloatParam, ListParam, MessageFloatParam)
 from parsing.argument import Argument
 from utils.validation import is_float, is_valid_enum_list
 
@@ -22,6 +23,7 @@ if TYPE_CHECKING:
 
 def op_AGENT(state: State, name: str) -> None:    
     state.require(not state.in_agent, 'Already inside an agent.', 'First end current agent using EAGENT.')
+    state.require(not state.in_message, 'Cannot define agents inside messages.', 'First end current message using EMESSAGE.')
     state.require(not state.agent_exists(name), f'Agent {name} already exists in the current environment.')
     state.require(not name[0].isdigit(), f'{name} is not correct.', 'Names cannot start with a digit.')
     
@@ -34,10 +36,26 @@ def op_EAGENT(state: State) -> None:
     state.require(not state.in_behaviour, 'Cannot end an agent inside a behaviour.', 'First end current behaviour using EBEHAV.')
     
     state.in_agent = False
+    
+    
+def op_MESSAGE(state: State, name: str) -> None:
+    state.require(not state.in_message, 'Already inside a message.', 'First end current message using EMESSAGE.')
+    state.require(not state.in_agent, 'Cannot define messages inside agents.', 'First end current agent using EAGENT.')
+    state.require(not state.message_exists(name), f'Message {name} already exists in the current environment.')
+    state.require(not name[0].isdigit(), f'{name} is not correct.', 'Names cannot start with a digit.')
+    
+    state.in_message = True
+    state.add_message(Message(name))
 
 
-def op_PRM(state: State, name: str, category: str, args: List[str]) -> None:    
-    state.require(state.in_agent, 'Cannot define parameters outside agent scope.', 'Try defining new agents using AGENT.')
+def op_EMESSAGE(state: State) -> None:    
+    state.require(state.in_message, 'Not inside any message.', 'Try defining new messages using MESSAGE.')
+    
+    state.in_message = False
+
+
+def op_agent_PRM(state: State, name: str, category: str, args: List[str]) -> None:    
+    state.require(state.in_agent, 'Cannot define agent parameters outside agent scope.', 'Try defining new agents using AGENT.')
     state.require(not state.in_behaviour, 'Cannot define agent parameters inside a behaviour.', 'Parameters must appear after AGENT.')
     state.require(not state.last_agent.param_exists(name), f'Parameter {name} already exists inside current agent.')
     state.require(not name[0].isdigit(), f'{name} is not correct.', 'Names cannot start with a digit.')
@@ -61,6 +79,14 @@ def op_PRM(state: State, name: str, category: str, args: List[str]) -> None:
             
         case _:
             state.panic(f'Incorrect operation: PRM {name} {category} {args}')
+ 
+
+def op_message_PRM(state: State, name: str, category: str) -> None:    
+    state.require(state.in_message, 'Cannot define message parameters outside message scope.', 'Try defining new messages using MESSAGE.')
+    state.require(not state.last_message.param_exists(name), f'Parameter {name} already exists inside current message.')
+    state.require(not name[0].isdigit(), f'{name} is not correct.', 'Names cannot start with a digit.')
+    
+    state.last_message.add_float(MessageFloatParam(name))
 
 
 def op_SETUPBEHAV(state: State, name: str) -> None:    

@@ -2,6 +2,20 @@ from pprint import pprint
 from typing import List, Tuple
 
 
+class MessageFloatParam:
+    def __init__(self, name: str):
+        self.name: str = name
+        self.value: str
+        self.is_value_set: bool = False
+        
+    def set_value(self, value: str) -> None:
+        self.is_value_set = True
+        self.value = value
+        
+    def print(self) -> None:
+        print(f'MessageFloatParam {self.name}')
+
+
 class InitFloatParam:
     def __init__(self, name: str, value: str):
         self.name: str = name

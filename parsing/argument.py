@@ -146,10 +146,11 @@ class Argument:
         raise Exception('array modification context not implemented')
     
     def assignment_context(self, rhs: Argument) -> bool:
+        available_types = set(self.types).intersection(set(rhs.types))
         if Argument.ENUM in self.types and self.types[Argument.ENUM].is_mutable and f'{self.expr}{Argument.ENUM_VALUE_SUFFIX}' in rhs.types:
             self.type_in_op = Argument.ENUM
             rhs.type_in_op = f'{self.expr}{Argument.ENUM_VALUE_SUFFIX}'
-        elif Argument.FLOAT in self.types and self.types[Argument.FLOAT].is_mutable and Argument.FLOAT in rhs.types:
+        elif Argument.FLOAT in available_types and self.types[Argument.FLOAT].is_mutable:
             self.type_in_op = Argument.FLOAT
             rhs.type_in_op = Argument.FLOAT
         else:

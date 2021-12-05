@@ -48,7 +48,7 @@ class State:
         self.agents[agent.name] = agent
         
     def add_message(self, message: Message) -> None:
-        self.messages[message.name] = message
+        self.messages[message.type] = message
         
     def agent_exists(self, name: str) -> bool:
         return name in self.agents
