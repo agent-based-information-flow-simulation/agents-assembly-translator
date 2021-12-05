@@ -9,7 +9,8 @@ emessage
 agent test_agent
     prm susceptability, float, init, 20
     prm friends, list, conn_list
-    prm friends_msgs, list, msg_list
+    prm bots, list, conn_list
+    prm fakenews_msgs, list, msg_list
 
     behav runs_on_start, setup
         action modify_susceptability, modify_self
@@ -32,6 +33,8 @@ agent test_agent
 
     behav runs_on_msg_received, msg_rcv, fakenews, query
         action send_fakenews_response, send_msg, fakenews_response, query
+            rme friends, sender
+            adde bots, sender
             decl num_received_photos, 0
             get num_received_photos, num_photos
             subt num_received_photos, 10
