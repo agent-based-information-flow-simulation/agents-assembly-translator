@@ -82,6 +82,8 @@ class State:
     def verify_end_state(self) -> None:
         if self.in_agent:
             self.panic('Missing EAGENT')
+        elif self.in_message:
+            self.panic('Missing EMESSAGE')
             
     def get_parsed_data(self) -> ParsedData:
         self.verify_end_state()
