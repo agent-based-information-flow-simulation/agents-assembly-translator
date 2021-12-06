@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from copy import deepcopy
 from pprint import pprint
-from typing import TYPE_CHECKING, Dict, Generator, List
+from typing import TYPE_CHECKING, Dict, Generator, List, Tuple
 
 if TYPE_CHECKING:
     from intermediate.action import Action
@@ -26,7 +27,7 @@ class State:
         self.in_behaviour: bool = False
         self.in_action: bool = False
         self.agents: Dict[str, Agent] = {}
-        self.messages: Dict[str, Message] = {}
+        self.messages: Dict[Tuple[str, str], Message] = {}
         
     @property
     def last_agent(self) -> Agent:
@@ -48,13 +49,16 @@ class State:
         self.agents[agent.name] = agent
         
     def add_message(self, message: Message) -> None:
-        self.messages[message.type] = message
+        self.messages[(message.type, message.performative)] = message
         
     def agent_exists(self, name: str) -> bool:
         return name in self.agents
     
-    def message_exists(self, name: str) -> bool:
-        return name in self.messages
+    def message_exists(self, msg_type: str, msg_performative: str) -> bool:
+        return (msg_type, msg_performative) in self.messages
+    
+    def get_message_instance(self, msg_type: str, msg_performative: str) -> Message:
+        return deepcopy(self.messages[(msg_type, msg_performative)])
             
     def tokens_from_lines(self) -> Generator[list[str], None, None]:
         for line in self.lines:
@@ -66,13 +70,15 @@ class State:
                 yield tokens
                 
     def print(self) -> None:
-        print('- Agents:')
-        for agent in self.agents.values():
-            agent.print()
         print('- Messages:')
         for message in self.messages.values():
             message.print()
-            
+            print('')
+        print('- Agents:')
+        for agent in self.agents.values():
+            agent.print()
+            print('')
+        
     def verify_end_state(self) -> None:
         if self.in_agent:
             self.panic('Missing EAGENT')
