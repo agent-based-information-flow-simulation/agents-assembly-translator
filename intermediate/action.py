@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, Dict, List
 
 if TYPE_CHECKING:
-    from parsing.argument import Argument
+    from intermediate.argument import Argument
+    from intermediate.message import Message
 
 
-class Declaration():  
+class Declaration:  
     def __init__(self, name: Argument, value: Argument):
         self.name: str = name.expr
         self.value: Argument = value
@@ -17,28 +18,28 @@ class Declaration():
 
 
 class Instruction:
-    def __init__(self, arg1: Argument, arg2: Argument):
-        self.arg1: Argument = arg1
-        self.arg2: Argument = arg2
+    def __init__(self, **kwargs: Dict[str, Argument]):
+        for key in kwargs:
+            self.__dict__[key] = kwargs[key]
   
     def print(self) -> None:
         print('Instruction')
-        self.arg1.print()
-        self.arg2.print()
+        for argument in self.__dict__.values():
+            argument.print()
 
 
 class IfGreaterThan(Instruction):
     def __init__(self, arg1: Argument, arg2: Argument):
-        super().__init__(arg1, arg2)
+        super().__init__(arg1=arg1, arg2=arg2)
  
     def print(self) -> None:
         print('IfGreaterThan')
         super().print()
-        
-        
+
+
 class IfGreaterThanOrEqual(Instruction):
     def __init__(self, arg1: Argument, arg2: Argument):
-        super().__init__(arg1, arg2)
+        super().__init__(arg1=arg1, arg2=arg2)
  
     def print(self) -> None:
         print('IfGreaterThanOrEqual')
@@ -47,7 +48,7 @@ class IfGreaterThanOrEqual(Instruction):
 
 class IfLessThan(Instruction):
     def __init__(self, arg1: Argument, arg2: Argument):
-        super().__init__(arg1, arg2)
+        super().__init__(arg1=arg1, arg2=arg2)
 
     def print(self) -> None:
         print('IfLessThan')
@@ -56,43 +57,43 @@ class IfLessThan(Instruction):
 
 class IfLessThanOrEqual(Instruction):
     def __init__(self, arg1: Argument, arg2: Argument):
-        super().__init__(arg1, arg2)
+        super().__init__(arg1=arg1, arg2=arg2)
 
     def print(self) -> None:
         print('IfLessThanOrEqual')
         super().print()
-        
-        
+
+
 class IfEqual(Instruction):
     def __init__(self, arg1: Argument, arg2: Argument):
-        super().__init__(arg1, arg2)
+        super().__init__(arg1=arg1, arg2=arg2)
 
     def print(self) -> None:
         print('IfEqual')
         super().print()
-        
-        
+
+
 class IfNotEqual(Instruction):
     def __init__(self, arg1: Argument, arg2: Argument):
-        super().__init__(arg1, arg2)
+        super().__init__(arg1=arg1, arg2=arg2)
 
     def print(self) -> None:
         print('IfNotEqual')
         super().print()
 
-        
+
 class WhileGreaterThan(Instruction):
     def __init__(self, arg1: Argument, arg2: Argument):
-        super().__init__(arg1, arg2)
+        super().__init__(arg1=arg1, arg2=arg2)
 
     def print(self) -> None:
         print('WhileGreaterThan')
         super().print()
 
-  
+
 class WhileGreaterThanOrEqual(Instruction):
     def __init__(self, arg1: Argument, arg2: Argument):
-        super().__init__(arg1, arg2)
+        super().__init__(arg1=arg1, arg2=arg2)
 
     def print(self) -> None:
         print('WhileGreaterThanOrEqual')
@@ -101,16 +102,16 @@ class WhileGreaterThanOrEqual(Instruction):
 
 class WhileLessThan(Instruction):
     def __init__(self, arg1: Argument, arg2: Argument):
-        super().__init__(arg1, arg2)
+        super().__init__(arg1=arg1, arg2=arg2)
 
     def print(self) -> None:
         print('WhileLessThan')
         super().print()
-        
-        
+
+
 class WhileLessThanOrEqual(Instruction):
     def __init__(self, arg1: Argument, arg2: Argument):
-        super().__init__(arg1, arg2)
+        super().__init__(arg1=arg1, arg2=arg2)
 
     def print(self) -> None:
         print('WhileLessThanOrEqual')
@@ -119,7 +120,7 @@ class WhileLessThanOrEqual(Instruction):
 
 class WhileEqual(Instruction):
     def __init__(self, arg1: Argument, arg2: Argument):
-        super().__init__(arg1, arg2)
+        super().__init__(arg1=arg1, arg2=arg2)
 
     def print(self) -> None:
         print('WhileEqual')
@@ -128,7 +129,7 @@ class WhileEqual(Instruction):
 
 class WhileNotEqual(Instruction):
     def __init__(self, arg1: Argument, arg2: Argument):
-        super().__init__(arg1, arg2)
+        super().__init__(arg1=arg1, arg2=arg2)
 
     def print(self) -> None:
         print('WhileNotEqual')
@@ -137,16 +138,16 @@ class WhileNotEqual(Instruction):
 
 class Multiply(Instruction):
     def __init__(self, arg1: Argument, arg2: Argument):
-        super().__init__(arg1, arg2)
+        super().__init__(arg1=arg1, arg2=arg2)
 
     def print(self) -> None:
         print('Multiply')
         super().print()
-        
-        
+
+
 class Divide(Instruction):
     def __init__(self, arg1: Argument, arg2: Argument):
-        super().__init__(arg1, arg2)
+        super().__init__(arg1=arg1, arg2=arg2)
 
     def print(self) -> None:
         print('Divide')
@@ -155,37 +156,100 @@ class Divide(Instruction):
 
 class Add(Instruction):
     def __init__(self, arg1: Argument, arg2: Argument):
-        super().__init__(arg1, arg2)
+        super().__init__(arg1=arg1, arg2=arg2)
 
     def print(self) -> None:
         print('Add')
         super().print()
-        
+
 
 class Subtract(Instruction):
     def __init__(self, arg1: Argument, arg2: Argument):
-        super().__init__(arg1, arg2)
+        super().__init__(arg1=arg1, arg2=arg2)
 
     def print(self) -> None:
         print('Subtract')
         super().print()
-        
-        
+
+
 class AddElement(Instruction):
     def __init__(self, arg1: Argument, arg2: Argument):
-        super().__init__(arg1, arg2)
+        super().__init__(arg1=arg1, arg2=arg2)
 
     def print(self) -> None:
         print('AddElement')
         super().print()
-        
-        
+
+
+class RemoveElement(Instruction):
+    def __init__(self, arg1: Argument, arg2: Argument):
+        super().__init__(arg1=arg1, arg2=arg2)
+
+    def print(self) -> None:
+        print('RemoveElement')
+        super().print()
+
+
+class Subset(Instruction):
+    def __init__(self, arg1: Argument, arg2: Argument, arg3: Argument):
+        super().__init__(arg1=arg1, arg2=arg2, arg3=arg3)
+
+    def print(self) -> None:
+        print('RemoveElement')
+        super().print()
+
+
 class Set(Instruction):
     def __init__(self, arg1: Argument, arg2: Argument):
-        super().__init__(arg1, arg2)
+        super().__init__(arg1=arg1, arg2=arg2)
 
     def print(self) -> None:
         print('Set')
+        super().print()
+
+
+class IfInList(Instruction):
+    def __init__(self, arg1: Argument, arg2: Argument):
+        super().__init__(arg1=arg1, arg2=arg2)
+
+    def print(self) -> None:
+        print('IfInList')
+        super().print()
+
+
+class IfNotInList(Instruction):
+    def __init__(self, arg1: Argument, arg2: Argument):
+        super().__init__(arg1=arg1, arg2=arg2)
+
+    def print(self) -> None:
+        print('IfNotInList')
+        super().print()
+
+
+class Clear(Instruction):
+    def __init__(self, arg1: Argument):
+        super().__init__(arg1=arg1)
+
+    def print(self) -> None:
+        print('Clear')
+        super().print()
+
+
+class Length(Instruction):
+    def __init__(self, arg1: Argument, arg2: Argument):
+        super().__init__(arg1=arg1, arg2=arg2)
+
+    def print(self) -> None:
+        print('Length')
+        super().print()
+
+
+class Send(Instruction):
+    def __init__(self, arg1: Argument):
+        super().__init__(arg1=arg1)
+
+    def print(self) -> None:
+        print('Send')
         super().print()
 
 
@@ -194,13 +258,14 @@ class Block:
         self.statements: List[Declaration | Instruction | Block] = []
         self._declared_names: List[str] = list(names_declared_in_parent)
         
+    @property
+    def declarations_in_scope(self) -> List[str]:
+        return self._declared_names
+        
     def add_declaration(self, declaration: Declaration) -> None:
         self._declared_names.append(declaration.name)
         self.statements.append(declaration)
-        
-    def is_name_in_scope_declarations(self, name: str) -> bool:
-        return name in self._declared_names
-        
+    
     def add_statement(self, statement: Instruction | Block) -> None:
         self.statements.append(statement)
         
@@ -227,8 +292,8 @@ class Action:
     def current_block(self) -> Block:
         return self._block_stack[-1]
     
-    def is_name_declared_in_action(self, name: str) -> bool:
-        return self.current_block.is_name_in_scope_declarations(name)
+    def is_declaration_in_scope(self, name: str) -> bool:
+        return name in self.current_block.declarations_in_scope
     
     def add_declaration(self, declaration: Declaration) -> None:
         self.current_block.add_declaration(declaration)
@@ -249,3 +314,23 @@ class Action:
     def print(self) -> None:
         print(f'Action {self.name}')
         self.main_block.print()
+
+
+class ModifySelfAction(Action):
+    def __init__(self, name: str):
+        super().__init__(name)
+        
+    def print(self) -> None:
+        print('ModifySelfAction')
+        super().print()
+        
+        
+class SendMessageAction(Action):
+    def __init__(self, name: str, message: Message):
+        super().__init__(name)
+        self.send_message: Message = message
+        
+    def print(self) -> None:
+        print('SendMessageAction')
+        super().print()
+        self.send_message.print()
