@@ -12,8 +12,8 @@ from intermediate.action import (Add, AddElement, Block, Declaration, Divide,
 
 if TYPE_CHECKING:
     from intermediate.agent import Agent
+    from intermediate.argument import Argument
     from intermediate.behaviour import Behaviour
-    from parsing.argument import Argument
     from parsing.state import ParsedData
     
 
