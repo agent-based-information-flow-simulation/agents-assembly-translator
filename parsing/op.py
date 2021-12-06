@@ -2,20 +2,24 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List
 
-from intermediate.action import (Action, Add, AddElement, Declaration, Divide,
-                                 IfEqual, IfGreaterThan, IfGreaterThanOrEqual,
-                                 IfLessThan, IfLessThanOrEqual, IfNotEqual,
-                                 Multiply, Set, Subtract, WhileEqual,
-                                 WhileGreaterThan, WhileGreaterThanOrEqual,
-                                 WhileLessThan, WhileLessThanOrEqual,
-                                 WhileNotEqual)
+from intermediate.action import (Add, AddElement, Clear, Declaration, Divide,
+                                 IfEqual, IfGreaterThan, IfGreaterThanOrEqual, IfInList,
+                                 IfLessThan, IfLessThanOrEqual, IfNotEqual, IfNotInList, Length,
+                                 ModifySelfAction, Multiply, RemoveElement, Send, SendMessageAction,
+                                 Set, Subset, Subtract, WhileEqual, WhileGreaterThan,
+                                 WhileGreaterThanOrEqual, WhileLessThan,
+                                 WhileLessThanOrEqual, WhileNotEqual)
 from intermediate.agent import Agent
-from intermediate.behaviour import Behaviour
+from intermediate.argument import Argument
+from intermediate.behaviour import (CyclicBehaviour, MessageReceivedBehaviour,
+                                    OneTimeBehaviour, SetupBehaviour)
 from intermediate.message import Message
-from intermediate.param import (DistNormalFloatParam, EnumParam,
-                                InitFloatParam, ListParam, MessageFloatParam)
-from parsing.argument import Argument
-from utils.validation import is_float, is_valid_enum_list
+from intermediate.param import (AgentConnectionListParam,
+                                AgentDistExpFloatParam,
+                                AgentDistNormalFloatParam, AgentEnumParam,
+                                AgentInitFloatParam, AgentMessageListParam,
+                                MessageFloatParam)
+from utils.validation import is_float, is_valid_enum_list, is_valid_name
 
 if TYPE_CHECKING:
     from parsing.state import State
@@ -25,7 +29,7 @@ def op_AGENT(state: State, name: str) -> None:
     state.require(not state.in_agent, 'Already inside an agent.', 'First end current agent using EAGENT.')
     state.require(not state.in_message, 'Cannot define agents inside messages.', 'First end current message using EMESSAGE.')
     state.require(not state.agent_exists(name), f'Agent {name} already exists in the current environment.')
-    state.require(not name[0].isdigit(), f'{name} is not correct.', 'Names cannot start with a digit.')
+    state.require(is_valid_name(name), f'{name} is not correct.', 'Names cannot: start with a digit, contain whitespaces or dots.')
     
     state.in_agent = True
     state.add_agent(Agent(name))
@@ -36,16 +40,17 @@ def op_EAGENT(state: State) -> None:
     state.require(not state.in_behaviour, 'Cannot end an agent inside a behaviour.', 'First end current behaviour using EBEHAV.')
     
     state.in_agent = False
-    
-    
-def op_MESSAGE(state: State, name: str) -> None:
+
+
+def op_MESSAGE(state: State, msg_type: str, msg_performative) -> None:
     state.require(not state.in_message, 'Already inside a message.', 'First end current message using EMESSAGE.')
     state.require(not state.in_agent, 'Cannot define messages inside agents.', 'First end current agent using EAGENT.')
-    state.require(not state.message_exists(name), f'Message {name} already exists in the current environment.')
-    state.require(not name[0].isdigit(), f'{name} is not correct.', 'Names cannot start with a digit.')
+    state.require(not state.message_exists(msg_type, msg_performative), f'Message {msg_type}/{msg_performative} already exists in the current environment.')
+    state.require(is_valid_name(msg_type), f'{msg_type} is not correct.', 'Names cannot: start with a digit, contain whitespaces or dots.')
+    state.require(is_valid_name(msg_performative), f'{msg_performative} is not correct.', 'Names cannot: start with a digit, contain whitespaces or dots.')
     
     state.in_message = True
-    state.add_message(Message(name))
+    state.add_message(Message(msg_type, msg_performative))
 
 
 def op_EMESSAGE(state: State) -> None:    
@@ -58,45 +63,74 @@ def op_agent_PRM(state: State, name: str, category: str, args: List[str]) -> Non
     state.require(state.in_agent, 'Cannot define agent parameters outside agent scope.', 'Try defining new agents using AGENT.')
     state.require(not state.in_behaviour, 'Cannot define agent parameters inside a behaviour.', 'Parameters must appear after AGENT.')
     state.require(not state.last_agent.param_exists(name), f'Parameter {name} already exists inside current agent.')
-    state.require(not name[0].isdigit(), f'{name} is not correct.', 'Names cannot start with a digit.')
+    state.require(is_valid_name(name), f'{name} is not correct.', 'Names cannot: start with a digit, contain whitespaces or dots.')
     
     match category, args:
-        case 'float', ['init', val]:
-            state.require(is_float(val), f'{val} is not a valid float.')
-            state.last_agent.add_init_float(InitFloatParam(name, val))
+        case 'float', [ 'init', value ]:
+            state.require(is_float(value), f'{value} is not a valid float.')
+            state.last_agent.add_init_float(AgentInitFloatParam(name, value))
             
-        case 'float', ['dist_normal', mean, std_dev]:
+        case 'float', [ 'dist', 'normal', mean, std_dev ]:
             state.require(is_float(mean), f'{mean} is not a valid float.')
             state.require(is_float(std_dev), f'{std_dev} is not a valid float.')
-            state.last_agent.add_dist_normal_float(DistNormalFloatParam(name, mean, std_dev))
+            state.last_agent.add_dist_normal_float(AgentDistNormalFloatParam(name, mean, std_dev))
             
-        case 'list', ['conn_list' | 'msg_list']:
-            state.last_agent.add_list(ListParam(name))
+        case 'float', [ 'dist', 'exp', _lambda ]:
+            state.require(is_float(_lambda), f'{_lambda} is not a valid float.')
+            state.last_agent.add_dist_exp_float(AgentDistExpFloatParam(name, _lambda))
+            
+        case 'list', [ 'conn' ]:
+            state.last_agent.add_connection_list(AgentConnectionListParam(name))
+            
+        case 'list', [ 'msg' ]:
+            state.last_agent.add_message_list(AgentMessageListParam(name))
             
         case 'enum', enums:
             state.require(is_valid_enum_list(enums), f'{enums} is not a valid enum list.', 'The correct pattern is [name, percent, ...], where percent(s) sum up to 100 (+/- 1).')
-            state.last_agent.add_enum(EnumParam(name, enums))
+            state.last_agent.add_enum(AgentEnumParam(name, enums))
             
         case _:
-            state.panic(f'Incorrect operation: PRM {name} {category} {args}')
- 
+            state.panic(f'Incorrect operation: (agent) PRM {name} {category} {args}')
+
 
 def op_message_PRM(state: State, name: str, category: str) -> None:    
     state.require(state.in_message, 'Cannot define message parameters outside message scope.', 'Try defining new messages using MESSAGE.')
     state.require(not state.last_message.param_exists(name), f'Parameter {name} already exists inside current message.')
-    state.require(not name[0].isdigit(), f'{name} is not correct.', 'Names cannot start with a digit.')
+    state.require(is_valid_name(name), f'{name} is not correct.', 'Names cannot: start with a digit, contain whitespaces or dots.')
     
-    state.last_message.add_float(MessageFloatParam(name))
+    match category:
+        case 'float':
+            state.last_message.add_float(MessageFloatParam(name))
+        case _:
+            state.panic(f'Incorrect operation: (message) PRM {name} {category}')
 
 
-def op_SETUPBEHAV(state: State, name: str) -> None:    
+def op_BEHAV(state: State, name: str, category: str, args: List[str]):
     state.require(state.in_agent, 'Cannot define behaviours outside agents.', 'Try defining new agents using AGENT.')
     state.require(not state.in_behaviour, 'Cannot define behaviours inside other behaviours.', 'First end current behaviour using EBEHAV.')
     state.require(not state.last_agent.behaviour_exists(name), f'Behaviour {name} already exists in current agent.')
-    state.require(not name[0].isdigit(), f'{name} is not correct.', 'Names cannot start with a digit.')
+    state.require(is_valid_name(name), f'{name} is not correct.', 'Names cannot: start with a digit, contain whitespaces or dots.')
+    
+    match category, args:
+        case 'setup', [ ]:
+            state.last_agent.add_setup_behaviour(SetupBehaviour(name))
+            
+        case 'one_time', [ delay ]:
+            state.require(is_float(delay) and float(delay) >= 0, f'{delay} is not a valid delay value.')
+            state.last_agent.add_one_time_behaviour(OneTimeBehaviour(name, delay))
+            
+        case 'cyclic', [ period ]:
+            state.require(is_float(period) and float(period) > 0, f'{period} is not a valid period value.')
+            state.last_agent.add_one_time_behaviour(CyclicBehaviour(name, period))
+            
+        case 'msg_rcv', [ msg_type, msg_performative ]:
+            state.require(not state.message_exists(msg_type, msg_performative), f'Message {msg_type}/{msg_performative} does not exist.', 'Try defining new messages using MESSAGE')
+            state.last_agent.add_message_received_behaviour(MessageReceivedBehaviour(name, state.get_message_instance(msg_type, msg_performative)))
+            
+        case _:
+            state.panic(f'Incorrect operation: BEHAV {name} {category} {args}')
     
     state.in_behaviour = True
-    state.last_agent.add_setup_behaviour(Behaviour(name))
 
 
 def op_EBEHAV(state: State) -> None:            
@@ -106,14 +140,24 @@ def op_EBEHAV(state: State) -> None:
     state.in_behaviour = False
 
 
-def op_ACTION(state: State, name: str) -> None:
+def op_ACTION(state: State, name: str, category: str, args: List[str]) -> None:
     state.require(state.in_behaviour, 'Actions must be definied inside behaviours.', 'Try defining new behaviours using BEHAV.')
     state.require(not state.in_action, 'Cannot define an action in another action.', 'Try finishing current action using EACTION.')
     state.require(not state.last_behaviour.action_exists(name), f'Action {name} already exists in current behaviour.')
-    state.require(not name[0].isdigit(), f'{name} is not correct.', 'Names cannot start with a digit.')
+    state.require(is_valid_name(name), f'{name} is not correct.', 'Names cannot: start with a digit, contain whitespaces or dots.')
+    
+    match category, args:
+        case 'modify_self', [ ]:
+            state.last_behaviour.add_action(ModifySelfAction(name))
+            
+        case 'send_msg', [ msg_type, msg_performative ]:
+            state.require(state.message_exists(msg_type, msg_performative), f'Message {msg_type}/{msg_performative} does not exist.', 'Try defining new messages using MESSAGE.')
+            state.last_behaviour.add_action(SendMessageAction(name, state.get_message_instance(msg_type, msg_performative)))
+            
+        case _:
+            state.panic(f'Incorrect operation: ACTION {category} {args}')
     
     state.in_action = True
-    state.last_behaviour.add_action(Action(name))
 
 
 def op_EACTION(state: State) -> None:            
@@ -125,7 +169,9 @@ def op_EACTION(state: State) -> None:
 
 def op_DECL(state: State, name: str, value: str) -> None:            
     state.require(state.in_action, 'Cannot declare variables outside actions.')
-    state.require(not name[0].isdigit(), f'{name} is not correct.', 'Names cannot start with a digit.')
+    state.require(is_valid_name(name), f'{name} is not correct.', 'Names cannot: start with a digit, contain whitespaces or dots.')
+    state.require(not state.last_agent.param_exists(name), f'{name} is already defined in current agent.')
+    state.require(not state.last_action.is_declaration_in_scope(name), f'{name} is already declared in current action scope.')
     lhs = Argument(state, name)
     rhs = Argument(state, value)
     state.require(lhs.declaration_context(rhs), 'Mismatched types in the declaration context.', f'ARG1 {lhs.explain()}, ARG2 {rhs.explain()}')
@@ -147,20 +193,20 @@ def handle_unordered_conditional_statement(state: State, op: str, arg1: str, arg
     state.require(lhs.unordered_comparaison_context(rhs), 'Mismatched types in the unordered comparaison context.', f'ARG1 {lhs.explain()}, ARG2 {rhs.explain()}')
     
     match op:
-        case 'IE':
+        case 'IEQ':
             state.last_action.add_instruction(IfEqual(lhs, rhs))
-        case 'INE':
+        case 'INEQ':
             state.last_action.add_instruction(IfNotEqual(lhs, rhs))
-        case 'WE':
+        case 'WEQ':
             state.last_action.add_instruction(WhileEqual(lhs, rhs))
-        case 'WNE':
+        case 'WNEQ':
             state.last_action.add_instruction(WhileNotEqual(lhs, rhs))
         case _:
             state.panic(f'Unexpected error: {op} {arg1} {arg2}')
     
     state.last_action.start_block()
-    
-    
+
+
 def handle_ordered_conditional_statement(state: State, op: str, arg1: str, arg2: str) -> None:
     state.require(state.in_action, 'Not inside any action.', f'{op} can be used inside actions.')     
     lhs = Argument(state, arg1)
@@ -170,19 +216,19 @@ def handle_ordered_conditional_statement(state: State, op: str, arg1: str, arg2:
     match op:
         case 'IGT':
             state.last_action.add_instruction(IfGreaterThan(lhs, rhs))
-        case 'IGTE':
+        case 'IGTEQ':
             state.last_action.add_instruction(IfGreaterThanOrEqual(lhs, rhs))
         case 'ILT':
             state.last_action.add_instruction(IfLessThan(lhs, rhs))
-        case 'ILTE':
+        case 'ILTEQ':
             state.last_action.add_instruction(IfLessThanOrEqual(lhs, rhs))
         case 'WGT':
             state.last_action.add_instruction(WhileGreaterThan(lhs, rhs))
-        case 'WGTE':
+        case 'WGTEQ':
             state.last_action.add_instruction(WhileGreaterThanOrEqual(lhs, rhs))
         case 'WLT':
             state.last_action.add_instruction(WhileLessThan(lhs, rhs))
-        case 'WLTE':
+        case 'WLTEQ':
             state.last_action.add_instruction(WhileLessThanOrEqual(lhs, rhs))
         case _:
             state.panic(f'Unexpected error: {op} {arg1} {arg2}')
@@ -208,19 +254,79 @@ def handle_math_statement(state: State, op: str, arg1: str, arg2: str) -> None:
             state.panic(f'Unexpected error: {op} {arg1} {arg2}')
 
 
-def op_ADDELEM(state: State, arg1: str, arg2: str) -> None:            
-    state.require(state.in_action, 'Not inside any action.', f'ADDELEM can be used inside actions.')
+def handle_list_modification(state: State, op: str, arg1: str, arg2: str):
+    state.require(state.in_action, 'Not inside any action.', 'List modifications can be used inside actions.')
     lhs = Argument(state, arg1)
     rhs = Argument(state, arg2)
-    state.require(lhs.array_modification_context(rhs), 'Mismatched types in the list modification context.', f'ARG1 {lhs.explain()}, ARG2 {rhs.explain()}')
+    state.require(lhs.list_modification_context(rhs), 'Mismatched types in the list modification context.', f'ARG1 {lhs.explain()}, ARG2 {rhs.explain()}')
     
-    state.last_action.add_instruction(AddElement(lhs, rhs))
+    match op:
+        case 'ADDE':
+            state.last_action.add_instruction(AddElement(lhs, rhs))
+        case 'REME':
+            state.last_action.add_instruction(RemoveElement(lhs, rhs))
+        case _:
+            state.panic(f'Unexpected error: {op} {arg1} {arg2}')
+
+
+def op_LEN(state: State, arg1: str, arg2: str) -> None:
+    state.require(state.in_action, 'Not inside any action.', 'LEN can be used inside actions.')
+    lhs = Argument(state, arg1)
+    rhs = Argument(state, arg2)
+    state.require(lhs.list_length_context(rhs), 'Mismatched types in the list length context.', f'ARG1 {lhs.explain()}, ARG2 {rhs.explain()}')
+    
+    state.last_action.add_instruction(Length(lhs, rhs))
+
+
+def op_CLR(state: State, arg1: str) -> None:
+    state.require(state.in_action, 'Not inside any action.', 'CLR can be used inside actions.')
+    list_ = Argument(state, arg1)
+    state.require(list_.list_clear_context(), 'Mismatched type in the list clear context.', f'ARG {list_.explain()}')
+
+    state.last_action.add_instruction(Clear(list_))
+
+
+def handle_list_inclusion(state: State, op: str, arg1: str, arg2: str):
+    state.require(state.in_action, 'Not inside any action.', 'List inclusion check can be used inside actions.')
+    lhs = Argument(state, arg1)
+    rhs = Argument(state, arg2)
+    state.require(lhs.list_inclusion_context(rhs), 'Mismatched types in the list inclusion context.', f'ARG1 {lhs.explain()}, ARG2 {rhs.explain()}')
+    
+    match op:
+        case 'IN':
+            state.last_action.add_instruction(IfInList(lhs, rhs))
+        case 'NIN':
+            state.last_action.add_instruction(IfNotInList(lhs, rhs))
+        case _:
+            state.panic(f'Unexpected error: {op} {arg1} {arg2}')
+            
+    state.last_action.start_block()
+
+
+def op_SEND(state: State, arg1: str) -> None:
+    state.require(state.in_action, 'Not inside any action.', 'SEND can be used inside send_msg actions.')
+    state.require(isinstance(state.last_action, SendMessageAction), 'Not inside send_msg action.', 'SEND can be used inside send_msg actions.')
+    # state.require(state.last_action.send_message.are_all_params_set, 'Some message parameters are not set.', f'Unset paramters: {state.last_action.send_message.unset_params}')
+    receivers = Argument(state, arg1)
+    state.require(receivers.send_context(), 'Mismatched type in the send context.', f'ARG1 {receivers.explain()}')
+
+    state.last_action.add_instruction(Send(receivers))
 
 
 def op_SET(state: State, arg1: str, arg2: str) -> None:
     state.require(state.in_action, 'Not inside any action.', f'SET can be used inside actions.')
     lhs = Argument(state, arg1)
     rhs = Argument(state, arg2)
-    state.require(lhs.assignment_context(rhs), 'Mismatched types in the assignment context.', f'ARG1 {lhs.explain()}, ARG2 {rhs.explain()}')
+    state.require(lhs.assignment_context(rhs), 'Mismatched types in the assignment context.', f'ARG1 {lhs.explain()}, ARG2 {rhs.explain()}')    
     
     state.last_action.add_instruction(Set(lhs, rhs))
+
+
+def op_SUBS(state: State, arg1: str, arg2: str, arg3: str) -> None:
+    state.require(state.in_action, 'Not inside any action.', f'SUBS can be used inside actions.')
+    to_list = Argument(state, arg1)
+    from_list = Argument(state, arg2)
+    num = Argument(state, arg3)
+    state.require(to_list.list_subset_context(from_list, num), 'Mismatched types in the subset context.', f'ARG1 {to_list.explain()}, ARG2 {from_list.explain()}, ARG3 ARG2 {num.explain()}')
+
+    state.last_action.add_instruction(Subset(to_list, from_list, num))
