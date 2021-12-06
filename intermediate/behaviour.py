@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Dict
 
 if TYPE_CHECKING:
     from intermediate.action import Action
+    from intermediate.message import Message
 
 
 class Behaviour:
@@ -25,3 +26,26 @@ class Behaviour:
         print(f'Behaviour {self.name}')
         for action in self.actions.values():
             action.print()
+
+
+class SetupBehaviour(Behaviour):
+    def __init__(self, name: str):
+        super().__init__(name)
+        
+        
+class OneTimeBehaviour(Behaviour):
+    def __init__(self, name: str, delay: str):
+        super().__init__(name)
+        self.delay: str = delay
+        
+        
+class CyclicBehaviour(Behaviour):
+    def __init__(self, name: str, period: str):
+        super().__init__(name)
+        self.period: str = period
+        
+        
+class MessageReceivedBehaviour(Behaviour):
+    def __init__(self, name: str, message: Message):
+        super().__init__(name)
+        self.received_message: Message = message
