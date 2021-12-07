@@ -1,4 +1,6 @@
+import keyword
 from decimal import Decimal
+from typing import List
 
 
 def is_float(value: str) -> bool:
@@ -19,4 +21,14 @@ def is_valid_enum_list(enums: list[str]):
 
 
 def is_valid_name(name: str) -> bool:
-    return not name[0].isdigit() and not '.' in name and not ' ' in name and len(name)
+    return len(name) and not name[0].isdigit() and (name.isalnum() or "_" in name) and name not in get_invalid_names()
+
+
+def get_invalid_names() -> List[str]:
+    invalid_names = [ 'send', 'rcv', 'len', 'list', 'filter', 'self', 'BaseMessage' ]
+    invalid_names.extend(keyword.kwlist)
+    return invalid_names
+
+
+def print_invalid_names() -> str:
+    return ", ".join(get_invalid_names())
