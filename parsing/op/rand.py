@@ -55,7 +55,7 @@ def op_RAND(state: State, arg1: str, arg2: str, arg3: str, args: List[str]) -> N
             ...
 
         case 'int':
-            op_ROUND(arg1)
+            op_ROUND(state, arg1)
 
         case _:
             state.panic(f'Incorrect operation: RAND {arg1} {arg2} {arg3} {args}')
