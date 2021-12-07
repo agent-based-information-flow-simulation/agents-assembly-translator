@@ -25,7 +25,7 @@ def is_valid_name(name: str) -> bool:
 
 
 def get_invalid_names() -> List[str]:
-    invalid_names = [ 'send', 'rcv', 'len', 'list', 'filter', 'self', 'BaseMessage' ]
+    invalid_names = [ 'send', 'rcv', 'len', 'round', 'list', 'filter', 'self', 'BaseMessage' ]
     invalid_names.extend(keyword.kwlist)
     return invalid_names
 
