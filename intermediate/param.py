@@ -37,7 +37,7 @@ class AgentDistNormalFloatParam:
 class AgentDistExpFloatParam:
     def __init__(self, name: str, lambda_: str):
         self.name: str = name
-        self._lambda: str = lambda_
+        self.lambda_: str = lambda_
 
     def print(self) -> None:
         print(f'AgentDistExpFloatParam {self.name} = exp(lambda={self.lambda_})')
