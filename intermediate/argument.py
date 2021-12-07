@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Tuple
 from typing import List as typingList
 
 from intermediate.action import SendMessageAction
@@ -316,6 +316,22 @@ class Argument:
             return False
         
         return True
+
+    def random_number_generation_context(self, *args: Argument) -> bool:
+        if self.has_type(Float, Mutable) and all([arg.has_type(Float) for arg in args]):
+            self.set_op_type(Float, Mutable)
+            for arg in args:
+                arg.set_op_type(Float)
+            return True
+
+        return False
+
+    def round_number_context(self) -> bool:
+        if self.has_type(Float, Mutable):
+            self.set_op_type(Float, Mutable)
+            return True
+
+        return False
 
     def explain(self) -> str:
         types = f'{self.expr}: [ '
