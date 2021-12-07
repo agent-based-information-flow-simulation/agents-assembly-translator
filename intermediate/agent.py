@@ -13,8 +13,9 @@ if TYPE_CHECKING:
 
 
 class Agent:
-    RESERVED_FLOAT_PARAMS = [ 'connCount', 'msgRCount', 'msgSCount' ]
+    RESERVED_LOCATION_PARAMS = [ 'location' ]
     RESERVED_CONNECTION_LIST_PARAMS = [ 'connections' ]
+    RESERVED_FLOAT_PARAMS = [ 'connCount', 'msgRCount', 'msgSCount' ]
     
     def __init__(self, name: str):
         self.name: str = name
@@ -36,8 +37,9 @@ class Agent:
     
     @property
     def param_names(self) -> List[str]:
-        return [ *Agent.RESERVED_FLOAT_PARAMS,
+        return [ *Agent.RESERVED_LOCATION_PARAMS,
                  *Agent.RESERVED_CONNECTION_LIST_PARAMS,
+                 *Agent.RESERVED_FLOAT_PARAMS,
                  *list(self.init_floats), 
                  *list(self.dist_normal_floats),
                  *list(self.dist_exp_floats),
@@ -97,6 +99,11 @@ class Agent:
     
     def behaviour_exists(self, name: str) -> bool:
         return name in self.behaviour_names
+        
+    def behaviour_for_template_exists(self, msg_type: str, msg_performative: str):
+        for msg_rcv_behav in self.message_received_behaviours.values():
+            if msg_rcv_behav.received_message.type == msg_type and msg_rcv_behav.received_message.performative == msg_performative:
+                return True
     
     def print(self) -> None:
         print(f'Agent {self.name}')
