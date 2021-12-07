@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import List as typingList
+
 from intermediate.action import SendMessageAction
 from intermediate.behaviour import MessageReceivedBehaviour
-
 from utils.validation import is_float
 
 if TYPE_CHECKING:
@@ -91,31 +91,7 @@ class Argument:
         self.types: typingList[ArgumentType] = []
         self.type_in_op: ArgumentType | None = None
         self.set_types(state)
-
-    @property
-    def is_agent_param(self) -> bool:
-        if not self.type_in_op:
-            print(f'Warning: context not set for {self.expr}')
-        return isinstance(self.type_in_op, AgentParam)
-
-    @property
-    def is_enum(self) -> bool:
-        if not self.type_in_op:
-            print(f'Warning: context not set for {self.expr}')
-        return isinstance(self.type_in_op, Enum)
-
-    @property
-    def is_float(self) -> bool:
-        if not self.type_in_op:
-            print(f'Warning: context not set for {self.expr}')
-        return isinstance(self.type_in_op, Float)
-
-    @property
-    def is_list(self) -> bool:
-        if not self.type_in_op:
-            print(f'Warning: context not set for {self.expr}')
-        return isinstance(self.type_in_op, List)
-    
+   
     def set_types(self, state: State) -> None:        
         self.check_agent_params(state)
         self.check_action_variables(state)
@@ -147,7 +123,7 @@ class Argument:
                     self.types.append(self.compose(EnumValue, Immutable, from_enum=enum_param.name))
         
     def check_action_variables(self, state: State) -> None:
-        if self.expr in state.last_action.declarations_in_scope:
+        if state.last_action.is_declaration_in_scope(self.expr):
             self.types.append(self.compose(Float, Declared, Mutable))
             
         elif is_float(self.expr):
@@ -261,6 +237,14 @@ class Argument:
         
         return True
     
+    def list_n_removal_context(self, rhs: Argument) -> bool:
+        if self.has_type(List, Mutable) and rhs.has_type(Float):
+            self.set_op_type(List, Mutable)
+            rhs.set_op_type(Float)
+            return True
+        
+        return False
+    
     def assignment_context(self, rhs: Argument) -> bool:
         if self.has_type(Enum, Mutable) and rhs.has_type(EnumValue, from_enum=self.expr):
             self.set_op_type(Enum, Mutable)
@@ -296,9 +280,15 @@ class Argument:
         if self.has_type(ConnectionList) and rhs.has_type(Connection):
             self.set_op_type(ConnectionList)
             rhs.set_op_type(Connection)
-            return True
         
-        return False
+        elif self.has_type(MessageList) and rhs.has_type(Message):
+            self.set_op_type(MessageList)
+            rhs.set_op_type(Message)
+
+        else:
+            return False
+        
+        return True
     
     def list_clear_context(self) -> bool:
         if self.has_type(List, Mutable):

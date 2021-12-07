@@ -251,6 +251,15 @@ class Send(Instruction):
     def print(self) -> None:
         print('Send')
         super().print()
+        
+        
+class RemoveNElements(Instruction):
+    def __init__(self, arg1: Argument, arg2: Argument):
+        super().__init__(arg1=arg1, arg2=arg2)
+
+    def print(self) -> None:
+        print('RemoveNElements')
+        super().print()
 
 
 class Block:    
