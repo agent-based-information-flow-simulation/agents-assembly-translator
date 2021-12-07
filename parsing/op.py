@@ -344,3 +344,11 @@ def op_SUBS(state: State, arg1: str, arg2: str, arg3: str) -> None:
     state.require(to_list.list_subset_context(from_list, num), 'Mismatched types in the subset context.', f'ARG1 {to_list.explain()}, ARG2 {from_list.explain()}, ARG3 ARG2 {num.explain()}')
     
     state.last_action.add_instruction(Subset(to_list, from_list, num))
+
+
+def op_RAND(state: State, arg1: str, arg2: str, arg3: str, args: List[str]) -> None:
+    # arg1 result
+    # arg2 cast to type (float, int)
+    # arg3 dist_type (uniform(a, b), normal(mean, std_dev), exp(lambda))
+    # args parameters to dist
+    ...
