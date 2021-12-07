@@ -6,7 +6,7 @@ from parsing.op import (handle_list_inclusion, handle_list_modification,
                         handle_math_statement,
                         handle_ordered_conditional_statement,
                         handle_unordered_conditional_statement, op_ACTION,
-                        op_AGENT, op_agent_PRM, op_BEHAV, op_CLR, op_DECL,
+                        op_AGENT, op_RAND, op_ROUND, op_agent_PRM, op_BEHAV, op_CLR, op_DECL,
                         op_EACTION, op_EAGENT, op_EBEHAV, op_EBLOCK,
                         op_EMESSAGE, op_LEN, op_MESSAGE, op_message_PRM,
                         op_REMEN, op_SEND, op_SET, op_SUBS)
@@ -88,6 +88,12 @@ def parse_lines(lines: List[str], debug: bool) -> ParsedData:
                 
             case [ 'REMEN', list_, num ]:
                 op_REMEN(state, list_, num)
+
+            case [ 'RAND', result, cast_to, dist, *args ]:
+                op_RAND(state, result, cast_to, dist, args)
+
+            case [ 'ROUND', num ]:
+                op_ROUND(state, num)
                 
             case _:
                 state.panic(f'Unknown tokens: {tokens}')
