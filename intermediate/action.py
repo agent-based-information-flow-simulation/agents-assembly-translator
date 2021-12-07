@@ -262,6 +262,42 @@ class RemoveNElements(Instruction):
         super().print()
 
 
+class UniformDist(Instruction):
+    def __init__(self, arg1: Argument, arg2: Argument, arg3: Argument):
+        super().__init__(arg1=arg1, arg2=arg2, arg3=arg3)
+
+    def print(self) -> None:
+        print('UniformDist')
+        super().print()
+
+
+class NormalDist(Instruction):
+    def __init__(self, arg1: Argument, arg2: Argument, arg3: Argument):
+        super().__init__(arg1=arg1, arg2=arg2, arg3=arg3)
+
+    def print(self) -> None:
+        print('NormalDist')
+        super().print()
+
+
+class ExpDist(Instruction):
+    def __init__(self, arg1: Argument, arg2: Argument):
+        super().__init__(arg1=arg1, arg2=arg2)
+
+    def print(self) -> None:
+        print('ExpDist')
+        super().print()
+
+
+class Round(Instruction):
+    def __init__(self, arg1: Argument):
+        super().__init__(arg1=arg1)
+
+    def print(self) -> None:
+        print('Round')
+        super().print()
+
+
 class Block:    
     def __init__(self, names_declared_in_parent: List[str]):
         self.statements: List[Declaration | Instruction | Block] = []
