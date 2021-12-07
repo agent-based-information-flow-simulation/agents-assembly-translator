@@ -1,49 +1,70 @@
-message fakenews
+message fakenews, query
     prm num_photos, float
 emessage
 
-message fakenews_response
+message fakenews_response, query
     prm num_seen_photos, float
 emessage
 
 agent test_agent
     prm susceptability, float, init, 20
-    prm friends, list, conn_list
-    prm bots, list, conn_list
-    prm fakenews_msgs, list, msg_list
+    prm friends, list, conn
+    prm bots, list, conn
+    prm fakenews_msgs, list, msg
+    prm is_dead, enum, maybe, 60, no, 40
+    prm is_online, enum, yes, 90, no, 10
+    prm yes, float, init, 0
+    prm test_norm, float, dist, normal, 0, 20
+    prm test_exp, float, dist, exp, 15
 
-    behav runs_on_start, setup
+    behav run_on_start, setup
+        action do_something, modify_self
+            set is_online, yes
+        eaction
+    ebehav
+
+    behav run_only_once, one_time, 5
+        action send_fakenews, send_msg, fakenews, query
+            set send.num_photos, 5
+            send bots
+        eaction
+    ebehav
+    
+    behav send_fakenews_response, msg_rcv, fakenews, query
         action modify_susceptability, modify_self
             add susceptability, 15
         eaction
-    ebehav
 
-    behav runs_once_after_delay, one_time, 5
-        action modify_susceptability, modify_self
-            mult susceptability, 15
+        action send_response, send_msg, fakenews_response, query
+            decl match, 0
+            ieq match, 0
+            eblock
+            add susceptability, 15
+            ieq is_online, yes
+                set yes, 150
+            eblock
+            send rcv.sender
+
+            adde fakenews_msgs, rcv
+            reme fakenews_msgs, rcv
+
+            set send, fakenews_msgs
+
+            send rcv.sender
+
+            decl res, 0
+            len res, fakenews_msgs
+            nin fakenews_msgs, rcv
+            eblock
+
+            remen fakenews_msgs, res
         eaction
     ebehav
 
-    behav runs_indefinately, cyclic, 0, 20
-        action spread_fakenews, send_msg, fakenews, query
-            set num_photos, 100
+    behav spread_fakenews, cyclic, 10
+        action spread, send_msg, fakenews, query
+            set send.num_photos, 30
             send friends
-        eaction
-    ebehav
-
-    behav runs_on_msg_received, msg_rcv, fakenews, query
-        action send_fakenews_response, send_msg, fakenews_response, query
-            rme friends, sender
-            adde bots, sender
-            decl num_received_photos, 0
-            get num_received_photos, num_photos
-            subt num_received_photos, 10
-            set num_seen_photos, num_received_photos
-            send sender
-        eaction
-
-        action modify_susceptability, modify_self
-            mult susceptability, 3.5
         eaction
     ebehav
 eagent
