@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List
 
-from intermediate.action import (Add, AddElement, Clear, Declaration, Divide,
+from intermediate.action import (Add, AddElement, Clear, Declaration, Divide, ExpDist,
                                  IfEqual, IfGreaterThan, IfGreaterThanOrEqual,
                                  IfInList, IfLessThan, IfLessThanOrEqual,
                                  IfNotEqual, IfNotInList, Length,
-                                 ModifySelfAction, Multiply, RemoveElement,
-                                 RemoveNElements, Send, SendMessageAction, Set,
-                                 Subset, Subtract, WhileEqual,
+                                 ModifySelfAction, Multiply, NormalDist, RemoveElement,
+                                 RemoveNElements, Round, Send, SendMessageAction, Set,
+                                 Subset, Subtract, UniformDist, WhileEqual,
                                  WhileGreaterThan, WhileGreaterThanOrEqual,
                                  WhileLessThan, WhileLessThanOrEqual,
                                  WhileNotEqual)
@@ -352,19 +352,36 @@ def op_RAND(state: State, arg1: str, arg2: str, arg3: str, args: List[str]) -> N
 
     match arg3, args:
         case 'uniform', [ a, b ]:
-            # require result.random_number_generation_context(a, b)
-            # add insturction UniformDist(a, b)
-            ...
+            a_arg = Argument(state, a)
+            b_arg = Argument(state, b)
+            state.require(
+                result.random_number_generation_context(a_arg, b_arg), 
+                'Mismatched types in the random number generation context.', 
+                f'RESULT {result.explain()}, A {a_arg.explain()}, B {b_arg.explain()}'
+            )
+
+            state.last_action.add_instruction(UniformDist(result, a_arg, b_arg))
 
         case 'normal', [ mean, std_dev ]:
-            # require random_number_generation_context
-            # add instruction NormalDist(mean, std_dev)
-            ...
+            mean_arg = Argument(state, mean)
+            std_dev_arg = Argument(state, std_dev)
+            state.require(
+                result.random_number_generation_context(mean_arg, std_dev_arg), 
+                'Mismatched types in the random number generation context.', 
+                f'RESULT {result.explain()}, MEAN {mean_arg.explain()}, STD_DEV {std_dev_arg.explain()}'
+            )
+
+            state.last_action.add_instruction(NormalDist(result, mean_arg, std_dev_arg))
 
         case 'exp', [ lambda_ ]:
-            # require random_number_generation_context
-            # add instruction ExpDist(lambda_)
-            ...
+            lambda_arg = Argument(state, lambda_)
+            state.require(
+                result.random_number_generation_context(lambda_arg), 
+                'Mismatched types in the random number generation context.', 
+                f'RESULT {result.explain()}, LAMBDA {lambda_arg.explain()}'
+            )
+
+            state.last_action.add_instruction(ExpDist(result, lambda_arg))
 
         case _:
             state.panic(f'Incorrect operation: RAND {arg1} {arg2} {arg3} {args}')
@@ -374,16 +391,15 @@ def op_RAND(state: State, arg1: str, arg2: str, arg3: str, args: List[str]) -> N
             ...
 
         case 'int':
-            # op_ROUND(arg1)
-            ...
+            op_ROUND(arg1)
 
         case _:
             state.panic(f'Incorrect operation: RAND {arg1} {arg2} {arg3} {args}')
 
 
 def op_ROUND(state: State, arg1: str) -> None:
-    state.require(state.in_action, 'Not inside any action.', f'RAND can be used inside actions.')
+    state.require(state.in_action, 'Not inside any action.', f'ROUND can be used inside actions.')
     num = Argument(state, arg1)
-    # require num.round_number_context()
+    state.require(num.round_number_context(), 'Mismatched type in the round number context.', f'NUM {num.explain()}')
 
-    # add instruction Round(num)
+    state.last_action.add_instruction(Round(num))
