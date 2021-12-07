@@ -338,17 +338,52 @@ def op_SET(state: State, arg1: str, arg2: str) -> None:
 
 def op_SUBS(state: State, arg1: str, arg2: str, arg3: str) -> None:
     state.require(state.in_action, 'Not inside any action.', f'SUBS can be used inside actions.')
-    to_list = Argument(state, arg1)
-    from_list = Argument(state, arg2)
+    dst_list = Argument(state, arg1)
+    src_list = Argument(state, arg2)
     num = Argument(state, arg3)
-    state.require(to_list.list_subset_context(from_list, num), 'Mismatched types in the subset context.', f'ARG1 {to_list.explain()}, ARG2 {from_list.explain()}, ARG3 ARG2 {num.explain()}')
+    state.require(dst_list.list_subset_context(src_list, num), 'Mismatched types in the subset context.', f'ARG1 {dst_list.explain()}, ARG2 {src_list.explain()}, ARG3 {num.explain()}')
     
-    state.last_action.add_instruction(Subset(to_list, from_list, num))
+    state.last_action.add_instruction(Subset(dst_list, src_list, num))
 
 
 def op_RAND(state: State, arg1: str, arg2: str, arg3: str, args: List[str]) -> None:
-    # arg1 result
-    # arg2 cast to type (float, int)
-    # arg3 dist_type (uniform(a, b), normal(mean, std_dev), exp(lambda))
-    # args parameters to dist
-    ...
+    state.require(state.in_action, 'Not inside any action.', f'RAND can be used inside actions.')
+    result = Argument(state, arg1)
+
+    match arg3, args:
+        case 'uniform', [ a, b ]:
+            # require result.random_number_generation_context(a, b)
+            # add insturction UniformDist(a, b)
+            ...
+
+        case 'normal', [ mean, std_dev ]:
+            # require random_number_generation_context
+            # add instruction NormalDist(mean, std_dev)
+            ...
+
+        case 'exp', [ lambda_ ]:
+            # require random_number_generation_context
+            # add instruction ExpDist(lambda_)
+            ...
+
+        case _:
+            state.panic(f'Incorrect operation: RAND {arg1} {arg2} {arg3} {args}')
+
+    match arg2:
+        case 'float':
+            ...
+
+        case 'int':
+            # op_ROUND(arg1)
+            ...
+
+        case _:
+            state.panic(f'Incorrect operation: RAND {arg1} {arg2} {arg3} {args}')
+
+
+def op_ROUND(state: State, arg1: str) -> None:
+    state.require(state.in_action, 'Not inside any action.', f'RAND can be used inside actions.')
+    num = Argument(state, arg1)
+    # require num.round_number_context()
+
+    # add instruction Round(num)
