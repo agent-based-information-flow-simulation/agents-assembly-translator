@@ -1,3 +1,15 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, List
+
+from intermediate.behaviour import (CyclicBehaviour, MessageReceivedBehaviour,
+                                    OneTimeBehaviour, SetupBehaviour)
+from utils.validation import is_float, is_valid_name, print_invalid_names
+
+if TYPE_CHECKING:
+    from parsing.state import State
+
+
 def op_BEHAV(state: State, name: str, category: str, args: List[str]):
     state.require(state.in_agent, 'Cannot define behaviours outside agents.', 'Try defining new agents using AGENT.')
     state.require(
@@ -46,3 +58,13 @@ def op_BEHAV(state: State, name: str, category: str, args: List[str]):
     
     state.in_behaviour = True
 
+
+def op_EBEHAV(state: State) -> None:            
+    state.require(state.in_behaviour, 'Not inside any behaviour.', 'Try defining new behaviours using BEHAV.')
+    state.require(
+        not state.in_action, 
+        'Cannot end behaviours inside actions.', 
+        'Try ending current action using EACTION.'
+    )
+    
+    state.in_behaviour = False

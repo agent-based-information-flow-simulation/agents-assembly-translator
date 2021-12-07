@@ -1,3 +1,14 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from intermediate.argument import Argument
+from intermediate.instruction import RemoveNElements
+
+if TYPE_CHECKING:
+    from parsing.state import State
+
+
 def op_REMEN(state: State, arg1: str, arg2: str) -> None:
     state.require(state.in_action, 'Not inside any action.', 'List modifications can be used inside actions.')
     lhs = Argument(state, arg1)

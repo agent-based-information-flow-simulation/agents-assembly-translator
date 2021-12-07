@@ -2,14 +2,25 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List
 
-from parsing.op import (handle_list_inclusion, handle_list_modification,
-                        handle_math_statement,
-                        handle_ordered_conditional_statement,
-                        handle_unordered_conditional_statement, op_ACTION,
-                        op_AGENT, op_RAND, op_ROUND, op_agent_PRM, op_BEHAV, op_CLR, op_DECL,
-                        op_EACTION, op_EAGENT, op_EBEHAV, op_EBLOCK,
-                        op_EMESSAGE, op_LEN, op_MESSAGE, op_message_PRM,
-                        op_REMEN, op_SEND, op_SET, op_SUBS)
+from parsing.op.action import op_ACTION, op_EACTION
+from parsing.op.agent import op_AGENT, op_EAGENT
+from parsing.op.behav import op_BEHAV, op_EBEHAV
+from parsing.op.clr import op_CLR
+from parsing.op.conditional import (handle_ordered_conditional_statement,
+                                    handle_unordered_conditional_statement)
+from parsing.op.decl import op_DECL
+from parsing.op.eblock import op_EBLOCK
+from parsing.op.len import op_LEN
+from parsing.op.list import handle_list_inclusion, handle_list_modification
+from parsing.op.math import handle_math_statement
+from parsing.op.message import op_EMESSAGE, op_MESSAGE
+from parsing.op.prm import op_agent_PRM, op_message_PRM
+from parsing.op.rand import op_RAND
+from parsing.op.remen import op_REMEN
+from parsing.op.round import op_ROUND
+from parsing.op.send import op_SEND
+from parsing.op.set import op_SET
+from parsing.op.subs import op_SUBS
 from parsing.state import State
 
 if TYPE_CHECKING:

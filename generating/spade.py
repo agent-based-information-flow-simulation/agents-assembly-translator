@@ -2,20 +2,22 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List
 
-from intermediate.action import (Add, AddElement, Block, Clear, Declaration,
-                                 Divide, IfEqual, IfGreaterThan,
-                                 IfGreaterThanOrEqual, IfInList, IfLessThan,
-                                 IfLessThanOrEqual, IfNotEqual, IfNotInList,
-                                 Length, Multiply, RemoveElement,
-                                 RemoveNElements, Send, SendMessageAction, Set,
-                                 Subset, Subtract, WhileEqual,
-                                 WhileGreaterThan, WhileGreaterThanOrEqual,
-                                 WhileLessThan, WhileLessThanOrEqual,
-                                 WhileNotEqual)
+from intermediate.action import SendMessageAction
 from intermediate.argument import (AgentParam, Connection, ConnectionList,
                                    EnumValue, MessageList,
                                    ReceivedMessageParam, SendMessageParam)
 from intermediate.behaviour import MessageReceivedBehaviour
+from intermediate.block import Block
+from intermediate.declaration import Declaration
+from intermediate.instruction import (Add, AddElement, Clear, Divide, IfEqual,
+                                      IfGreaterThan, IfGreaterThanOrEqual,
+                                      IfInList, IfLessThan, IfLessThanOrEqual,
+                                      IfNotEqual, IfNotInList, Length,
+                                      Multiply, RemoveElement, RemoveNElements,
+                                      Send, Set, Subset, Subtract, WhileEqual,
+                                      WhileGreaterThan,
+                                      WhileGreaterThanOrEqual, WhileLessThan,
+                                      WhileLessThanOrEqual, WhileNotEqual)
 
 if TYPE_CHECKING:
     from intermediate.agent import Agent
@@ -382,16 +384,6 @@ class SpadeCode:
                             self.add_line(f'{arg1} = len({arg2})')
                             
                         case RemoveNElements():
-                            # l = []
-                            # l.pop
-                            # x=5
-                            # import math, random
-                            # if math.ceil(x) > 0:
-                            #     if math.ceil(x) < len(l):
-                            #         random.shuffle(l)
-                            #         l = l[:len(l) - math.ceil(x)]
-                            #     else:
-                            #         l = []
                             self.add_line(f'if math.ceil({arg2}) > 0:')
                             self.indent_right()
                             self.add_line(f'if math.ceil({arg2}) < len({arg1}):')

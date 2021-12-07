@@ -1,10 +1,13 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
-from intermediate.action import Round
 from intermediate.argument import Argument
+from intermediate.instruction import Round
 
 if TYPE_CHECKING:
     from parsing.state import State
+
 
 def op_ROUND(state: State, arg1: str) -> None:
     state.require(state.in_action, 'Not inside any action.', f'ROUND can be used inside actions.')

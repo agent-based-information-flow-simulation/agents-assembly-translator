@@ -6,10 +6,69 @@ if TYPE_CHECKING:
     from intermediate.behaviour import (Behaviour, CyclicBehaviour,
                                         MessageReceivedBehaviour,
                                         OneTimeBehaviour, SetupBehaviour)
-    from intermediate.param import (AgentConnectionListParam,
-                                    AgentDistExpFloatParam,
-                                    AgentDistNormalFloatParam, AgentEnumParam,
-                                    AgentInitFloatParam, AgentMessageListParam)
+
+
+class InitFloatParam:
+    def __init__(self, name: str, value: str):
+        self.name: str = name
+        self.value: str = value
+        
+    def print(self) -> None:
+        print(f'InitFloatParam {self.name} = {self.value}')
+
+
+class DistNormalFloatParam:
+    def __init__(self, name: str, mean: str, std_dev: str):
+        self.name: str = name
+        self.mean: str = mean
+        self.std_dev: str = std_dev
+
+    def print(self) -> None:
+        print(f'DistNormalFloatParam {self.name} = normal(mean={self.mean}, std_dev={self.std_dev})')
+
+
+class DistExpFloatParam:
+    def __init__(self, name: str, lambda_: str):
+        self.name: str = name
+        self.lambda_: str = lambda_
+
+    def print(self) -> None:
+        print(f'DistExpFloatParam {self.name} = exp(lambda={self.lambda_})')
+
+
+class EnumParam:
+    def __init__(self, name: str, enums: List[str]):
+        self.name: str = name
+        self.enum_values: List[EnumValue] = [EnumValue(name, value, percentage) for value, percentage in zip(*[iter(enums)] * 2)]
+        
+    def print(self) -> None:
+        print(f'EnumParam {self.name} = {self.enum_values}')
+
+
+class EnumValue:
+    def __init__(self, from_enum: str, value: str, percentage: str):
+        self.from_enum: str = from_enum
+        self.value: str = value
+        self.percentage: str = percentage
+        
+    def __str__(self) -> str:
+        return f'({self.value}, {self.percentage}; from_enum={self.from_enum})'
+
+
+class MessageListParam:
+    def __init__(self, name: str):
+        self.name: str = name
+        
+    def print(self) -> None:
+        print(f'MessageListParam {self.name} = []')
+
+
+class ConnectionListParam:
+    def __init__(self, name: str):
+        self.name: str = name
+        
+    def print(self) -> None:
+        print(f'ConnectionListParam {self.name} = []')
 
 
 class Agent:
@@ -19,12 +78,12 @@ class Agent:
     
     def __init__(self, name: str):
         self.name: str = name
-        self.init_floats: Dict[str, AgentInitFloatParam] = {}
-        self.dist_normal_floats: Dict[str, AgentDistNormalFloatParam] = {}
-        self.dist_exp_floats: Dict[str, AgentDistExpFloatParam] = {}
-        self.enums: Dict[str, AgentEnumParam] = {}
-        self.connection_lists: Dict[str, AgentConnectionListParam] = {}
-        self.message_lists: Dict[str, AgentMessageListParam] = {}
+        self.init_floats: Dict[str, InitFloatParam] = {}
+        self.dist_normal_floats: Dict[str, DistNormalFloatParam] = {}
+        self.dist_exp_floats: Dict[str, DistExpFloatParam] = {}
+        self.enums: Dict[str, EnumParam] = {}
+        self.connection_lists: Dict[str, ConnectionListParam] = {}
+        self.message_lists: Dict[str, MessageListParam] = {}
         self.setup_behaviours: Dict[str, SetupBehaviour] = {}
         self.one_time_behaviours: Dict[str, OneTimeBehaviour] = {}
         self.cyclic_behaviours: Dict[str, CyclicBehaviour] = {}
@@ -60,22 +119,22 @@ class Agent:
                  *list(self.dist_normal_floats), 
                  *list(self.dist_exp_floats) ]
     
-    def add_init_float(self, float_param: AgentInitFloatParam) -> None:
+    def add_init_float(self, float_param: InitFloatParam) -> None:
         self.init_floats[float_param.name] = float_param
 
-    def add_dist_normal_float(self, float_param: AgentDistNormalFloatParam) -> None:
+    def add_dist_normal_float(self, float_param: DistNormalFloatParam) -> None:
         self.dist_normal_floats[float_param.name] = float_param
     
-    def add_dist_exp_float(self, float_param: AgentDistExpFloatParam) -> None:
+    def add_dist_exp_float(self, float_param: DistExpFloatParam) -> None:
         self.dist_exp_floats[float_param.name] = float_param
     
-    def add_enum(self, enum_param: AgentEnumParam) -> None:
+    def add_enum(self, enum_param: EnumParam) -> None:
         self.enums[enum_param.name] = enum_param
     
-    def add_connection_list(self, list_param: AgentConnectionListParam) -> None:
+    def add_connection_list(self, list_param: ConnectionListParam) -> None:
         self.connection_lists[list_param.name] = list_param
     
-    def add_message_list(self, list_param: AgentMessageListParam) -> None:
+    def add_message_list(self, list_param: MessageListParam) -> None:
         self.message_lists[list_param.name] = list_param
     
     def add_setup_behaviour(self, behaviour: SetupBehaviour) -> None:

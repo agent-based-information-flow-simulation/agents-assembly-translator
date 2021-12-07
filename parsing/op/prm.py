@@ -1,3 +1,22 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, List
+
+from intermediate.agent import ConnectionListParam as AgentConnectionListParam
+from intermediate.agent import DistExpFloatParam as AgentDistExpFloatParam
+from intermediate.agent import \
+    DistNormalFloatParam as AgentDistNormalFloatParam
+from intermediate.agent import EnumParam as AgentEnumParam
+from intermediate.agent import InitFloatParam as AgentInitFloatParam
+from intermediate.agent import MessageListParam as AgentMessageListParam
+from intermediate.message import FloatParam as MessageFloatParam
+from utils.validation import (is_float, is_valid_enum_list, is_valid_name,
+                              print_invalid_names)
+
+if TYPE_CHECKING:
+    from parsing.state import State
+
+
 def op_agent_PRM(state: State, name: str, category: str, args: List[str]) -> None:    
     state.require(
         state.in_agent, 

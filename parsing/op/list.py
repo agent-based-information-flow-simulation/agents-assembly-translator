@@ -1,3 +1,15 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from intermediate.argument import Argument
+from intermediate.instruction import (AddElement, IfInList, IfNotInList,
+                                      RemoveElement)
+
+if TYPE_CHECKING:
+    from parsing.state import State
+
+
 def handle_list_modification(state: State, op: str, arg1: str, arg2: str) -> None:
     state.require(state.in_action, 'Not inside any action.', 'List modifications can be used inside actions.')
     lhs = Argument(state, arg1)
@@ -17,6 +29,7 @@ def handle_list_modification(state: State, op: str, arg1: str, arg2: str) -> Non
 
         case _:
             state.panic(f'Unexpected error: {op} {arg1} {arg2}')
+
 
 def handle_list_inclusion(state: State, op: str, arg1: str, arg2: str):
     state.require(state.in_action, 'Not inside any action.', 'List inclusion check can be used inside actions.')

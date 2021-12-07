@@ -1,9 +1,20 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, List
+from typing import Dict, List
 
-if TYPE_CHECKING:
-    from intermediate.param import MessageFloatParam
+
+class FloatParam:
+    def __init__(self, name: str):
+        self.name: str = name
+        self.value: str = ''
+        self.is_value_set: bool = False
+        
+    def set_value(self, value: str) -> None:
+        self.is_value_set = True
+        self.value = value
+        
+    def print(self) -> None:
+        print(f'MessageFloatParam {self.name} = {self.value}')
 
 
 class Message:
@@ -13,7 +24,7 @@ class Message:
     def __init__(self, msg_type: str, msg_performative: str):
         self.type: str = msg_type
         self.performative: str = msg_performative
-        self.float_params: Dict[str, MessageFloatParam] = {}
+        self.float_params: Dict[str, FloatParam] = {}
         
     @property
     def param_names(self) -> List[str]:
@@ -36,7 +47,7 @@ class Message:
     def param_exists(self, name: str) -> bool:
         return name in self.param_names
     
-    def add_float(self, float_param: MessageFloatParam) -> None:
+    def add_float(self, float_param: FloatParam) -> None:
         self.float_params[float_param.name] = float_param
         
     def print(self) -> None:

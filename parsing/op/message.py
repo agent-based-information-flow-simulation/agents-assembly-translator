@@ -1,3 +1,14 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from intermediate.message import Message
+from utils.validation import is_valid_name, print_invalid_names
+
+if TYPE_CHECKING:
+    from parsing.state import State
+
+
 def op_MESSAGE(state: State, msg_type: str, msg_performative) -> None:
     state.require(not state.in_message, 'Already inside a message.', 'First end current message using EMESSAGE.')
     state.require(not state.in_agent, 'Cannot define messages inside agents.', 'First end current agent using EAGENT.')
@@ -18,3 +29,9 @@ def op_MESSAGE(state: State, msg_type: str, msg_performative) -> None:
     
     state.in_message = True
     state.add_message(Message(msg_type, msg_performative))
+
+
+def op_EMESSAGE(state: State) -> None:    
+    state.require(state.in_message, 'Not inside any message.', 'Try defining new messages using MESSAGE.')
+    
+    state.in_message = False

@@ -1,3 +1,14 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from intermediate.argument import Argument
+from intermediate.instruction import Subset
+
+if TYPE_CHECKING:
+    from parsing.state import State
+
+
 def op_SUBS(state: State, arg1: str, arg2: str, arg3: str) -> None:
     state.require(state.in_action, 'Not inside any action.', f'SUBS can be used inside actions.')
     dst_list = Argument(state, arg1)

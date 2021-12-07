@@ -1,3 +1,14 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, List
+
+from intermediate.action import ModifySelfAction, SendMessageAction
+from utils.validation import is_valid_name, print_invalid_names
+
+if TYPE_CHECKING:
+    from parsing.state import State
+
+
 def op_ACTION(state: State, name: str, category: str, args: List[str]) -> None:
     state.require(
         state.in_behaviour, 
@@ -33,3 +44,14 @@ def op_ACTION(state: State, name: str, category: str, args: List[str]) -> None:
             state.panic(f'Incorrect operation: ACTION {category} {args}')
     
     state.in_action = True
+
+
+def op_EACTION(state: State) -> None:            
+    state.require(state.in_action, 'Not inside any action.', 'Try defining new actions using ACTION.')
+    state.require(
+        state.last_action._nested_blocks_count == 0, 
+        'There are unclosed blocks.', 
+        'Try closing them using EBLOCK.'
+    )
+    
+    state.in_action = False
