@@ -118,6 +118,8 @@ class test_agent(spade.agent.Agent):
                     self.agent.fakenews_msgs = self.agent.fakenews_msgs[:len(self.agent.fakenews_msgs) - math.ceil(res)]
                 else:
                     self.agent.fakenews_msgs = []
+            res = numpy.random.exponential(1/0) if 0 > 0 else 0
+            res = round(res)
         
         async def run(self):
             rcv = await self.receive(timeout=10)

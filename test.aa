@@ -58,6 +58,8 @@ agent test_agent
             eblock
 
             remen fakenews_msgs, res
+
+            rand res, int, exp, 0
         eaction
     ebehav
 

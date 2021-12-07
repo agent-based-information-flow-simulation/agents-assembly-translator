@@ -9,12 +9,12 @@ from intermediate.argument import (AgentParam, Connection, ConnectionList,
 from intermediate.behaviour import MessageReceivedBehaviour
 from intermediate.block import Block
 from intermediate.declaration import Declaration
-from intermediate.instruction import (Add, AddElement, Clear, Divide, IfEqual,
+from intermediate.instruction import (Add, AddElement, Clear, Divide, ExpDist, IfEqual,
                                       IfGreaterThan, IfGreaterThanOrEqual,
                                       IfInList, IfLessThan, IfLessThanOrEqual,
                                       IfNotEqual, IfNotInList, Length,
-                                      Multiply, RemoveElement, RemoveNElements,
-                                      Send, Set, Subset, Subtract, WhileEqual,
+                                      Multiply, NormalDist, RemoveElement, RemoveNElements, Round,
+                                      Send, Set, Subset, Subtract, UniformDist, WhileEqual,
                                       WhileGreaterThan,
                                       WhileGreaterThanOrEqual, WhileLessThan,
                                       WhileLessThanOrEqual, WhileNotEqual)
@@ -315,6 +315,27 @@ class SpadeCode:
                     arg1 = self.parse_arg(statement.arg1)
                     arg2 = self.parse_arg(statement.arg2)
                     self.add_line(f'{arg1} = {arg2}')
+                    
+                case Round():
+                    num = self.parse_arg(statement.arg1)
+                    self.add_line(f'{num} = round({num})')
+                    
+                case UniformDist():
+                    result = self.parse_arg(statement.arg1)
+                    a = self.parse_arg(statement.arg2)
+                    b = self.parse_arg(statement.arg3)
+                    self.add_line(f'{result} = random.uniform({a}, {b})')
+                    
+                case NormalDist():
+                    result = self.parse_arg(statement.arg1)
+                    mean = self.parse_arg(statement.arg2)
+                    std_dev = self.parse_arg(statement.arg3)
+                    self.add_line(f'{result} = numpy.random.normal({mean}, {std_dev})')
+                    
+                case ExpDist():
+                    result = self.parse_arg(statement.arg1)
+                    lambda_ = self.parse_arg(statement.arg2)
+                    self.add_line(f'{result} = numpy.random.exponential(1/{lambda_}) if {lambda_} > 0 else 0')
                 
                 case _:
                     arg1 = self.parse_arg(statement.arg1)
