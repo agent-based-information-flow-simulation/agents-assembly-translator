@@ -40,7 +40,7 @@ def get_spade_code(aasm_lines: List[str], debug: bool = False) -> List[str]:
             Lines of code written in Agents Assembly
             
         debug: bool, optional
-            Print the translator debug information to the standard output (default it False)
+            Print the translator debug information to the standard output (default is False)
 
         Raises
         ------
