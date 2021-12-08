@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 from datetime import datetime
 from typing import List, Tuple
 
-from aasm.generating.spade import SpadeCode
+from aasm.generating.spade import get_spade_code
 
 
 def get_args() -> Tuple[str, str, bool]:
@@ -29,9 +29,9 @@ def save_output(output_path: str, code: List[str]) -> None:
 def main(input_path: str, output_path: str, debug: bool) -> None:
     lines = get_input(input_path)
     start_time = datetime.now()
-    spade_code = SpadeCode(lines, debug)
+    spade_code = get_spade_code(lines, debug)
     time_delta = (datetime.now() - start_time).total_seconds()
-    save_output(output_path, spade_code.code_lines)
+    save_output(output_path, spade_code)
     print(f'({time_delta}s) Your results are saved in the file "{output_path}" 😎')
 
 
