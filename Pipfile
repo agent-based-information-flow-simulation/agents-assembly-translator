@@ -4,13 +4,12 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-numpy = "*"
-spade = {git = "https://github.com/agent-based-information-flow-simulation/spade"}
-black = "*"
-orjson = "*"
 
 [dev-packages]
 isort = "*"
+numpy = "*"
+orjson = "*"
+spade = {git = "https://github.com/agent-based-information-flow-simulation/spade"}
 
 [requires]
 python_version = "3.10"

@@ -1,4 +1,4 @@
-# AA Translator
+# Agents Assembly Translator
 
 ## Table of Contents
 
@@ -18,25 +18,18 @@ A translator from Agents Assembly to SPADE (Python).
 
 ```
 Python 3.10
-pipenv
-```
-
-### Installing
-
-```
-pipenv install
 ```
 
 ## Usage <a name = "usage"></a>
 
 Translate agent.aa to SPADE:
 ```
-python translate.py agent.aa
+python -m aasm.translate agent.aa
 ```
 
 For more information about usage run:
 ```
-python translate.py --help
+python -m aasm.translate --help
 ```
 
 ## Structure <a name = "structure"></a>
