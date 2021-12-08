@@ -32,6 +32,21 @@ if TYPE_CHECKING:
 
 
 def get_spade_code(aasm_lines: List[str], debug: bool = False) -> List[str]:
+    """Generates SPADE code in Python from `aasm_lines`.
+
+        Parameters
+        ----------
+        aasm_lines : List[str]
+            Lines of code written in Agents Assembly
+            
+        debug: bool, optional
+            Print the translator debug information to the standard output (default it False)
+
+        Raises
+        ------
+        PanicException
+            If an error is detected while parsing the `aasm_lines`.
+    """
     return SpadeCode(aasm_lines, debug).code_lines
 
 
