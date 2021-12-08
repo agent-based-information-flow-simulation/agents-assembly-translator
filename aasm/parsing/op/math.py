@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from intermediate.argument import Argument
-from intermediate.instruction import Add, Divide, Multiply, Subtract
+from aasm.intermediate.argument import Argument
+from aasm.intermediate.instruction import Add, Divide, Multiply, Subtract
 
 if TYPE_CHECKING:
-    from parsing.state import State
+    from aasm.parsing.state import State
 
 
 def handle_math_statement(state: State, op: str, arg1: str, arg2: str) -> None:

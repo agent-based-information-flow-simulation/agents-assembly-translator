@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from intermediate.argument import Argument
+    from aasm.intermediate.argument import Argument
 
 
 class Declaration:  

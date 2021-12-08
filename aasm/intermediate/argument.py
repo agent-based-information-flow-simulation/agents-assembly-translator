@@ -3,9 +3,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import List as typingList
 
-from intermediate.action import SendMessageAction
-from intermediate.behaviour import MessageReceivedBehaviour
-from utils.validation import is_float
+from aasm.intermediate.action import SendMessageAction
+from aasm.intermediate.behaviour import MessageReceivedBehaviour
+from aasm.utils.validation import is_float
 
 if TYPE_CHECKING:
     from parsing.state import State

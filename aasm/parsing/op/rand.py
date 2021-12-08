@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List
 
-from intermediate.argument import Argument
-from intermediate.instruction import ExpDist, NormalDist, UniformDist
-from parsing.op.round import op_ROUND
+from aasm.intermediate.argument import Argument
+from aasm.intermediate.instruction import ExpDist, NormalDist, UniformDist
+from aasm.parsing.op.round import op_ROUND
 
 if TYPE_CHECKING:
-    from parsing.state import State
+    from aasm.parsing.state import State
 
 
 def op_RAND(state: State, arg1: str, arg2: str, arg3: str, args: List[str]) -> None:

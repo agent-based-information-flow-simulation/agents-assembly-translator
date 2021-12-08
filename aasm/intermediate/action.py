@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List
 
-from intermediate.block import Block
+from aasm.intermediate.block import Block
 
 if TYPE_CHECKING:
-    from intermediate.declaration import Declaration
-    from intermediate.instruction import Instruction
-    from intermediate.message import Message
+    from aasm.intermediate.declaration import Declaration
+    from aasm.intermediate.instruction import Instruction
+    from aasm.intermediate.message import Message
 
 
 class Action:

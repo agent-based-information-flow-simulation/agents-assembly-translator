@@ -2,29 +2,31 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List
 
-from parsing.op.action import op_ACTION, op_EACTION
-from parsing.op.agent import op_AGENT, op_EAGENT
-from parsing.op.behav import op_BEHAV, op_EBEHAV
-from parsing.op.clr import op_CLR
-from parsing.op.conditional import (handle_ordered_conditional_statement,
-                                    handle_unordered_conditional_statement)
-from parsing.op.decl import op_DECL
-from parsing.op.eblock import op_EBLOCK
-from parsing.op.len import op_LEN
-from parsing.op.list import handle_list_inclusion, handle_list_modification
-from parsing.op.math import handle_math_statement
-from parsing.op.message import op_EMESSAGE, op_MESSAGE
-from parsing.op.prm import op_agent_PRM, op_message_PRM
-from parsing.op.rand import op_RAND
-from parsing.op.remen import op_REMEN
-from parsing.op.round import op_ROUND
-from parsing.op.send import op_SEND
-from parsing.op.set import op_SET
-from parsing.op.subs import op_SUBS
-from parsing.state import State
+from aasm.parsing.op.action import op_ACTION, op_EACTION
+from aasm.parsing.op.agent import op_AGENT, op_EAGENT
+from aasm.parsing.op.behav import op_BEHAV, op_EBEHAV
+from aasm.parsing.op.clr import op_CLR
+from aasm.parsing.op.conditional import (
+    handle_ordered_conditional_statement,
+    handle_unordered_conditional_statement)
+from aasm.parsing.op.decl import op_DECL
+from aasm.parsing.op.eblock import op_EBLOCK
+from aasm.parsing.op.len import op_LEN
+from aasm.parsing.op.list import (handle_list_inclusion,
+                                  handle_list_modification)
+from aasm.parsing.op.math import handle_math_statement
+from aasm.parsing.op.message import op_EMESSAGE, op_MESSAGE
+from aasm.parsing.op.prm import op_agent_PRM, op_message_PRM
+from aasm.parsing.op.rand import op_RAND
+from aasm.parsing.op.remen import op_REMEN
+from aasm.parsing.op.round import op_ROUND
+from aasm.parsing.op.send import op_SEND
+from aasm.parsing.op.set import op_SET
+from aasm.parsing.op.subs import op_SUBS
+from aasm.parsing.state import State
 
 if TYPE_CHECKING:
-    from parsing.state import ParsedData
+    from aasm.parsing.state import ParsedData
 
 
 def parse_lines(lines: List[str], debug: bool) -> ParsedData:

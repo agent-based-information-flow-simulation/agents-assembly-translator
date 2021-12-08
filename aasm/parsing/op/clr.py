@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from intermediate.argument import Argument
-from intermediate.instruction import Clear
+from aasm.intermediate.argument import Argument
+from aasm.intermediate.instruction import Clear
 
 if TYPE_CHECKING:
-    from parsing.state import State
+    from aasm.parsing.state import State
 
 
 def op_CLR(state: State, arg1: str) -> None:

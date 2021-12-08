@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, List
 
 if TYPE_CHECKING:
-    from intermediate.declaration import Declaration
-    from intermediate.instruction import Instruction
+    from aasm.intermediate.declaration import Declaration
+    from aasm.intermediate.instruction import Instruction
 
 
 class Block:    

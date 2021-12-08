@@ -2,35 +2,40 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List
 
-from intermediate.action import SendMessageAction
-from intermediate.argument import (AgentParam, Connection, ConnectionList,
-                                   EnumValue, MessageList,
-                                   ReceivedMessageParam, SendMessageParam)
-from intermediate.behaviour import MessageReceivedBehaviour
-from intermediate.block import Block
-from intermediate.declaration import Declaration
-from intermediate.instruction import (Add, AddElement, Clear, Divide, ExpDist, IfEqual,
-                                      IfGreaterThan, IfGreaterThanOrEqual,
-                                      IfInList, IfLessThan, IfLessThanOrEqual,
-                                      IfNotEqual, IfNotInList, Length,
-                                      Multiply, NormalDist, RemoveElement, RemoveNElements, Round,
-                                      Send, Set, Subset, Subtract, UniformDist, WhileEqual,
-                                      WhileGreaterThan,
-                                      WhileGreaterThanOrEqual, WhileLessThan,
-                                      WhileLessThanOrEqual, WhileNotEqual)
+from aasm.intermediate.action import SendMessageAction
+from aasm.intermediate.argument import (AgentParam, Connection, ConnectionList,
+                                        EnumValue, MessageList,
+                                        ReceivedMessageParam, SendMessageParam)
+from aasm.intermediate.behaviour import MessageReceivedBehaviour
+from aasm.intermediate.block import Block
+from aasm.intermediate.declaration import Declaration
+from aasm.intermediate.instruction import (Add, AddElement, Clear, Divide,
+                                           ExpDist, IfEqual, IfGreaterThan,
+                                           IfGreaterThanOrEqual, IfInList,
+                                           IfLessThan, IfLessThanOrEqual,
+                                           IfNotEqual, IfNotInList, Length,
+                                           Multiply, NormalDist, RemoveElement,
+                                           RemoveNElements, Round, Send, Set,
+                                           Subset, Subtract, UniformDist,
+                                           WhileEqual, WhileGreaterThan,
+                                           WhileGreaterThanOrEqual,
+                                           WhileLessThan, WhileLessThanOrEqual,
+                                           WhileNotEqual)
+from aasm.parsing.parse import parse_lines
 
 if TYPE_CHECKING:
-    from intermediate.agent import Agent
-    from intermediate.argument import Argument
-    from intermediate.behaviour import Behaviour
-    from intermediate.message import Message as IntermediateMessage
-    from parsing.state import ParsedData
+    from aasm.intermediate.agent import Agent
+    from aasm.intermediate.argument import Argument
+    from aasm.intermediate.behaviour import Behaviour
+    from aasm.intermediate.message import Message as IntermediateMessage
+    from aasm.parsing.state import ParsedData
     
 
 class SpadeCode:
     INDENT_SIZE = 4
     
-    def __init__(self, parsed_data: ParsedData):
+    def __init__(self, lines: List[str], debug: bool = False):
+        parsed_data: ParsedData = parse_lines(lines, debug)
         self.indent: int = 0
         self.code_lines: List[str] = []
         self.add_required_imports()

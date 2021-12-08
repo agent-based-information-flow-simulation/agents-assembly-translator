@@ -3,9 +3,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Dict, List
 
 if TYPE_CHECKING:
-    from intermediate.behaviour import (Behaviour, CyclicBehaviour,
-                                        MessageReceivedBehaviour,
-                                        OneTimeBehaviour, SetupBehaviour)
+    from aasm.intermediate.behaviour import (Behaviour, CyclicBehaviour,
+                                             MessageReceivedBehaviour,
+                                             OneTimeBehaviour, SetupBehaviour)
 
 
 class InitFloatParam:

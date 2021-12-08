@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Dict
 
 if TYPE_CHECKING:
-    from intermediate.action import Action
-    from intermediate.message import Message
+    from aasm.intermediate.action import Action
+    from aasm.intermediate.message import Message
 
 
 class Behaviour:

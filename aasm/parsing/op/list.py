@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from intermediate.argument import Argument
-from intermediate.instruction import (AddElement, IfInList, IfNotInList,
-                                      RemoveElement)
+from aasm.intermediate.argument import Argument
+from aasm.intermediate.instruction import (AddElement, IfInList, IfNotInList,
+                                           RemoveElement)
 
 if TYPE_CHECKING:
-    from parsing.state import State
+    from aasm.parsing.state import State
 
 
 def handle_list_modification(state: State, op: str, arg1: str, arg2: str) -> None:

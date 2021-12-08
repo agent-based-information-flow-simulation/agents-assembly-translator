@@ -3,10 +3,10 @@ from __future__ import annotations
 from pprint import pprint
 from typing import TYPE_CHECKING, Dict
 
-from utils.validation import is_float
+from aasm.utils.validation import is_float
 
 if TYPE_CHECKING:
-    from parsing.state import State
+    from aasm.parsing.state import State
 
 
 class ArgumentType:

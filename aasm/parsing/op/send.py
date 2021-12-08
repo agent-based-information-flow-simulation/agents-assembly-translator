@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from intermediate.action import SendMessageAction
-from intermediate.argument import Argument
-from intermediate.instruction import Send
+from aasm.intermediate.action import SendMessageAction
+from aasm.intermediate.argument import Argument
+from aasm.intermediate.instruction import Send
 
 if TYPE_CHECKING:
-    from parsing.state import State
+    from aasm.parsing.state import State
 
 
 def op_SEND(state: State, arg1: str) -> None:

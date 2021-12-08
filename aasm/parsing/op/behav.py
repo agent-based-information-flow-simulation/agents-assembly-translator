@@ -2,12 +2,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List
 
-from intermediate.behaviour import (CyclicBehaviour, MessageReceivedBehaviour,
-                                    OneTimeBehaviour, SetupBehaviour)
-from utils.validation import is_float, is_valid_name, print_invalid_names
+from aasm.intermediate.behaviour import (CyclicBehaviour,
+                                         MessageReceivedBehaviour,
+                                         OneTimeBehaviour, SetupBehaviour)
+from aasm.utils.validation import is_float, is_valid_name, print_invalid_names
 
 if TYPE_CHECKING:
-    from parsing.state import State
+    from aasm.parsing.state import State
 
 
 def op_BEHAV(state: State, name: str, category: str, args: List[str]):

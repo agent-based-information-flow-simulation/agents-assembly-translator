@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from intermediate.argument import Argument
-from intermediate.instruction import Length
+from aasm.intermediate.argument import Argument
+from aasm.intermediate.instruction import Length
 
 if TYPE_CHECKING:
-    from parsing.state import State
+    from aasm.parsing.state import State
 
 
 def op_LEN(state: State, arg1: str, arg2: str) -> None:

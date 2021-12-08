@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List
 
-from intermediate.action import ModifySelfAction, SendMessageAction
-from utils.validation import is_valid_name, print_invalid_names
+from aasm.intermediate.action import ModifySelfAction, SendMessageAction
+from aasm.utils.validation import is_valid_name, print_invalid_names
 
 if TYPE_CHECKING:
-    from parsing.state import State
+    from aasm.parsing.state import State
 
 
 def op_ACTION(state: State, name: str, category: str, args: List[str]) -> None:

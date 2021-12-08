@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from intermediate.argument import Argument
-from intermediate.declaration import Declaration
-from utils.validation import is_valid_name, print_invalid_names
+from aasm.intermediate.argument import Argument
+from aasm.intermediate.declaration import Declaration
+from aasm.utils.validation import is_valid_name, print_invalid_names
 
 if TYPE_CHECKING:
-    from parsing.state import State
+    from aasm.parsing.state import State
 
 
 def op_DECL(state: State, name: str, value: str) -> None:            

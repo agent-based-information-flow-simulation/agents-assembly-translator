@@ -5,10 +5,10 @@ from pprint import pprint
 from typing import TYPE_CHECKING, Dict, Generator, List, Tuple
 
 if TYPE_CHECKING:
-    from intermediate.action import Action
-    from intermediate.agent import Agent
-    from intermediate.behaviour import Behaviour
-    from intermediate.message import Message
+    from aasm.intermediate.action import Action
+    from aasm.intermediate.agent import Agent
+    from aasm.intermediate.behaviour import Behaviour
+    from aasm.intermediate.message import Message
 
 
 class ParsedData:

@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from intermediate.message import Message
-from utils.validation import is_valid_name, print_invalid_names
+from aasm.intermediate.message import Message
+from aasm.utils.validation import is_valid_name, print_invalid_names
 
 if TYPE_CHECKING:
-    from parsing.state import State
+    from aasm.parsing.state import State
 
 
 def op_MESSAGE(state: State, msg_type: str, msg_performative) -> None:

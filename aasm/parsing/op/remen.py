@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from intermediate.argument import Argument
-from intermediate.instruction import RemoveNElements
+from aasm.intermediate.argument import Argument
+from aasm.intermediate.instruction import RemoveNElements
 
 if TYPE_CHECKING:
-    from parsing.state import State
+    from aasm.parsing.state import State
 
 
 def op_REMEN(state: State, arg1: str, arg2: str) -> None:

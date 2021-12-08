@@ -2,16 +2,17 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from intermediate.argument import Argument
-from intermediate.instruction import (IfEqual, IfGreaterThan,
-                                      IfGreaterThanOrEqual, IfLessThan,
-                                      IfLessThanOrEqual, IfNotEqual,
-                                      WhileEqual, WhileGreaterThan,
-                                      WhileGreaterThanOrEqual, WhileLessThan,
-                                      WhileLessThanOrEqual, WhileNotEqual)
+from aasm.intermediate.argument import Argument
+from aasm.intermediate.instruction import (IfEqual, IfGreaterThan,
+                                           IfGreaterThanOrEqual, IfLessThan,
+                                           IfLessThanOrEqual, IfNotEqual,
+                                           WhileEqual, WhileGreaterThan,
+                                           WhileGreaterThanOrEqual,
+                                           WhileLessThan, WhileLessThanOrEqual,
+                                           WhileNotEqual)
 
 if TYPE_CHECKING:
-    from parsing.state import State
+    from aasm.parsing.state import State
 
 
 def handle_unordered_conditional_statement(state: State, op: str, arg1: str, arg2: str) -> None:
