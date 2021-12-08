@@ -3,6 +3,7 @@ from __future__ import annotations
 from copy import deepcopy
 from pprint import pprint
 from typing import TYPE_CHECKING, Dict, Generator, List, Tuple
+from aasm.utils.exception import PanicException
 
 if TYPE_CHECKING:
     from aasm.intermediate.action import Action
@@ -96,11 +97,8 @@ class State:
         if self.debug:
             pprint(self.__dict__)
             self.print()
-        print(f'🔥 Error in line {self.line_num}: {self.lines[self.line_num - 1].strip()}')
-        print(reason)
-        if suggestion:
-            print(suggestion)
-        exit(1)
+        place = f'Error in line {self.line_num}: {self.lines[self.line_num - 1].strip()}'
+        raise PanicException(place, reason, suggestion)
 
     def require(self, expr: bool, msg_on_error: str, suggestion_on_error: str = '') -> None:
         if not expr:
