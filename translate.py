@@ -8,9 +8,9 @@ from parsing.parse import parse_lines
 
 def get_args() -> Tuple[str, str, bool]:
     parser = ArgumentParser()
-    parser.add_argument('input_path', type=str, help='path to input file in .aa format')
-    parser.add_argument('-d', '--debug', action='store_true', help='toggle compiler debug mode')
-    parser.add_argument('-o', '--output_path', type=str, default='out', help='output file path')
+    parser.add_argument('input_path', type=str, help='path to the input file')
+    parser.add_argument('-d', '--debug', action='store_true', help='toggle the compiler debug mode')
+    parser.add_argument('-o', '--output-path', type=str, default='out', help='the output file path')
     args = parser.parse_args()
     return args.input_path, args.output_path, args.debug
 

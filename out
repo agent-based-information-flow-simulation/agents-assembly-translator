@@ -1,35 +1,131 @@
-import random as r
+import datetime
+import math
+import random
+import numpy
+import orjson
 import spade
-from numpy.random import normal
 
 
-class test(spade.agent.Agent):
+class BaseMessage:
+    def __init__(self, **kwargs):
+        if "type" in kwargs and "performative" in kwargs:
+            self.body = {
+                "type": kwargs["type"],
+                "performative": kwargs["performative"],
+            }
+        elif "rcv" in kwargs:
+            self.body = orjson.loads(kwargs["rcv"].body)
+    
+    def get_spade_message(self):
+        msg = spade.message.Message()
+        msg.metadata["type"] = self.body["type"]
+        msg.metadata["performative"] = self.body["performative"]
+        msg.body = orjson.dumps(self.body)
+        return msg
+
+
+class test_agent(spade.agent.Agent):
     def __init__(self, jid, password, location, connections):
         super().__init__(jid, password, verify_security=False)
-        self.susceptability = 30.5
-        self.social_media_addiction = normal(0, 30)
-        self.is_online = r.choices(["yes", "no"], [80, 20])[0]
-        self.is_dead = r.choices(["yes", "no_way", "maybe"], [0, 90, 10])[0]
+        self.location = location
+        self.connections = connections
+        self.msgRCount = 0
+        self.mSCount = 0
+        self.susceptability = 20
+        self.yes = 0
+        self.test_norm = numpy.random.normal(0, 20)
+        self.test_exp = numpy.random.exponential(1/15)
+        self.is_dead = random.choices(["maybe", "no"], [60, 40])[0]
+        self.is_online = random.choices(["yes", "no"], [90, 10])[0]
+        self.friends = []
+        self.bots = []
+        self.fakenews_msgs = []
+    
+    @property
+    def connCount(self):
+        return len(self.connections)
     
     def setup(self):
         self.add_behaviour(self.run_on_start())
+        self.add_behaviour(self.run_only_once(start_at=datetime.datetime.now() + datetime.timedelta(seconds=5)))
+        self.add_behaviour(self.spread_fakenews(period=10))
+        send_fakenews_response_template = spade.template.Template()
+        send_fakenews_response_template.set_metadata("type", "fakenews")
+        send_fakenews_response_template.set_metadata("performative", "query")
+        self.add_behaviour(self.send_fakenews_response(), send_fakenews_response_template)
     
     class run_on_start(spade.behaviour.OneShotBehaviour):
-        async def check_addiction(self):
-            big = 5
-            if self.agent.social_media_addiction > big:
-                self.agent.susceptability += 15
-            i = 1
-            while i <= 10:
-                self.agent.is_dead = "maybe"
-                if self.agent.is_online != "no_way":
-                    factorial = 1
-                    factor = 2
-                    while factorial < 1000:
-                        factorial *= factor
-                        factor += 1
-                i += 1
-            self.agent.is_dead = "no_way"
+        def do_something(self):
+            self.agent.is_online = "yes"
         
         async def run(self):
-            await self.check_addiction()
+            self.do_something()
+    
+    class run_only_once(spade.behaviour.TimeoutBehaviour):
+        async def send_fakenews(self):
+            send = BaseMessage(type="fakenews", performative="query")
+            send.body["num_photos"] = 0.0
+            send.body["num_photos"] = 5
+            for receiver in self.agent.bots:
+                await self.send(send.get_spade_message(receiver))
+                self.agent.msgSCount += 1
+        
+        async def run(self):
+            await self.send_fakenews()
+    
+    class spread_fakenews(spade.behaviour.PeriodicBehaviour):
+        async def spread(self):
+            send = BaseMessage(type="fakenews", performative="query")
+            send.body["num_photos"] = 0.0
+            send.body["num_photos"] = 30
+            for receiver in self.agent.friends:
+                await self.send(send.get_spade_message(receiver))
+                self.agent.msgSCount += 1
+        
+        async def run(self):
+            await self.spread()
+    
+    class send_fakenews_response(spade.behaviour.CyclicBehaviour):
+        def modify_susceptability(self, rcv):
+            self.agent.susceptability += 15
+        
+        async def send_response(self, rcv):
+            send = BaseMessage(type="fakenews_response", performative="query")
+            send.body["num_seen_photos"] = 0.0
+            match = 0
+            if match == 0:
+                ...
+            self.agent.susceptability += 15
+            if self.agent.is_online == "yes":
+                self.agent.yes = 150
+            await self.send(send.get_spade_message(rcv.sender))
+            self.agent.msgSCount += 1
+            if rcv not in self.agent.fakenews_msgs: self.agent.fakenews_msgs.append(rcv)
+            if rcv in self.agent.fakenews_msgs: self.agent.fakenews_msgs.remove(rcv)
+            if len(list(filter(lambda msg: msg.body["type"] == send.body["type"] and msg.body["performative"] == send.body["performative"], self.agent.fakenews_msgs))):
+                send = random.choice(list(filter(lambda msg: msg.body["type"] == send.body["type"] and msg.body["performative"] == send.body["performative"], self.agent.fakenews_msgs)))
+            else:
+                return
+            await self.send(send.get_spade_message(rcv.sender))
+            self.agent.msgSCount += 1
+            res = 0
+            res = len(self.agent.fakenews_msgs)
+            if rcv not in self.agent.fakenews_msgs:
+                ...
+            if math.ceil(res) > 0:
+                if math.ceil(res) < len(self.agent.fakenews_msgs):
+                    random.shuffle(self.agent.fakenews_msgs)
+                    self.agent.fakenews_msgs = self.agent.fakenews_msgs[:len(self.agent.fakenews_msgs) - math.ceil(res)]
+                else:
+                    self.agent.fakenews_msgs = []
+            res = numpy.random.exponential(1/0) if 0 > 0 else 0
+            res = round(res)
+        
+        async def run(self):
+            rcv = await self.receive(timeout=10)
+            if rcv:
+                rcv = BaseMessage(rcv=rcv)
+                self.agent.msgRCount += 1
+                self.modify_susceptability(rcv)
+                await self.send_response(rcv)
+    

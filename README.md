@@ -44,33 +44,42 @@ python translate.py --help
 * `generating`
     * `spade.py` - SPADE code generation from the intermediate representation
 * `intermediate`
-    * `action.py` - action representation
-    * `agent.py` - agent representation
-    * `behaviour.py` - behaviour representation
-    * `message.py` - message representation
-    * `param.py` - parameters representation
+    * `action.py`
+    * `agent.py`
+    * `argument.py` - arguments used in instructions
+    * `behaviour.py`
+    * `block.py` - block of code representation
+    * `declaration.py` - declarations used in actions
+    * `instruction.py` - instructions used in actions
+    * `message.py`
 * `parsing`
-    * `parse.py` - parsing environments from `*.aa` files
-    * `op.py` - Agents Assembly operations
+    * `parse.py` - parsing environment from Agents Assembly file
+    * `op/` - Agents Assembly operations
     * `state.py` - state definition used for the parsing process
 * `utils`
     * `validation.py` - variables validation
 * `translate.py` - entrypoint
 
 ## Design <a name = "design"></a>
+* `Message`
+    * `Parameter`
+        * `Type`
 * `Agent`
-    * `Parameters`
+    * `Parameter`
         * `Type`
-        * `Values`
-    * `Behaviours`
+        * `Value`
+    * `Behaviour`
         * `Type`
+        * `Parameter`
+        * `Received message`
         * `Actions`
-            * `Blocks`
-                * `Declarations`
+            * `Message to be sent`
+            * `Block`
+                * `Declaration`
                     * `Name`
                     * `Argument`
                         * `Types`
-                * `Instructions`
-                    * `Arguments`
+                * `Instruction`
+                    * `Argument`
                         * `Types`
-                * `Blocks`
+                * `Block`

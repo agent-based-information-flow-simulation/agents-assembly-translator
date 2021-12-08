@@ -1,28 +1,72 @@
-agent test
-    prm social_media_addiction, float, dist_normal, 0, 30
-    prm susceptability, float, init, 30.5
-    prm is_online, enum, yes, 80, no, 20
-    prm is_dead, enum, yes, 0, no_way, 90, maybe, 10
-    setupbehav run_on_start
-        action check_addiction
-            decl big, 5
-            igt social_media_addiction, big 
-                add susceptability, 15
+message fakenews, query
+    prm num_photos, float
+emessage
+
+message fakenews_response, query
+    prm num_seen_photos, float
+emessage
+
+agent test_agent
+    prm susceptability, float, init, 20
+    prm friends, list, conn
+    prm bots, list, conn
+    prm fakenews_msgs, list, msg
+    prm is_dead, enum, maybe, 60, no, 40
+    prm is_online, enum, yes, 90, no, 10
+    prm yes, float, init, 0
+    prm test_norm, float, dist, normal, 0, 20
+    prm test_exp, float, dist, exp, 15
+
+    behav run_on_start, setup
+        action do_something, modify_self
+            set is_online, yes
+        eaction
+    ebehav
+
+    behav run_only_once, one_time, 5
+        action send_fakenews, send_msg, fakenews, query
+            set send.num_photos, 5
+            send bots
+        eaction
+    ebehav
+    
+    behav send_fakenews_response, msg_rcv, fakenews, query
+        action modify_susceptability, modify_self
+            add susceptability, 15
+        eaction
+
+        action send_response, send_msg, fakenews_response, query
+            decl match, 0
+            ieq match, 0
             eblock
-            decl i, 1
-            wlte i, 10
-                set is_dead, maybe 
-                ine is_online, no_way
-                    decl factorial, 1
-                    decl factor, 2
-                    wlt factorial, 1000
-                        mult factorial, factor
-                        add factor, 1
-                    eblock
-                eblock
-                add i, 1
+            add susceptability, 15
+            ieq is_online, yes
+                set yes, 150
             eblock
-            set is_dead, no_way
+            send rcv.sender
+
+            adde fakenews_msgs, rcv
+            reme fakenews_msgs, rcv
+
+            set send, fakenews_msgs
+
+            send rcv.sender
+
+            decl res, 0
+            len res, fakenews_msgs
+            nin fakenews_msgs, rcv
+            eblock
+
+            remen fakenews_msgs, res
+
+            rand res, int, exp, 0
+        eaction
+    ebehav
+
+    behav spread_fakenews, cyclic, 10
+        action spread, send_msg, fakenews, query
+            set send.num_photos, 30
+            send friends
         eaction
     ebehav
 eagent
