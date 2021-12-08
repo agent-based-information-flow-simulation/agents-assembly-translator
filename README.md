@@ -18,13 +18,6 @@ A translator from Agents Assembly to SPADE (Python).
 
 ```
 Python 3.10
-pipenv
-```
-
-### Installing
-
-```
-pipenv install
 ```
 
 ## Usage <a name = "usage"></a>
