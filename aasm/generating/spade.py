@@ -29,12 +29,16 @@ if TYPE_CHECKING:
     from aasm.intermediate.behaviour import Behaviour
     from aasm.intermediate.message import Message as IntermediateMessage
     from aasm.parsing.state import ParsedData
-    
+
+
+def get_spade_code(aasm_lines: List[str], debug: bool = False) -> List[str]:
+    return SpadeCode(aasm_lines, debug).code_lines
+
 
 class SpadeCode:
     INDENT_SIZE = 4
     
-    def __init__(self, lines: List[str], debug: bool = False):
+    def __init__(self, lines: List[str], debug: bool):
         parsed_data: ParsedData = parse_lines(lines, debug)
         self.indent: int = 0
         self.code_lines: List[str] = []
