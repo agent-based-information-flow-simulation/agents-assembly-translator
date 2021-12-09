@@ -1,27 +1,22 @@
+import copy
 import datetime
-import math
 import random
 import numpy
 import orjson
 import spade
 
 
-class BaseMessage:
-    def __init__(self, **kwargs):
-        if "type" in kwargs and "performative" in kwargs:
-            self.body = {
-                "type": kwargs["type"],
-                "performative": kwargs["performative"],
-            }
-        elif "rcv" in kwargs:
-            self.body = orjson.loads(kwargs["rcv"].body)
-    
-    def get_spade_message(self):
-        msg = spade.message.Message()
-        msg.metadata["type"] = self.body["type"]
-        msg.metadata["performative"] = self.body["performative"]
-        msg.body = orjson.dumps(self.body)
-        return msg
+def get_json_from_spade_message(msg):
+    return orjson.loads(msg.body)
+
+
+def get_spade_message(sender_jid, receiver_jid, json):
+    msg = spade.message.Message(to=receiver_jid)
+    json["sender"] = sender_jid
+    msg.metadata["type"] = json["type"]
+    msg.metadata["performative"] = json["performative"]
+    msg.body = orjson.dumps(json)
+    return msg
 
 
 class test_agent(spade.agent.Agent):
@@ -56,6 +51,10 @@ class test_agent(spade.agent.Agent):
     
     class run_on_start(spade.behaviour.OneShotBehaviour):
         def do_something(self):
+            if round(5) > 0:
+                self.agent.bots = [copy.deepcopy(elem) for elem in random.sample(self.agent.friends, min(round(5), len(self.agent.friends)))]
+            else:
+                self.agent.bots = []
             self.agent.is_online = "yes"
         
         async def run(self):
@@ -63,11 +62,10 @@ class test_agent(spade.agent.Agent):
     
     class run_only_once(spade.behaviour.TimeoutBehaviour):
         async def send_fakenews(self):
-            send = BaseMessage(type="fakenews", performative="query")
-            send.body["num_photos"] = 0.0
-            send.body["num_photos"] = 5
+            send = { "type": "fakenews", "performative": "query", "num_photos": 0.0, }
+            send["num_photos"] = 5
             for receiver in self.agent.bots:
-                await self.send(send.get_spade_message(receiver))
+                await self.send(get_spade_message(self.agent.jid, receiver, send))
                 self.agent.msgSCount += 1
         
         async def run(self):
@@ -75,11 +73,10 @@ class test_agent(spade.agent.Agent):
     
     class spread_fakenews(spade.behaviour.PeriodicBehaviour):
         async def spread(self):
-            send = BaseMessage(type="fakenews", performative="query")
-            send.body["num_photos"] = 0.0
-            send.body["num_photos"] = 30
+            send = { "type": "fakenews", "performative": "query", "num_photos": 0.0, }
+            send["num_photos"] = 30
             for receiver in self.agent.friends:
-                await self.send(send.get_spade_message(receiver))
+                await self.send(get_spade_message(self.agent.jid, receiver, send))
                 self.agent.msgSCount += 1
         
         async def run(self):
@@ -90,32 +87,31 @@ class test_agent(spade.agent.Agent):
             self.agent.susceptability += 15
         
         async def send_response(self, rcv):
-            send = BaseMessage(type="fakenews_response", performative="query")
-            send.body["num_seen_photos"] = 0.0
+            send = { "type": "fakenews_response", "performative": "query", "num_seen_photos": 0.0, }
             match = 0
             if match == 0:
                 ...
             self.agent.susceptability += 15
             if self.agent.is_online == "yes":
                 self.agent.yes = 150
-            await self.send(send.get_spade_message(rcv.sender))
+            await self.send(send.get_spade_message(rcv["sender"]))
             self.agent.msgSCount += 1
             if rcv not in self.agent.fakenews_msgs: self.agent.fakenews_msgs.append(rcv)
             if rcv in self.agent.fakenews_msgs: self.agent.fakenews_msgs.remove(rcv)
             if len(list(filter(lambda msg: msg.body["type"] == send.body["type"] and msg.body["performative"] == send.body["performative"], self.agent.fakenews_msgs))):
-                send = random.choice(list(filter(lambda msg: msg.body["type"] == send.body["type"] and msg.body["performative"] == send.body["performative"], self.agent.fakenews_msgs)))
+                send = copy.deepcopy(random.choice(list(filter(lambda msg: msg.body["type"] == send.body["type"] and msg.body["performative"] == send.body["performative"], self.agent.fakenews_msgs))))
             else:
                 return
-            await self.send(send.get_spade_message(rcv.sender))
+            await self.send(send.get_spade_message(rcv["sender"]))
             self.agent.msgSCount += 1
             res = 0
             res = len(self.agent.fakenews_msgs)
             if rcv not in self.agent.fakenews_msgs:
                 ...
-            if math.ceil(res) > 0:
-                if math.ceil(res) < len(self.agent.fakenews_msgs):
+            if round(res) > 0:
+                if round(res) < len(self.agent.fakenews_msgs):
                     random.shuffle(self.agent.fakenews_msgs)
-                    self.agent.fakenews_msgs = self.agent.fakenews_msgs[:len(self.agent.fakenews_msgs) - math.ceil(res)]
+                    self.agent.fakenews_msgs = self.agent.fakenews_msgs[:len(self.agent.fakenews_msgs) - round(res)]
                 else:
                     self.agent.fakenews_msgs = []
             res = numpy.random.exponential(1/0) if 0 > 0 else 0
@@ -124,7 +120,7 @@ class test_agent(spade.agent.Agent):
         async def run(self):
             rcv = await self.receive(timeout=10)
             if rcv:
-                rcv = BaseMessage(rcv=rcv)
+                rcv = get_json_from_spade_message(rcv)
                 self.agent.msgRCount += 1
                 self.modify_susceptability(rcv)
                 await self.send_response(rcv)
