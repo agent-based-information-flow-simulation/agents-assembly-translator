@@ -60,13 +60,14 @@ class SpadeCode:
         self.add_required_imports()
         if parsed_data.messages:
             self.add_newlines(2)
-            self.add_base_message()
+            self.add_message_utils()
         for agent in parsed_data.agents:
             self.add_newlines(2)
             self.generate_agent(agent)
     
     ### COMMON ###
     def add_required_imports(self) -> List[str]:
+        self.add_line('import copy')
         self.add_line('import datetime')
         self.add_line('import math')
         self.add_line('import random')
@@ -90,35 +91,21 @@ class SpadeCode:
         for _ in range(count):
             self.add_newline()
             
-    ### BASE MESSAGE ###
-    def add_base_message(self) -> None:
-        self.add_line('class BaseMessage:')
+    ### MESSAGE PARSING ###
+    def add_message_utils(self) -> None:
+        self.add_line('def get_json_from_spade_message(msg):')
         self.indent_right()
-        self.add_line('def __init__(self, **kwargs):')
-        self.indent_right()
-        self.add_line('if \"type\" in kwargs and \"performative\" in kwargs:')
-        self.indent_right()
-        self.add_line('self.body = {')
-        self.indent_right()
-        self.add_line('\"type\": kwargs[\"type\"],')
-        self.add_line('\"performative\": kwargs[\"performative\"],')
+        self.add_line('return orjson.loads(msg.body)')
         self.indent_left()
-        self.add_line('}')
-        self.indent_left()
-        self.add_line('elif \"rcv\" in kwargs:')
+        self.add_newlines(2)
+        self.add_line('def get_spade_message(sender_jid, receiver_jid, json):')
         self.indent_right()
-        self.add_line('self.body = orjson.loads(kwargs[\"rcv\"].body)')
-        self.indent_left()
-        self.indent_left()
-        self.add_newline()
-        self.add_line('def get_spade_message(self):')
-        self.indent_right()
-        self.add_line('msg = spade.message.Message()')
-        self.add_line('msg.metadata["type"] = self.body["type"]')
-        self.add_line('msg.metadata["performative"] = self.body["performative"]')
-        self.add_line('msg.body = orjson.dumps(self.body)')
+        self.add_line('msg = spade.message.Message(to=receiver_jid)')
+        self.add_line('json[\"sender\"] = sender_jid')
+        self.add_line('msg.metadata[\"type\"] = json[\"type\"]')
+        self.add_line('msg.metadata[\"performative\"] = json[\"performative\"]')
+        self.add_line('msg.body = orjson.dumps(json)')
         self.add_line('return msg')
-        self.indent_left()
         self.indent_left()
     
     ### AGENT ###
@@ -196,10 +183,12 @@ class SpadeCode:
             self.add_line(f'self.add_behaviour(self.{message_received_behaviour.name}(), {message_received_behaviour.name}_template)')
         self.indent_left()
 
-    def add_send_message(self, message: IntermediateMessage) -> None:
-        self.add_line(f'send = BaseMessage(type=\"{message.type}\", performative=\"{message.performative}\")')
+    def add_send_message(self, message: IntermediateMessage) -> None:            
+        send_msg = f'send = {{ \"type\": \"{message.type}\", \"performative\": \"{message.performative}\", '
         for float_param_name in message.float_params:
-            self.add_line(f'send.body[\"{float_param_name}\"] = 0.0')
+            send_msg += f'\"{float_param_name}\": 0.0, '
+        send_msg += '}'
+        self.add_line(send_msg)
         
     def add_agent_behaviour(self, behaviour: Behaviour, behaviour_type: str) -> None:
         self.add_line(f'class {behaviour.name}({behaviour_type}):')
@@ -233,7 +222,7 @@ class SpadeCode:
             self.add_line('rcv = await self.receive(timeout=10)')
             self.add_line('if rcv:')
             self.indent_right()
-            self.add_line('rcv = BaseMessage(rcv=rcv)')
+            self.add_line('rcv = get_json_from_spade_message(rcv)')
             self.add_line('self.agent.msgRCount += 1')
         elif not behaviour.actions.values():
             self.add_line('...')
@@ -263,13 +252,13 @@ class SpadeCode:
             case EnumValue():
                 return f'\"{arg.expr}\"'
             
-            case ReceivedMessageParam() if not isinstance(arg.type_in_op, Connection):
+            case ReceivedMessageParam():
                 prop = arg.expr.split('.')[1]
-                return f'rcv.body[\"{prop}\"]'
+                return f'rcv[\"{prop}\"]'
             
-            case SendMessageParam() if not isinstance(arg.type_in_op, Connection):
+            case SendMessageParam():
                 prop = arg.expr.split('.')[1]
-                return f'send.body[\"{prop}\"]'
+                return f'send[\"{prop}\"]'
             
             case _:
                 return arg.expr
@@ -293,18 +282,14 @@ class SpadeCode:
                     to_list = self.parse_arg(statement.arg1)
                     from_list = self.parse_arg(statement.arg2)
                     num = self.parse_arg(statement.arg3)
-                    self.add_line(f'if math.ceil({num}) > 0:')
+                    self.add_line(f'if round({num}) > 0:')
                     self.indent_right()
-                    self.add_line(f'if math.ceil({num}) <= len({from_list}):')
-                    self.indent_right()
-                    self.add_line(f'{to_list} = random.sample({from_list}, math.ceil({num}))')
+                    self.add_line(f'{to_list} = [copy.deepcopy(elem) for elem in random.sample({from_list}, min(round({num}), len({from_list})))]')
                     self.indent_left()
                     self.add_line('else:')
                     self.indent_right()
-                    self.add_line(f'{to_list} = random.sample({from_list}, len({from_list}))')
+                    self.add_line(f'{to_list} = []')
                     self.indent_left()
-                    self.indent_left()
-                    self.add_line(f'else: {to_list} = []')
                     
                 case Clear():
                     list_ = self.parse_arg(statement.arg1)
@@ -319,7 +304,7 @@ class SpadeCode:
                     receivers = self.parse_arg(statement.arg1)
                     self.add_line(f'for receiver in {receivers}:')
                     self.indent_right()
-                    self.add_line(f'await self.send(send.get_spade_message(receiver))')
+                    self.add_line('await self.send(get_spade_message(self.agent.jid, receiver, send))')
                     self.add_line('self.agent.msgSCount += 1')
                     self.indent_left()
                     
@@ -328,7 +313,7 @@ class SpadeCode:
                     msg_list = self.parse_arg(statement.arg2)
                     self.add_line(f'if len(list(filter(lambda msg: msg.body["type"] == {msg}.body["type"] and msg.body["performative"] == {msg}.body["performative"], {msg_list}))):')
                     self.indent_right()
-                    self.add_line(f'{msg} = random.choice(list(filter(lambda msg: msg.body["type"] == {msg}.body["type"] and msg.body["performative"] == {msg}.body["performative"], {msg_list})))')
+                    self.add_line(f'{msg} = copy.deepcopy(random.choice(list(filter(lambda msg: msg.body["type"] == {msg}.body["type"] and msg.body["performative"] == {msg}.body["performative"], {msg_list}))))')
                     self.indent_left()
                     self.add_line('else:')
                     self.indent_right()
