@@ -69,7 +69,6 @@ class SpadeCode:
     def add_required_imports(self) -> List[str]:
         self.add_line('import copy')
         self.add_line('import datetime')
-        self.add_line('import math')
         self.add_line('import random')
         self.add_line('import numpy')
         self.add_line('import orjson')
@@ -414,12 +413,12 @@ class SpadeCode:
                             self.add_line(f'{arg1} = len({arg2})')
                             
                         case RemoveNElements():
-                            self.add_line(f'if math.ceil({arg2}) > 0:')
+                            self.add_line(f'if round({arg2}) > 0:')
                             self.indent_right()
-                            self.add_line(f'if math.ceil({arg2}) < len({arg1}):')
+                            self.add_line(f'if round({arg2}) < len({arg1}):')
                             self.indent_right()
                             self.add_line(f'random.shuffle({arg1})')
-                            self.add_line(f'{arg1} = {arg1}[:len({arg1}) - math.ceil({arg2})]')
+                            self.add_line(f'{arg1} = {arg1}[:len({arg1}) - round({arg2})]')
                             self.indent_left()
                             self.add_line('else:')
                             self.indent_right()
