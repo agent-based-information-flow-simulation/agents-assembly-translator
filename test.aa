@@ -19,6 +19,7 @@ agent test_agent
 
     behav run_on_start, setup
         action do_something, modify_self
+            subs bots, friends, 5
             set is_online, yes
         eaction
     ebehav
