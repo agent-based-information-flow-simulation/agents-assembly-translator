@@ -19,109 +19,92 @@ def get_spade_message(sender_jid, receiver_jid, json):
     return msg
 
 
-class test_agent(spade.agent.Agent):
+class colorChecker(spade.agent.Agent):
     def __init__(self, jid, password, location, connections):
         super().__init__(jid, password, verify_security=False)
         self.location = location
         self.connections = connections
         self.msgRCount = 0
         self.mSCount = 0
-        self.susceptability = 20
-        self.yes = 0
-        self.test_norm = numpy.random.normal(0, 20)
-        self.test_exp = numpy.random.exponential(1/15)
-        self.is_dead = random.choices(["maybe", "no"], [60, 40])[0]
-        self.is_online = random.choices(["yes", "no"], [90, 10])[0]
-        self.friends = []
-        self.bots = []
-        self.fakenews_msgs = []
+        self.prevColor = -1
+        self.myColor = numpy.random.normal(1, 3)
+        self.redList = []
+        self.greenList = []
+        self.blueList = []
     
     @property
     def connCount(self):
         return len(self.connections)
     
     def setup(self):
-        self.add_behaviour(self.run_on_start())
-        self.add_behaviour(self.run_only_once(start_at=datetime.datetime.now() + datetime.timedelta(seconds=5)))
-        self.add_behaviour(self.spread_fakenews(period=10))
-        send_fakenews_response_template = spade.template.Template()
-        send_fakenews_response_template.set_metadata("type", "fakenews")
-        send_fakenews_response_template.set_metadata("performative", "query")
-        self.add_behaviour(self.send_fakenews_response(), send_fakenews_response_template)
+        self.add_behaviour(self.hello())
+        changeColor_template = spade.template.Template()
+        changeColor_template.set_metadata("type", "broadcast")
+        changeColor_template.set_metadata("performative", "Inform")
+        self.add_behaviour(self.changeColor(), changeColor_template)
     
-    class run_on_start(spade.behaviour.OneShotBehaviour):
-        def do_something(self):
-            if round(5) > 0:
-                self.agent.bots = [copy.deepcopy(elem) for elem in random.sample(self.agent.friends, min(round(5), len(self.agent.friends)))]
-            else:
-                self.agent.bots = []
-            self.agent.is_online = "yes"
-        
-        async def run(self):
-            self.do_something()
-    
-    class run_only_once(spade.behaviour.TimeoutBehaviour):
-        async def send_fakenews(self):
-            send = { "type": "fakenews", "performative": "query", "num_photos": 0.0, }
-            send["num_photos"] = 5
-            for receiver in self.agent.bots:
+    class hello(spade.behaviour.OneShotBehaviour):
+        async def send_color(self):
+            send = { "type": "broadcast", "performative": "Inform", "colorFrom": 0.0, "colorTo": 0.0, }
+            send["colorTo"] = self.agent.myColor
+            send["colorFrom"] = self.agent.prevColor
+            for receiver in self.agent.connections:
                 await self.send(get_spade_message(self.agent.jid, receiver, send))
                 self.agent.msgSCount += 1
         
         async def run(self):
-            await self.send_fakenews()
+            await self.send_color()
     
-    class spread_fakenews(spade.behaviour.PeriodicBehaviour):
-        async def spread(self):
-            send = { "type": "fakenews", "performative": "query", "num_photos": 0.0, }
-            send["num_photos"] = 30
-            for receiver in self.agent.friends:
-                await self.send(get_spade_message(self.agent.jid, receiver, send))
-                self.agent.msgSCount += 1
+    class changeColor(spade.behaviour.CyclicBehaviour):
+        def change_color(self, rcv):
+            if rcv["colorTo"] == self.agent.myColor:
+                self.agent.prevColor = self.agent.myColor
+                self.agent.myColor += 1
+                if self.agent.myColor > 3:
+                    self.agent.myColor = 1
+            if rcv["colorFrom"] == 1:
+                if rcv["sender"] in self.agent.redList: self.agent.redList.remove(rcv["sender"])
+            if rcv["colorFrom"] == 2:
+                if rcv["sender"] in self.agent.greenList: self.agent.greenList.remove(rcv["sender"])
+            if rcv["colorFrom"] == 3:
+                if rcv["sender"] in self.agent.blueList: self.agent.blueList.remove(rcv["sender"])
+            if rcv["colorTo"] == 1:
+                if rcv["sender"] not in self.agent.redList: self.agent.redList.append(rcv["sender"])
+            if rcv["colorTo"] == 2:
+                if rcv["sender"] not in self.agent.greenList: self.agent.greenList.append(rcv["sender"])
+            if rcv["colorTo"] == 3:
+                if rcv["sender"] not in self.agent.blueList: self.agent.blueList.append(rcv["sender"])
         
-        async def run(self):
-            await self.spread()
-    
-    class send_fakenews_response(spade.behaviour.CyclicBehaviour):
-        def modify_susceptability(self, rcv):
-            self.agent.susceptability += 15
-        
-        async def send_response(self, rcv):
-            send = { "type": "fakenews_response", "performative": "query", "num_seen_photos": 0.0, }
-            match = 0
-            if match == 0:
-                ...
-            self.agent.susceptability += 15
-            if self.agent.is_online == "yes":
-                self.agent.yes = 150
-            await self.send(send.get_spade_message(rcv["sender"]))
-            self.agent.msgSCount += 1
-            if rcv not in self.agent.fakenews_msgs: self.agent.fakenews_msgs.append(rcv)
-            if rcv in self.agent.fakenews_msgs: self.agent.fakenews_msgs.remove(rcv)
-            if len(list(filter(lambda msg: msg.body["type"] == send.body["type"] and msg.body["performative"] == send.body["performative"], self.agent.fakenews_msgs))):
-                send = copy.deepcopy(random.choice(list(filter(lambda msg: msg.body["type"] == send.body["type"] and msg.body["performative"] == send.body["performative"], self.agent.fakenews_msgs))))
-            else:
-                return
-            await self.send(send.get_spade_message(rcv["sender"]))
-            self.agent.msgSCount += 1
-            res = 0
-            res = len(self.agent.fakenews_msgs)
-            if rcv not in self.agent.fakenews_msgs:
-                ...
-            if round(res) > 0:
-                if round(res) < len(self.agent.fakenews_msgs):
-                    random.shuffle(self.agent.fakenews_msgs)
-                    self.agent.fakenews_msgs = self.agent.fakenews_msgs[:len(self.agent.fakenews_msgs) - round(res)]
-                else:
-                    self.agent.fakenews_msgs = []
-            res = numpy.random.exponential(1/0) if 0 > 0 else 0
-            res = round(res)
+        async def send_color(self, rcv):
+            send = { "type": "broadcast", "performative": "Inform", "colorFrom": 0.0, "colorTo": 0.0, }
+            red_len = 0
+            blue_len = 0
+            green_len = 0
+            red_len = len(self.agent.redList)
+            green_len = len(self.agent.greenList)
+            blue_len = len(self.agent.blueList)
+            flag = 0
+            if self.agent.myColor == 1:
+                if red_len == 0:
+                    flag = 1
+            if self.agent.myColor == 2:
+                if green_len == 0:
+                    flag = 1
+            if self.agent.myColor == 3:
+                if blue_len == 0:
+                    flag = 1
+            if flag == 0:
+                send["colorFrom"] = self.agent.prevColor
+                send["colorTo"] = self.agent.myColor
+                for receiver in self.agent.connections:
+                    await self.send(get_spade_message(self.agent.jid, receiver, send))
+                    self.agent.msgSCount += 1
         
         async def run(self):
             rcv = await self.receive(timeout=10)
             if rcv:
                 rcv = get_json_from_spade_message(rcv)
                 self.agent.msgRCount += 1
-                self.modify_susceptability(rcv)
-                await self.send_response(rcv)
+                self.change_color(rcv)
+                await self.send_color(rcv)
     

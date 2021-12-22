@@ -1,73 +1,82 @@
-message fakenews, query
-    prm num_photos, float
-emessage
+MESSAGE broadcast, Inform
+PRM colorFrom, float
+PRM colorTo, float
+EMESSAGE
 
-message fakenews_response, query
-    prm num_seen_photos, float
-emessage
+AGENT colorChecker
+PRM, redList, list, conn
+PRM, greenList, list, conn
+PRM, blueList, list, conn
 
-agent test_agent
-    prm susceptability, float, init, 20
-    prm friends, list, conn
-    prm bots, list, conn
-    prm fakenews_msgs, list, msg
-    prm is_dead, enum, maybe, 60, no, 40
-    prm is_online, enum, yes, 90, no, 10
-    prm yes, float, init, 0
-    prm test_norm, float, dist, normal, 0, 20
-    prm test_exp, float, dist, exp, 15
+PRM prevColor, float, init, -1
+PRM myColor, float, dist, normal, 1, 3
 
-    behav run_on_start, setup
-        action do_something, modify_self
-            subs bots, friends, 5
-            set is_online, yes
-        eaction
-    ebehav
+BEHAV hello, setup
+ACTION send_color, send_msg, broadcast, Inform
+SET SEND.colorTo, myColor
+SET SEND.colorFrom, prevColor
+SEND connections
+EACTION
+EBEHAV
 
-    behav run_only_once, one_time, 5
-        action send_fakenews, send_msg, fakenews, query
-            set send.num_photos, 5
-            send bots
-        eaction
-    ebehav
-    
-    behav send_fakenews_response, msg_rcv, fakenews, query
-        action modify_susceptability, modify_self
-            add susceptability, 15
-        eaction
+BEHAV changeColor, msg_rcv, broadcast, Inform
+ACTION change_color, modify_self
+IEQ RCV.colorTo,myColor
+SET prevColor,myColor
+ADD myColor,1
+IGT myColor,3
+SET myColor,1
+EBLOCK
+EBLOCK
+IEQ RCV.colorFrom, 1
+REME redList, RCV.sender
+EBLOCK
+IEQ RCV.colorFrom, 2
+REME greenList, RCV.sender
+EBLOCK
+IEQ RCV.colorFrom, 3
+REME blueList, RCV.sender
+EBLOCK
+IEQ RCV.colorTo, 1
+ADDE redList, RCV.sender
+EBLOCK
+IEQ RCV.colorTo, 2
+ADDE greenList, RCV.sender
+EBLOCK
+IEQ RCV.colorTo, 3
+ADDE blueList, RCV.sender
+EBLOCK
+EACTION
 
-        action send_response, send_msg, fakenews_response, query
-            decl match, 0
-            ieq match, 0
-            eblock
-            add susceptability, 15
-            ieq is_online, yes
-                set yes, 150
-            eblock
-            send rcv.sender
+ACTION send_color, send_msg, broadcast, Inform
+DECL red_len, 0
+DECL blue_len, 0
+DECL green_len, 0
+LEN red_len, redList
+LEN green_len, greenList
+LEN blue_len, blueList
+DECL flag, 0
 
-            adde fakenews_msgs, rcv
-            reme fakenews_msgs, rcv
-
-            set send, fakenews_msgs
-
-            send rcv.sender
-
-            decl res, 0
-            len res, fakenews_msgs
-            nin fakenews_msgs, rcv
-            eblock
-
-            remen fakenews_msgs, res
-
-            rand res, int, exp, 0
-        eaction
-    ebehav
-
-    behav spread_fakenews, cyclic, 10
-        action spread, send_msg, fakenews, query
-            set send.num_photos, 30
-            send friends
-        eaction
-    ebehav
-eagent
+IEQ myColor, 1
+IEQ red_len, 0
+SET flag, 1
+EBLOCK
+EBLOCK
+IEQ myColor, 2
+IEQ green_len, 0
+SET flag, 1
+EBLOCK
+EBLOCK
+IEQ myColor, 3
+IEQ blue_len, 0
+SET flag, 1
+EBLOCK
+EBLOCK
+IEQ flag,0
+SET SEND.colorFrom, prevColor
+SET SEND.colorTo, myColor
+SEND connections
+EBLOCK
+EACTION
+EBEHAV
+EAGENT
