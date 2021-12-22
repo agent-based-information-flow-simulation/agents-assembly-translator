@@ -4,7 +4,11 @@ from typing import List
 
 
 def is_float(value: str) -> bool:
-    return value.replace('.', '', 1).isdigit()
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False
 
 
 def is_valid_enum_list(enums: list[str]):
@@ -21,7 +25,7 @@ def is_valid_enum_list(enums: list[str]):
 
 
 def is_valid_name(name: str) -> bool:
-    return len(name) and not name[0].isdigit() and (name.isalnum() or "_" in name) and name not in get_invalid_names()
+    return len(name) and not name[0].isdigit() and (name.isalnum() or "_" in name) and name.lower() not in get_invalid_names()
 
 
 def get_invalid_names() -> List[str]:
