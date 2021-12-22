@@ -132,7 +132,7 @@ class Argument:
     def check_received_message_params(self, state: State) -> None:
         if isinstance(state.last_behaviour, MessageReceivedBehaviour):
             if self.expr.lower().startswith('rcv.'):
-                prop = self.expr.split('rcv.')[1]
+                prop = self.expr.split('.')[1]
                 
                 if prop in state.last_behaviour.received_message.RESERVED_CONNECTION_PARAMS:
                     self.types.append(self.compose(Connection, ReceivedMessageParam, Immutable))
@@ -149,7 +149,7 @@ class Argument:
     def check_send_message_params(self, state: State) -> None:
         if isinstance(state.last_action, SendMessageAction):
             if self.expr.lower().startswith('send.'):
-                prop = self.expr.split('send.')[1]
+                prop = self.expr.split('.')[1]
                     
                 if prop in state.last_action.send_message.RESERVED_TYPE_PARAMS:
                     self.types.append(self.compose(MessageType, SendMessageParam, Immutable))
@@ -226,7 +226,7 @@ class Argument:
     def list_modification_context(self, rhs: Argument) -> bool:
         if self.has_type(ConnectionList, Mutable) and rhs.has_type(Connection):
             self.set_op_type(ConnectionList, Mutable)
-            self.set_op_type(Connection)
+            rhs.set_op_type(Connection)
             
         elif self.has_type(MessageList, Mutable) and rhs.has_type(Message):
             self.set_op_type(MessageList, Mutable)
