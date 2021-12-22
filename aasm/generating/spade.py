@@ -136,7 +136,7 @@ class SpadeCode:
         self.add_line('self.location = location')
         self.add_line('self.connections = connections')
         self.add_line('self.msgRCount = 0')
-        self.add_line('self.mSCount = 0')
+        self.add_line('self.msgSCount = 0')
         for init_float_param in agent.init_floats.values():
             self.add_line(f'self.{init_float_param.name} = {init_float_param.value}')
         for dist_normal_float_param in agent.dist_normal_floats.values():
