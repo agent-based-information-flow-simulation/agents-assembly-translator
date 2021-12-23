@@ -33,7 +33,7 @@ def get_invalid_names() -> List[str]:
                       'list', 'filter', 'self', 
                       'get_json_from_spade_message', 
                       'get_spade_message', 'datetime', 
-                      'random', 'numpy', 'orjson', 
+                      'random', 'numpy', 'json', 
                       'spade', 'copy' ]
     invalid_names.extend(keyword.kwlist)
     return invalid_names
