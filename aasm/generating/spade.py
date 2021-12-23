@@ -69,9 +69,9 @@ class SpadeCode:
     def add_required_imports(self) -> List[str]:
         self.add_line('import copy')
         self.add_line('import datetime')
+        self.add_line('import json')
         self.add_line('import random')
         self.add_line('import numpy')
-        self.add_line('import orjson')
         self.add_line('import spade')
         
     def indent_left(self) -> None:
@@ -94,16 +94,16 @@ class SpadeCode:
     def add_message_utils(self) -> None:
         self.add_line('def get_json_from_spade_message(msg):')
         self.indent_right()
-        self.add_line('return orjson.loads(msg.body)')
+        self.add_line('return json.loads(msg.body)')
         self.indent_left()
         self.add_newlines(2)
-        self.add_line('def get_spade_message(sender_jid, receiver_jid, json):')
+        self.add_line('def get_spade_message(sender_jid, receiver_jid, body):')
         self.indent_right()
         self.add_line('msg = spade.message.Message(to=receiver_jid)')
-        self.add_line('json[\"sender\"] = sender_jid')
-        self.add_line('msg.metadata[\"type\"] = json[\"type\"]')
-        self.add_line('msg.metadata[\"performative\"] = json[\"performative\"]')
-        self.add_line('msg.body = orjson.dumps(json)')
+        self.add_line('body[\"sender\"] = str(sender_jid)')
+        self.add_line('msg.metadata[\"type\"] = body[\"type\"]')
+        self.add_line('msg.metadata[\"performative\"] = body[\"performative\"]')
+        self.add_line('msg.body = json.dumps(body)')
         self.add_line('return msg')
         self.indent_left()
     
@@ -136,7 +136,7 @@ class SpadeCode:
         self.add_line('self.location = location')
         self.add_line('self.connections = connections')
         self.add_line('self.msgRCount = 0')
-        self.add_line('self.mSCount = 0')
+        self.add_line('self.msgSCount = 0')
         for init_float_param in agent.init_floats.values():
             self.add_line(f'self.{init_float_param.name} = {init_float_param.value}')
         for dist_normal_float_param in agent.dist_normal_floats.values():
