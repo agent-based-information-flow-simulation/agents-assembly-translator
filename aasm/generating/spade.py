@@ -9,6 +9,10 @@ from aasm.intermediate.argument import (AgentParam, Connection, ConnectionList,
 from aasm.intermediate.behaviour import MessageReceivedBehaviour
 from aasm.intermediate.block import Block
 from aasm.intermediate.declaration import Declaration
+from aasm.intermediate.graph import (AgentConstantAmount, AgentPercentAmount,
+                                     ConnectionConstantAmount,
+                                     ConnectionDistNormalAmount,
+                                     StatisticalGraph)
 from aasm.intermediate.instruction import (Add, AddElement, Clear, Divide,
                                            ExpDist, IfEqual, IfGreaterThan,
                                            IfGreaterThanOrEqual, IfInList,
@@ -27,6 +31,7 @@ if TYPE_CHECKING:
     from aasm.intermediate.agent import Agent
     from aasm.intermediate.argument import Argument
     from aasm.intermediate.behaviour import Behaviour
+    from aasm.intermediate.graph import Graph
     from aasm.intermediate.message import Message as IntermediateMessage
     from aasm.parsing.state import ParsedData
 
@@ -64,6 +69,8 @@ class SpadeCode:
         for agent in parsed_data.agents:
             self.add_newlines(2)
             self.generate_agent(agent)
+        if parsed_data.graph:
+            self.generate_graph(parsed_data.graph)
     
     ### COMMON ###
     def add_required_imports(self) -> List[str]:
@@ -71,6 +78,7 @@ class SpadeCode:
         self.add_line('import datetime')
         self.add_line('import json')
         self.add_line('import random')
+        self.add_line('import uuid')
         self.add_line('import numpy')
         self.add_line('import spade')
         
@@ -130,10 +138,9 @@ class SpadeCode:
         self.indent_left()
         
     def add_agent_constructor(self, agent: Agent) -> None:
-        self.add_line('def __init__(self, jid, password, location, connections):')
+        self.add_line('def __init__(self, jid, password, connections):')
         self.indent_right()
         self.add_line('super().__init__(jid, password, verify_security=False)')
-        self.add_line('self.location = location')
         self.add_line('self.connections = connections')
         self.add_line('self.msgRCount = 0')
         self.add_line('self.msgSCount = 0')
@@ -425,3 +432,52 @@ class SpadeCode:
                             self.add_line(f'{arg1} = []')
                             self.indent_left()
                             self.indent_left()
+
+    ### GRAPH ###
+    def generate_graph(self, graph: Graph) -> None:
+        if isinstance(graph, StatisticalGraph):
+            self.add_statistical_graph(graph)
+
+    def add_statistical_graph(self, graph: StatisticalGraph) -> None:
+        self.add_line('def generate_graph_structure(domain):')
+        self.indent_right()
+
+        if not graph.agents:
+            self.add_line('return json.dumps([])')
+            self.indent_left()
+            return
+        
+        num_agents = []
+        for agent in graph.agents.values():
+            if isinstance(agent.amount, AgentConstantAmount):
+                self.add_line(f'_num_{agent.name} = {agent.amount.value}')
+            elif isinstance(agent.amount, AgentPercentAmount):
+                self.add_line(f'_num_{agent.name} = round({agent.amount.value} / 100 * {graph.size})')
+            num_agents.append(f'_num_{agent.name}')
+        self.add_line(f'num_agents = {" + ".join(num_agents)}')
+
+        self.add_line('random_id = uuid.uuid4().hex')
+        self.add_line('jids = [f"{i}_{random_id}@{domain}" for i in range(num_agents)]')
+
+        self.add_line('agents = []')
+        self.add_line('next_agent_idx = 0')
+        for agent in graph.agents.values():
+            self.add_line(f'for _ in range(_num_{agent.name}):')
+            self.indent_right()
+            if isinstance(agent.connections, ConnectionDistNormalAmount):
+                self.add_line(f'num_connections = int(numpy.random.normal({agent.connections.mean}, {agent.connections.std_dev}))')
+            elif isinstance(agent.connections, ConnectionConstantAmount):
+                self.add_line(f'num_connections = {agent.connections.value}')
+            self.add_line('num_connections = max(min(num_connections, len(jids)), 0)')
+            self.add_line('agents.append({')
+            self.indent_right()
+            self.add_line('"jid": jids[next_agent_idx],')
+            self.add_line(f'"type": "{agent.name}",')
+            self.add_line('"connections": random.sample(jids, num_connections),')
+            self.indent_left()
+            self.add_line('})')
+            self.add_line('next_agent_idx += 1')
+            self.indent_left()
+        
+        self.add_line('return json.dumps(agents)')
+        self.indent_left()
