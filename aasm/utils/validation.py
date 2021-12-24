@@ -11,6 +11,10 @@ def is_float(value: str) -> bool:
         return False
 
 
+def is_int(value: str) -> bool:
+    return value.isdigit() or (value[0] == '-' and value[1:].isdigit())
+
+
 def is_valid_enum_list(enums: list[str]):
     if not len(enums) or len(enums) % 2:
         return False
@@ -34,7 +38,7 @@ def get_invalid_names() -> List[str]:
                       'get_json_from_spade_message', 
                       'get_spade_message', 'datetime', 
                       'random', 'numpy', 'json', 
-                      'spade', 'copy' ]
+                      'spade', 'copy', 'uuid' ]
     invalid_names.extend(keyword.kwlist)
     return invalid_names
 

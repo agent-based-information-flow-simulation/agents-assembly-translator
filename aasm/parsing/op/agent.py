@@ -16,6 +16,7 @@ def op_AGENT(state: State, name: str) -> None:
         'Cannot define agents inside messages.', 
         'First end current message using EMESSAGE.'
     )
+    state.require(not state.in_graph, 'Cannot define agents inside graphs.', 'First end current graph using EGRAPH.')
     state.require(not state.agent_exists(name), f'Agent {name} already exists in the current environment.')
     state.require(
         is_valid_name(name), 

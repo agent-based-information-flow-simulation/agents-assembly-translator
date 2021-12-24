@@ -43,6 +43,7 @@ python -m aasm.translate --help
     * `behaviour.py`
     * `block.py` - block of code representation
     * `declaration.py` - declarations used in actions
+    * `graph.py`
     * `instruction.py` - instructions used in actions
     * `message.py`
 * `parsing`
@@ -76,3 +77,5 @@ python -m aasm.translate --help
                     * `Argument`
                         * `Types`
                 * `Block`
+* `Graph`
+    * `Parameter`

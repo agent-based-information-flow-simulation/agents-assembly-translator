@@ -10,7 +10,9 @@ from aasm.parsing.op.conditional import (
     handle_ordered_conditional_statement,
     handle_unordered_conditional_statement)
 from aasm.parsing.op.decl import op_DECL
+from aasm.parsing.op.defg import op_DEFG
 from aasm.parsing.op.eblock import op_EBLOCK
+from aasm.parsing.op.graph import op_EGRAPH, op_GRAPH
 from aasm.parsing.op.len import op_LEN
 from aasm.parsing.op.list import (handle_list_inclusion,
                                   handle_list_modification)
@@ -22,6 +24,7 @@ from aasm.parsing.op.remen import op_REMEN
 from aasm.parsing.op.round import op_ROUND
 from aasm.parsing.op.send import op_SEND
 from aasm.parsing.op.set import op_SET
+from aasm.parsing.op.size import op_SIZE
 from aasm.parsing.op.subs import op_SUBS
 from aasm.parsing.state import State
 
@@ -110,6 +113,18 @@ def parse_lines(lines: List[str], debug: bool) -> ParsedData:
                 
             case [ 'SET', arg1, arg2 ]:
                 op_SET(state, arg1, arg2)
+
+            case [ 'GRAPH', category ]:
+                op_GRAPH(state, category)
+
+            case [ 'EGRAPH' ]:
+                op_EGRAPH(state)
+
+            case [ 'SIZE', size ]:
+                op_SIZE(state, size)
+
+            case [ 'DEFG',  agent_name, amount, *args ]:
+                op_DEFG(state, agent_name, amount, args)
                 
             case _:
                 state.panic(f'Unknown tokens: {tokens}')

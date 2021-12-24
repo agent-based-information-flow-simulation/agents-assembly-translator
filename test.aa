@@ -1,82 +1,20 @@
-MESSAGE broadcast, Inform
-PRM colorFrom, float
-PRM colorTo, float
-EMESSAGE
+message facebook_post, query
+	prm photos, float
+emessage
 
-AGENT colorChecker
-PRM, redList, list, conn
-PRM, greenList, list, conn
-PRM, blueList, list, conn
+agent average_user
+	prm friends, list, conn
+	behav facebook_activity, cyclic, 30
+		action post_photos, send_msg, facebook_post, query
+			decl num_photos, 0
+			rand num_photos, int, normal, 21, 37
+			set send.photos, num_photos
+			send friends
+		eaction
+	ebehav
+eagent
 
-PRM prevColor, float, init, -1
-PRM myColor, float, dist, normal, 1, 3
-
-BEHAV hello, setup
-ACTION send_color, send_msg, broadcast, Inform
-SET SEND.colorTo, myColor
-SET SEND.colorFrom, prevColor
-SEND connections
-EACTION
-EBEHAV
-
-BEHAV changeColor, msg_rcv, broadcast, Inform
-ACTION change_color, modify_self
-IEQ RCV.colorTo,myColor
-SET prevColor,myColor
-ADD myColor,1
-IGT myColor,3
-SET myColor,1
-EBLOCK
-EBLOCK
-IEQ RCV.colorFrom, 1
-REME redList, RCV.sender
-EBLOCK
-IEQ RCV.colorFrom, 2
-REME greenList, RCV.sender
-EBLOCK
-IEQ RCV.colorFrom, 3
-REME blueList, RCV.sender
-EBLOCK
-IEQ RCV.colorTo, 1
-ADDE redList, RCV.sender
-EBLOCK
-IEQ RCV.colorTo, 2
-ADDE greenList, RCV.sender
-EBLOCK
-IEQ RCV.colorTo, 3
-ADDE blueList, RCV.sender
-EBLOCK
-EACTION
-
-ACTION send_color, send_msg, broadcast, Inform
-DECL red_len, 0
-DECL blue_len, 0
-DECL green_len, 0
-LEN red_len, redList
-LEN green_len, greenList
-LEN blue_len, blueList
-DECL flag, 0
-
-IEQ myColor, 1
-IEQ red_len, 0
-SET flag, 1
-EBLOCK
-EBLOCK
-IEQ myColor, 2
-IEQ green_len, 0
-SET flag, 1
-EBLOCK
-EBLOCK
-IEQ myColor, 3
-IEQ blue_len, 0
-SET flag, 1
-EBLOCK
-EBLOCK
-IEQ flag,0
-SET SEND.colorFrom, prevColor
-SET SEND.colorTo, myColor
-SEND connections
-EBLOCK
-EACTION
-EBEHAV
-EAGENT
+graph statistical
+    size 150
+    defg average_user, 100%, dist_normal, 0, 15
+egraph
