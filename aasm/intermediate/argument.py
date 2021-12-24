@@ -5,7 +5,7 @@ from typing import List as typingList
 
 from aasm.intermediate.action import SendMessageAction
 from aasm.intermediate.behaviour import MessageReceivedBehaviour
-from aasm.utils.validation import is_float
+from aasm.utils.validation import is_float, is_int
 
 if TYPE_CHECKING:
     from parsing.state import State
@@ -29,11 +29,15 @@ class Declared(ArgumentType):
 
 class Float(ArgumentType):
     ...
-    
-    
+
+
+class Integer(ArgumentType):
+    ...
+
+
 class Enum(ArgumentType):
     ...
-    
+
 
 class EnumValue(ArgumentType):
     ...
@@ -45,8 +49,8 @@ class List(ArgumentType):
 
 class ConnectionList(ArgumentType):
     ...
-    
-    
+
+
 class MessageList(ArgumentType):
     ...
 
@@ -57,24 +61,24 @@ class AgentParam(ArgumentType):
 
 class Message(ArgumentType):
     ...
-    
-    
+
+
 class MessageType(ArgumentType):
     ...
-    
+
 
 class ReceivedMessage(ArgumentType):
     ...
-    
-    
+
+
 class ReceivedMessageParam(ArgumentType):
     ...
-    
-    
+
+
 class SendMessage(ArgumentType):
     ...
-    
-    
+
+
 class SendMessageParam(ArgumentType):
     ...
     
@@ -97,6 +101,7 @@ class Argument:
         self.check_action_variables(state)
         self.check_received_message_params(state)
         self.check_send_message_params(state)
+        self.check_numerical_values()
     
     def check_agent_params(self, state: State) -> None:
         if self.expr in state.last_agent.RESERVED_FLOAT_PARAMS:
@@ -125,10 +130,14 @@ class Argument:
     def check_action_variables(self, state: State) -> None:
         if state.last_action.is_declaration_in_scope(self.expr):
             self.types.append(self.compose(Float, Declared, Mutable))
-            
-        elif is_float(self.expr):
-            self.types.append(self.compose(Float, Immutable))
     
+    def check_numerical_values(self) -> None:
+        if is_float(self.expr):
+            self.types.append(self.compose(Float, Immutable))
+
+        if is_int(self.expr):
+            self.types.append(self.compose(Integer, Immutable))
+        
     def check_received_message_params(self, state: State) -> None:
         if isinstance(state.last_behaviour, MessageReceivedBehaviour):
             if self.expr.lower().startswith('rcv.'):
