@@ -29,7 +29,7 @@ def op_agent_PRM(state: State, name: str, category: str, args: List[str]) -> Non
         'Cannot define agent parameters inside a behaviour.', 
         'Parameters must appear after AGENT.'
     )
-    state.require(not state.last_agent.param_exists(name), f'Parameter {name} already exists inside current agent.')
+    state.require(not state.last_agent.name_exists(name), f'{name} already exists inside current agent.')
     state.require(
         is_valid_name(name), 
         f'{name} is not a correct name.', 
