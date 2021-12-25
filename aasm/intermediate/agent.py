@@ -158,6 +158,9 @@ class Agent:
     
     def behaviour_exists(self, name: str) -> bool:
         return name in self.behaviour_names
+
+    def name_exists(self, name: str) -> bool:
+        return self.param_exists(name) or self.behaviour_exists(name)
         
     def behaviour_for_template_exists(self, msg_type: str, msg_performative: str):
         for msg_rcv_behav in self.message_received_behaviours.values():
