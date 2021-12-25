@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List
 
+from aasm.generating.code import Code
+from aasm.generating.python_code import PythonCode
+from aasm.generating.python_graph import PythonGraph
 from aasm.intermediate.action import SendMessageAction
 from aasm.intermediate.argument import (AgentParam, Connection, ConnectionList,
                                         EnumValue, MessageList,
@@ -9,10 +12,6 @@ from aasm.intermediate.argument import (AgentParam, Connection, ConnectionList,
 from aasm.intermediate.behaviour import MessageReceivedBehaviour
 from aasm.intermediate.block import Block
 from aasm.intermediate.declaration import Declaration
-from aasm.intermediate.graph import (AgentConstantAmount, AgentPercentAmount,
-                                     ConnectionConstantAmount,
-                                     ConnectionDistNormalAmount,
-                                     StatisticalGraph)
 from aasm.intermediate.instruction import (Add, AddElement, Clear, Divide,
                                            ExpDist, IfEqual, IfGreaterThan,
                                            IfGreaterThanOrEqual, IfInList,
@@ -31,95 +30,62 @@ if TYPE_CHECKING:
     from aasm.intermediate.agent import Agent
     from aasm.intermediate.argument import Argument
     from aasm.intermediate.behaviour import Behaviour
-    from aasm.intermediate.graph import Graph
     from aasm.intermediate.message import Message as IntermediateMessage
-    from aasm.parsing.state import ParsedData
 
 
-def get_spade_code(aasm_lines: List[str], debug: bool = False) -> List[str]:
+def get_spade_code(aasm_lines: List[str], indent_size: int = 4, debug: bool = False) -> Code:
     """Generates SPADE code in Python from `aasm_lines`.
 
         Parameters
         ----------
-        aasm_lines : List[str]
+        aasm_lines: List[str]
             Lines of code written in Agents Assembly
+
+        indent_size: int, optional
+            Python code indentation size
             
         debug: bool, optional
-            Print the translator debug information to the standard output (default is False)
+            Print the translator debug information to the standard output
+
+        Returns
+        -------
+        SPADE code along with the algorithm for the graph generation
 
         Raises
         ------
         PanicException
             If an error is detected while parsing the `aasm_lines`.
     """
-    return SpadeCode(aasm_lines, debug).code_lines
+    parsed = parse_lines(aasm_lines, debug)
+    return Code(
+        PythonSpadeCode(indent_size, parsed.agents).code_lines, 
+        PythonGraph(indent_size, parsed.graph).code_lines
+    )
 
 
-class SpadeCode:
-    INDENT_SIZE = 4
+class PythonSpadeCode(PythonCode):
+    def __init__(self, indent_size: int, agents: List[Agent]):
+        super().__init__(indent_size)
+        if agents:
+            self.add_required_imports()
+            for agent in agents:
+                self.add_newlines(2)
+                self.generate_agent(agent)
     
-    def __init__(self, lines: List[str], debug: bool):
-        parsed_data: ParsedData = parse_lines(lines, debug)
-        self.indent: int = 0
-        self.code_lines: List[str] = []
-        self.add_required_imports()
-        if parsed_data.messages:
-            self.add_newlines(2)
-            self.add_message_utils()
-        for agent in parsed_data.agents:
-            self.add_newlines(2)
-            self.generate_agent(agent)
-        if parsed_data.graph:
-            self.generate_graph(parsed_data.graph)
-    
-    ### COMMON ###
     def add_required_imports(self) -> List[str]:
         self.add_line('import copy')
         self.add_line('import datetime')
         self.add_line('import json')
         self.add_line('import random')
-        self.add_line('import uuid')
         self.add_line('import numpy')
         self.add_line('import spade')
-        
-    def indent_left(self) -> None:
-        self.indent -= SpadeCode.INDENT_SIZE 
-        
-    def indent_right(self) -> None:
-        self.indent += SpadeCode.INDENT_SIZE 
-        
-    def add_line(self, line: str) -> None:
-        self.code_lines.append(self.indent * ' ' + line + '\n')
-        
-    def add_newline(self) -> None:
-        self.add_line('')
-        
-    def add_newlines(self, count: int) -> None:
-        for _ in range(count):
-            self.add_newline()
-            
-    ### MESSAGE PARSING ###
-    def add_message_utils(self) -> None:
-        self.add_line('def get_json_from_spade_message(msg):')
-        self.indent_right()
-        self.add_line('return json.loads(msg.body)')
-        self.indent_left()
-        self.add_newlines(2)
-        self.add_line('def get_spade_message(sender_jid, receiver_jid, body):')
-        self.indent_right()
-        self.add_line('msg = spade.message.Message(to=receiver_jid)')
-        self.add_line('body[\"sender\"] = str(sender_jid)')
-        self.add_line('msg.metadata[\"type\"] = body[\"type\"]')
-        self.add_line('msg.metadata[\"performative\"] = body[\"performative\"]')
-        self.add_line('msg.body = json.dumps(body)')
-        self.add_line('return msg')
-        self.indent_left()
     
-    ### AGENT ###
     def generate_agent(self, agent: Agent) -> None:
         self.add_line(f'class {agent.name}(spade.agent.Agent):')
         self.indent_right()
         self.add_agent_constructor(agent)
+        self.add_newline()
+        self.add_message_utils()
         self.add_newline()
         self.add_agent_setup(agent)
         self.add_newline()
@@ -169,6 +135,22 @@ class SpadeCode:
         self.add_line('def connCount(self):')
         self.indent_right()
         self.add_line('return len(self.connections)')
+        self.indent_left()
+
+    def add_message_utils(self) -> None:
+        self.add_line('def get_json_from_spade_message(self, msg):')
+        self.indent_right()
+        self.add_line('return json.loads(msg.body)')
+        self.indent_left()
+        self.add_newline()
+        self.add_line('def get_spade_message(self, receiver_jid, body):')
+        self.indent_right()
+        self.add_line('msg = spade.message.Message(to=receiver_jid)')
+        self.add_line('body[\"sender\"] = str(self.jid)')
+        self.add_line('msg.metadata[\"type\"] = body[\"type\"]')
+        self.add_line('msg.metadata[\"performative\"] = body[\"performative\"]')
+        self.add_line('msg.body = json.dumps(body)')
+        self.add_line('return msg')
         self.indent_left()
         
     def add_agent_setup(self, agent: Agent) -> None:
@@ -228,7 +210,7 @@ class SpadeCode:
             self.add_line('rcv = await self.receive(timeout=10)')
             self.add_line('if rcv:')
             self.indent_right()
-            self.add_line('rcv = get_json_from_spade_message(rcv)')
+            self.add_line('rcv = self.agent.get_json_from_spade_message(rcv)')
             self.add_line('self.agent.msgRCount += 1')
         elif not behaviour.actions.values():
             self.add_line('...')
@@ -303,14 +285,14 @@ class SpadeCode:
                     
                 case Send() if isinstance(statement.arg1.type_in_op, Connection):
                     receiver = self.parse_arg(statement.arg1)
-                    self.add_line(f'await self.send(send.get_spade_message({receiver}))')
+                    self.add_line(f'await self.send(self.agent.get_spade_message({receiver}, send))')
                     self.add_line('self.agent.msgSCount += 1')
                     
                 case Send() if isinstance(statement.arg1.type_in_op, ConnectionList):
                     receivers = self.parse_arg(statement.arg1)
                     self.add_line(f'for receiver in {receivers}:')
                     self.indent_right()
-                    self.add_line('await self.send(get_spade_message(self.agent.jid, receiver, send))')
+                    self.add_line('await self.send(self.agent.get_spade_message(receiver, send))')
                     self.add_line('self.agent.msgSCount += 1')
                     self.indent_left()
                     
@@ -432,52 +414,3 @@ class SpadeCode:
                             self.add_line(f'{arg1} = []')
                             self.indent_left()
                             self.indent_left()
-
-    ### GRAPH ###
-    def generate_graph(self, graph: Graph) -> None:
-        if isinstance(graph, StatisticalGraph):
-            self.add_statistical_graph(graph)
-
-    def add_statistical_graph(self, graph: StatisticalGraph) -> None:
-        self.add_line('def generate_graph_structure(domain):')
-        self.indent_right()
-
-        if not graph.agents:
-            self.add_line('return json.dumps([])')
-            self.indent_left()
-            return
-        
-        num_agents = []
-        for agent in graph.agents.values():
-            if isinstance(agent.amount, AgentConstantAmount):
-                self.add_line(f'_num_{agent.name} = {agent.amount.value}')
-            elif isinstance(agent.amount, AgentPercentAmount):
-                self.add_line(f'_num_{agent.name} = round({agent.amount.value} / 100 * {graph.size})')
-            num_agents.append(f'_num_{agent.name}')
-        self.add_line(f'num_agents = {" + ".join(num_agents)}')
-
-        self.add_line('random_id = uuid.uuid4().hex')
-        self.add_line('jids = [f"{i}_{random_id}@{domain}" for i in range(num_agents)]')
-
-        self.add_line('agents = []')
-        self.add_line('next_agent_idx = 0')
-        for agent in graph.agents.values():
-            self.add_line(f'for _ in range(_num_{agent.name}):')
-            self.indent_right()
-            if isinstance(agent.connections, ConnectionDistNormalAmount):
-                self.add_line(f'num_connections = int(numpy.random.normal({agent.connections.mean}, {agent.connections.std_dev}))')
-            elif isinstance(agent.connections, ConnectionConstantAmount):
-                self.add_line(f'num_connections = {agent.connections.value}')
-            self.add_line('num_connections = max(min(num_connections, len(jids)), 0)')
-            self.add_line('agents.append({')
-            self.indent_right()
-            self.add_line('"jid": jids[next_agent_idx],')
-            self.add_line(f'"type": "{agent.name}",')
-            self.add_line('"connections": random.sample(jids, num_connections),')
-            self.indent_left()
-            self.add_line('})')
-            self.add_line('next_agent_idx += 1')
-            self.indent_left()
-        
-        self.add_line('return json.dumps(agents)')
-        self.indent_left()
