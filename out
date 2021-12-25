@@ -2,22 +2,8 @@ import copy
 import datetime
 import json
 import random
-import uuid
 import numpy
 import spade
-
-
-def get_json_from_spade_message(msg):
-    return json.loads(msg.body)
-
-
-def get_spade_message(sender_jid, receiver_jid, body):
-    msg = spade.message.Message(to=receiver_jid)
-    body["sender"] = str(sender_jid)
-    msg.metadata["type"] = body["type"]
-    msg.metadata["performative"] = body["performative"]
-    msg.body = json.dumps(body)
-    return msg
 
 
 class average_user(spade.agent.Agent):
@@ -32,6 +18,17 @@ class average_user(spade.agent.Agent):
     def connCount(self):
         return len(self.connections)
     
+    def get_json_from_spade_message(self, msg):
+        return json.loads(msg.body)
+    
+    def get_spade_message(self, receiver_jid, body):
+        msg = spade.message.Message(to=receiver_jid)
+        body["sender"] = str(self.jid)
+        msg.metadata["type"] = body["type"]
+        msg.metadata["performative"] = body["performative"]
+        msg.body = json.dumps(body)
+        return msg
+    
     def setup(self):
         self.add_behaviour(self.facebook_activity(period=30))
     
@@ -43,12 +40,18 @@ class average_user(spade.agent.Agent):
             num_photos = round(num_photos)
             send["photos"] = num_photos
             for receiver in self.agent.friends:
-                await self.send(get_spade_message(self.agent.jid, receiver, send))
+                await self.send(self.agent.get_spade_message(receiver, send))
                 self.agent.msgSCount += 1
         
         async def run(self):
             await self.post_photos()
     
+import json
+import random
+import uuid
+import numpy
+
+
 def generate_graph_structure(domain):
     _num_average_user = round(100 / 100 * 150)
     num_agents = _num_average_user
