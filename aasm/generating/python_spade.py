@@ -27,6 +27,7 @@ from aasm.intermediate.instruction import (Add, AddElement, Clear, Divide,
 from aasm.parsing.parse import parse_lines
 
 if TYPE_CHECKING:
+    from aasm.intermediate.action import Action
     from aasm.intermediate.agent import Agent
     from aasm.intermediate.argument import Argument
     from aasm.intermediate.behaviour import Behaviour
@@ -83,39 +84,52 @@ class PythonSpadeCode(PythonCode):
     def generate_agent(self, agent: Agent) -> None:
         self.add_line(f'class {agent.name}(spade.agent.Agent):')
         self.indent_right()
+
         self.add_agent_constructor(agent)
         self.add_newline()
+
         self.add_message_utils()
         self.add_newline()
+
         self.add_agent_setup(agent)
         self.add_newline()
+
         for setup_behaviour in agent.setup_behaviours.values():
             self.add_agent_behaviour(setup_behaviour, 'spade.behaviour.OneShotBehaviour')
             self.add_newline()
+        
         for one_time_behaviour in agent.one_time_behaviours.values():
             self.add_agent_behaviour(one_time_behaviour, 'spade.behaviour.TimeoutBehaviour')
             self.add_newline()
+        
         for cyclic_behaviour in agent.cyclic_behaviours.values():
             self.add_agent_behaviour(cyclic_behaviour, 'spade.behaviour.PeriodicBehaviour')
             self.add_newline()
+        
         for message_received_behaviour in agent.message_received_behaviours.values():
             self.add_agent_behaviour(message_received_behaviour, 'spade.behaviour.CyclicBehaviour')
             self.add_newline()
+        
         self.indent_left()
         
     def add_agent_constructor(self, agent: Agent) -> None:
         self.add_line('def __init__(self, jid, password, connections):')
         self.indent_right()
+
         self.add_line('super().__init__(jid, password, verify_security=False)')
         self.add_line('self.connections = connections')
         self.add_line('self.msgRCount = 0')
         self.add_line('self.msgSCount = 0')
+
         for init_float_param in agent.init_floats.values():
             self.add_line(f'self.{init_float_param.name} = {init_float_param.value}')
+        
         for dist_normal_float_param in agent.dist_normal_floats.values():
             self.add_line(f'self.{dist_normal_float_param.name} = numpy.random.normal({dist_normal_float_param.mean}, {dist_normal_float_param.std_dev})')
+        
         for dist_exp_float_param in agent.dist_exp_floats.values():
             self.add_line(f'self.{dist_exp_float_param.name} = numpy.random.exponential(1/{dist_exp_float_param.lambda_})')
+        
         for enum_param in agent.enums.values():            
             values = []
             percentages = []
@@ -125,16 +139,21 @@ class PythonSpadeCode(PythonCode):
             values = f'[{", ".join(values)}]'
             percentages = f'[{", ".join(percentages)}]'
             self.add_line(f'self.{enum_param.name} = random.choices({values}, {percentages})[0]')
+        
         for connection_list_param in agent.connection_lists.values():
             self.add_line(f'self.{connection_list_param.name} = []')
+        
         for message_list_param in agent.message_lists.values():
             self.add_line(f'self.{message_list_param.name} = []')
+        
         self.indent_left()
         self.add_newline()
+
         self.add_line('@property')
         self.add_line('def connCount(self):')
         self.indent_right()
         self.add_line('return len(self.connections)')
+
         self.indent_left()
 
     def add_message_utils(self) -> None:
@@ -143,6 +162,7 @@ class PythonSpadeCode(PythonCode):
         self.add_line('return json.loads(msg.body)')
         self.indent_left()
         self.add_newline()
+
         self.add_line('def get_spade_message(self, receiver_jid, body):')
         self.indent_right()
         self.add_line('msg = spade.message.Message(to=receiver_jid)')
@@ -151,25 +171,107 @@ class PythonSpadeCode(PythonCode):
         self.add_line('msg.metadata[\"performative\"] = body[\"performative\"]')
         self.add_line('msg.body = json.dumps(body)')
         self.add_line('return msg')
+
         self.indent_left()
         
     def add_agent_setup(self, agent: Agent) -> None:
         self.add_line('def setup(self):')
         self.indent_right()
+
         if not agent.behaviour_names:
             self.add_line('...')
+            self.indent_left()
+            return
+        
         for setup_behaviour in agent.setup_behaviours.values():
             self.add_line(f'self.add_behaviour(self.{setup_behaviour.name}())')
+        
         for one_time_behaviour in agent.one_time_behaviours.values():
             self.add_line(f'self.add_behaviour(self.{one_time_behaviour.name}(start_at=datetime.datetime.now() + datetime.timedelta(seconds={one_time_behaviour.delay})))')
+        
         for cyclic_behaviour in agent.cyclic_behaviours.values():
             self.add_line(f'self.add_behaviour(self.{cyclic_behaviour.name}(period={cyclic_behaviour.period}))')
+        
         for message_received_behaviour in agent.message_received_behaviours.values():
             self.add_line(f'{message_received_behaviour.name}_template = spade.template.Template()')
             self.add_line(f'{message_received_behaviour.name}_template.set_metadata(\"type\", \"{message_received_behaviour.received_message.type}\")')
             self.add_line(f'{message_received_behaviour.name}_template.set_metadata(\"performative\", \"{message_received_behaviour.received_message.performative}\")')
             self.add_line(f'self.add_behaviour(self.{message_received_behaviour.name}(), {message_received_behaviour.name}_template)')
+        
         self.indent_left()
+        
+    def add_agent_behaviour(self, behaviour: Behaviour, behaviour_type: str) -> None:
+        self.add_line(f'class {behaviour.name}({behaviour_type}):')
+        self.indent_right()
+
+        for action in behaviour.actions.values():                
+            self.add_action(behaviour, action)
+        
+        self.add_line('async def run(self):')
+        self.indent_right()
+        if isinstance(behaviour, MessageReceivedBehaviour):
+            self.add_rcv_message()
+        elif not behaviour.actions.values():
+            self.add_line('...')
+            self.indent_left()
+            self.indent_left()
+            return
+
+        if isinstance(behaviour, MessageReceivedBehaviour):
+            self.indent_right()
+
+        for action in behaviour.actions.values():
+            self.add_action_call(behaviour, action)
+              
+        if isinstance(behaviour, MessageReceivedBehaviour):
+            self.indent_left()
+                    
+        self.indent_left()
+        self.indent_left()
+
+    def add_rcv_message(self) -> None:
+        self.add_line('rcv = await self.receive(timeout=10)')
+        self.add_line('if rcv:')
+        self.indent_right()
+        self.add_line('rcv = self.agent.get_json_from_spade_message(rcv)')
+        self.add_line('self.agent.msgRCount += 1')
+        self.indent_left()
+
+    def add_action_call(self, behaviour: Behaviour, action: Action) -> None:
+        action_call = ''
+        if isinstance(action, SendMessageAction):
+            action_call += 'await '
+        action_call += f'self.{action.name}'
+        if isinstance(behaviour, MessageReceivedBehaviour):
+            action_call += '(rcv)'
+        else:
+            action_call += '()'
+        self.add_line(action_call)
+
+    def add_action(self, behaviour: Behaviour, action: Action) -> None:
+        self.add_action_def(behaviour, action)
+
+        if isinstance(action, SendMessageAction):
+            self.indent_right()
+            self.add_send_message(action.send_message)
+            self.indent_left()
+        
+        self.indent_right()
+        self.add_block(action.main_block)
+        self.indent_left()
+
+        self.add_newline()
+
+    def add_action_def(self, behaviour: Behaviour, action: Action) -> None:
+        action_def = ''
+        if isinstance(action, SendMessageAction):
+            action_def += 'async '
+        action_def += f'def {action.name}'
+        if isinstance(behaviour, MessageReceivedBehaviour):
+            action_def += '(self, rcv):'
+        else:
+            action_def += '(self):'
+        self.add_line(action_def)
 
     def add_send_message(self, message: IntermediateMessage) -> None:            
         send_msg = f'send = {{ \"type\": \"{message.type}\", \"performative\": \"{message.performative}\", '
@@ -177,60 +279,6 @@ class PythonSpadeCode(PythonCode):
             send_msg += f'\"{float_param_name}\": 0.0, '
         send_msg += '}'
         self.add_line(send_msg)
-        
-    def add_agent_behaviour(self, behaviour: Behaviour, behaviour_type: str) -> None:
-        self.add_line(f'class {behaviour.name}({behaviour_type}):')
-        self.indent_right()
-        if not behaviour.actions.values():
-            self.add_line('...')
-        for action in behaviour.actions.values():                
-            match behaviour, action:
-                case MessageReceivedBehaviour(), SendMessageAction():
-                    self.add_line(f'async def {action.name}(self, rcv):')
-                    self.indent_right()
-                    self.add_send_message(action.send_message)
-                    self.indent_left()
-                case MessageReceivedBehaviour(), _:
-                    self.add_line(f'def {action.name}(self, rcv):')
-                case _, SendMessageAction():
-                    self.add_line(f'async def {action.name}(self):')
-                    self.indent_right()
-                    self.add_send_message(action.send_message)
-                    self.indent_left()
-                case _:
-                    self.add_line(f'def {action.name}(self):')
-            self.indent_right()
-            self.add_block(action.main_block)
-            self.indent_left()
-            self.add_newline()
-            
-        self.add_line('async def run(self):')
-        self.indent_right()
-        if isinstance(behaviour, MessageReceivedBehaviour):
-            self.add_line('rcv = await self.receive(timeout=10)')
-            self.add_line('if rcv:')
-            self.indent_right()
-            self.add_line('rcv = self.agent.get_json_from_spade_message(rcv)')
-            self.add_line('self.agent.msgRCount += 1')
-        elif not behaviour.actions.values():
-            self.add_line('...')
-            
-        for action in behaviour.actions.values():                
-            match behaviour, action:
-                case MessageReceivedBehaviour(), SendMessageAction():
-                    self.add_line(f'await self.{action.name}(rcv)')
-                case MessageReceivedBehaviour(), _:
-                    self.add_line(f'self.{action.name}(rcv)')
-                case _, SendMessageAction():
-                    self.add_line(f'await self.{action.name}()')
-                case _:
-                    self.add_line(f'self.{action.name}()')
-                    
-        if isinstance(behaviour, MessageReceivedBehaviour):
-            self.indent_left()
-                    
-        self.indent_left()
-        self.indent_left()
     
     def parse_arg(self, arg: Argument) -> str:
         match arg.type_in_op:
@@ -254,7 +302,8 @@ class PythonSpadeCode(PythonCode):
     def add_block(self, block: Block) -> None:
         if not block.statements:
             self.add_line('...')
-            
+            return
+        
         for statement in block.statements:
             match statement:
                 case Block():
