@@ -1,9 +1,14 @@
+from __future__ import annotations
+
 from argparse import ArgumentParser
 from datetime import datetime
-from typing import List, Tuple
+from typing import TYPE_CHECKING, List, Tuple
 
-from aasm.generating.spade import get_spade_code
+from aasm.generating.python_spade import get_spade_code
 from aasm.utils.exception import PanicException
+
+if TYPE_CHECKING:
+    from aasm.generating.code import Code
 
 
 def get_args() -> Tuple[str, str, bool]:
@@ -21,7 +26,7 @@ def get_input(input_path: str) -> List[str]:
     return lines
 
 
-def save_output(output_path: str, code: List[str]) -> None:
+def save_output(output_path: str, code: Code) -> None:
     with open(output_path, 'w') as f:
         for code_line in code:
             f.write(code_line)
@@ -31,7 +36,7 @@ def main(input_path: str, output_path: str, debug: bool) -> None:
     lines = get_input(input_path)
     start_time = datetime.now()
     try:
-        spade_code = get_spade_code(lines, debug)
+        spade_code = get_spade_code(lines, indent_size=4, debug=debug)
     except PanicException as e:
         e.print()
         exit(1)
