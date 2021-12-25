@@ -18,7 +18,7 @@ def op_BEHAV(state: State, name: str, category: str, args: List[str]):
         'Cannot define behaviours inside other behaviours.',
         'First end current behaviour using EBEHAV.'
     )
-    state.require(not state.last_agent.behaviour_exists(name), f'Behaviour {name} already exists in current agent.')
+    state.require(not state.last_agent.name_exists(name), f'{name} already exists in current agent.')
     state.require(
         is_valid_name(name), 
         f'{name} is not a correct name.', 
