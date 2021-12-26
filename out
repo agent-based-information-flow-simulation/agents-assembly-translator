@@ -46,7 +46,6 @@ class average_user(spade.agent.Agent):
         async def run(self):
             await self.post_photos()
     
-import json
 import random
 import uuid
 import numpy
@@ -68,4 +67,4 @@ def generate_graph_structure(domain):
             "connections": random.sample(jids, num_connections),
         })
         next_agent_idx += 1
-    return json.dumps(agents)
+    return agents
