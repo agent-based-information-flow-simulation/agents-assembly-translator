@@ -20,12 +20,12 @@ def op_MESSAGE(state: State, msg_type: str, msg_performative) -> None:
     state.require(
         is_valid_name(msg_type), 
         f'{msg_type} is not a correct name.', 
-        f'Names can only contain alphanumeric signs, underscores and cannot be: {print_invalid_names()}.'
+        f'Names can only contain alphanumeric characters, underscores and cannot be: {print_invalid_names()}.'
     )
     state.require(
         is_valid_name(msg_performative), 
         f'{msg_performative} is not a correct name.', 
-        f'Names can only contain alphanumeric signs, underscores and cannot be: {print_invalid_names()}.'
+        f'Names can only contain alphanumeric characters, underscores and cannot be: {print_invalid_names()}.'
     )
     
     state.in_message = True
