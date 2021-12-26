@@ -22,7 +22,7 @@ def op_BEHAV(state: State, name: str, category: str, args: List[str]):
     state.require(
         is_valid_name(name), 
         f'{name} is not a correct name.', 
-        f'Names can only contain alphanumeric signs, underscores and cannot be: {print_invalid_names()}.'
+        f'Names can only contain alphanumeric characters, underscores and cannot be: {print_invalid_names()}.'
     )
     
     match category, args:
