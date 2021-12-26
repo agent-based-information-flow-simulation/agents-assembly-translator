@@ -21,7 +21,6 @@ class PythonGraph(PythonCode):
             self.generate_graph(graph)
 
     def add_required_imports(self) -> List[str]:
-        self.add_line('import json')
         self.add_line('import random')
         self.add_line('import uuid')
         self.add_line('import numpy')
@@ -35,7 +34,7 @@ class PythonGraph(PythonCode):
         self.indent_right()
 
         if not graph.agents:
-            self.add_line('return json.dumps([])')
+            self.add_line('return []')
             self.indent_left()
             return
         
@@ -71,5 +70,5 @@ class PythonGraph(PythonCode):
             self.add_line('next_agent_idx += 1')
             self.indent_left()
         
-        self.add_line('return json.dumps(agents)')
+        self.add_line('return agents')
         self.indent_left()

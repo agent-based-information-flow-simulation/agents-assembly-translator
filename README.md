@@ -35,7 +35,10 @@ python -m aasm.translate --help
 ## Structure <a name = "structure"></a>
 
 * `generating`
-    * `spade.py` - SPADE code generation from the intermediate representation
+    * `code.py` - generated code
+    * `python_code.py` - Python code base class
+    * `python_graph.py` - Python graph code generation from the intermediate representation
+    * `python_spade.py` - SPADE agent code generation from the intermediate representation
 * `intermediate`
     * `action.py`
     * `agent.py`
