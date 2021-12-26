@@ -24,7 +24,7 @@ Python 3.10
 
 Translate agent.aa to SPADE:
 ```
-python -m aasm.translate agent.aa
+python -m aasm.translate agent.aasm
 ```
 
 For more information about usage run:
