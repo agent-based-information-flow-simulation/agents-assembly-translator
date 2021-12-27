@@ -113,24 +113,24 @@ class PythonSpadeCode(PythonCode):
         self.indent_left()
         
     def add_agent_constructor(self, agent: Agent) -> None:
-        self.add_line('def __init__(self, jid, password, connections):')
+        self.add_line('def __init__(self, jid, password, connections, **kwargs):')
         self.indent_right()
 
         self.add_line('super().__init__(jid, password, verify_security=False)')
         self.add_line('self.connections = connections')
-        self.add_line('self.msgRCount = 0')
-        self.add_line('self.msgSCount = 0')
+        self.add_line('self.msgRCount = kwargs.get("msgRCount", 0)')
+        self.add_line('self.msgSCount = kwargs.get("msgSCount", 0)')
 
         for init_float_param in agent.init_floats.values():
-            self.add_line(f'self.{init_float_param.name} = {init_float_param.value}')
+            self.add_line(f'self.{init_float_param.name} = kwargs.get("{init_float_param.name}", {init_float_param.value})')
         
         for dist_normal_float_param in agent.dist_normal_floats.values():
-            self.add_line(f'self.{dist_normal_float_param.name} = numpy.random.normal({dist_normal_float_param.mean}, {dist_normal_float_param.std_dev})')
+            self.add_line(f'self.{dist_normal_float_param.name} = kwargs.get("{dist_normal_float_param.name}", numpy.random.normal({dist_normal_float_param.mean}, {dist_normal_float_param.std_dev}))')
         
         for dist_exp_float_param in agent.dist_exp_floats.values():
-            self.add_line(f'self.{dist_exp_float_param.name} = numpy.random.exponential(1/{dist_exp_float_param.lambda_})')
+            self.add_line(f'self.{dist_exp_float_param.name} = kwargs.get("{dist_exp_float_param.name}", numpy.random.exponential(1/{dist_exp_float_param.lambda_}))')
         
-        for enum_param in agent.enums.values():            
+        for enum_param in agent.enums.values():
             values = []
             percentages = []
             for enum_value in enum_param.enum_values:
@@ -138,13 +138,13 @@ class PythonSpadeCode(PythonCode):
                 percentages.append(enum_value.percentage)
             values = f'[{", ".join(values)}]'
             percentages = f'[{", ".join(percentages)}]'
-            self.add_line(f'self.{enum_param.name} = random.choices({values}, {percentages})[0]')
+            self.add_line(f'self.{enum_param.name} = kwargs.get("{enum_param.name}", random.choices({values}, {percentages})[0])')
         
         for connection_list_param in agent.connection_lists.values():
-            self.add_line(f'self.{connection_list_param.name} = []')
+            self.add_line(f'self.{connection_list_param.name} = kwargs.get("{connection_list_param.name}", [])')
         
         for message_list_param in agent.message_lists.values():
-            self.add_line(f'self.{message_list_param.name} = []')
+            self.add_line(f'self.{message_list_param.name} = kwargs.get("{message_list_param.name}", [])')
         
         self.indent_left()
         self.add_newline()
