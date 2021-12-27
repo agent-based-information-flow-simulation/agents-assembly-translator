@@ -2,17 +2,21 @@ import copy
 import datetime
 import json
 import random
+import httpx
 import numpy
 import spade
 
 
 class average_user(spade.agent.Agent):
-    def __init__(self, jid, password, connections):
+    def __init__(self, jid, password, connections, backup_url = None, backup_period = 60, backup_delay = 0, **kwargs):
         super().__init__(jid, password, verify_security=False)
         self.connections = connections
-        self.msgRCount = 0
-        self.msgSCount = 0
-        self.friends = []
+        self.backup_url = backup_url
+        self.backup_period = backup_period
+        self.backup_delay = backup_delay
+        self.msgRCount = kwargs.get("msgRCount", 0)
+        self.msgSCount = kwargs.get("msgSCount", 0)
+        self.friends = kwargs.get("friends", [])
     
     @property
     def connCount(self):
@@ -30,7 +34,21 @@ class average_user(spade.agent.Agent):
         return msg
     
     def setup(self):
+        if self.backup_url:
+            self.add_behaviour(self.BackupBehaviour(start_at=datetime.datetime.now() + datetime.timedelta(seconds=self.backup_delay), period=self.backup_period))
         self.add_behaviour(self.facebook_activity(period=30))
+    
+    class BackupBehaviour(spade.behaviour.PeriodicBehaviour):
+        async def run(self):
+            data = {
+                "connections": self.agent.connections,
+                "connCount": self.agent.connCount,
+                "msgRCount": self.agent.msgRCount,
+                "msgSCount": self.agent.msgSCount,
+                "friends": self.agent.friends,
+            }
+            async with httpx.AsyncClient() as client:
+                await client.post(self.agent.backup_url, json=data)
     
     class facebook_activity(spade.behaviour.PeriodicBehaviour):
         async def post_photos(self):
@@ -46,6 +64,7 @@ class average_user(spade.agent.Agent):
         async def run(self):
             await self.post_photos()
     
+
 import random
 import uuid
 import numpy

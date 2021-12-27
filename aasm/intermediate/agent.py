@@ -72,7 +72,6 @@ class ConnectionListParam:
 
 
 class Agent:
-    RESERVED_LOCATION_PARAMS = [ 'location' ]
     RESERVED_CONNECTION_LIST_PARAMS = [ 'connections' ]
     RESERVED_FLOAT_PARAMS = [ 'connCount', 'msgRCount', 'msgSCount' ]
     
@@ -96,8 +95,7 @@ class Agent:
     
     @property
     def param_names(self) -> List[str]:
-        return [ *Agent.RESERVED_LOCATION_PARAMS,
-                 *Agent.RESERVED_CONNECTION_LIST_PARAMS,
+        return [ *Agent.RESERVED_CONNECTION_LIST_PARAMS,
                  *Agent.RESERVED_FLOAT_PARAMS,
                  *list(self.init_floats), 
                  *list(self.dist_normal_floats),

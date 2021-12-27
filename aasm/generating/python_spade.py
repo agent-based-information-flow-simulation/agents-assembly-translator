@@ -78,6 +78,7 @@ class PythonSpadeCode(PythonCode):
         self.add_line('import datetime')
         self.add_line('import json')
         self.add_line('import random')
+        self.add_line('import httpx')
         self.add_line('import numpy')
         self.add_line('import spade')
     
@@ -92,6 +93,9 @@ class PythonSpadeCode(PythonCode):
         self.add_newline()
 
         self.add_agent_setup(agent)
+        self.add_newline()
+
+        self.add_backup_behaviour(agent)
         self.add_newline()
 
         for setup_behaviour in agent.setup_behaviours.values():
@@ -113,24 +117,27 @@ class PythonSpadeCode(PythonCode):
         self.indent_left()
         
     def add_agent_constructor(self, agent: Agent) -> None:
-        self.add_line('def __init__(self, jid, password, connections):')
+        self.add_line('def __init__(self, jid, password, connections, backup_url = None, backup_period = 60, backup_delay = 0, **kwargs):')
         self.indent_right()
 
         self.add_line('super().__init__(jid, password, verify_security=False)')
         self.add_line('self.connections = connections')
-        self.add_line('self.msgRCount = 0')
-        self.add_line('self.msgSCount = 0')
+        self.add_line('self.backup_url = backup_url')
+        self.add_line('self.backup_period = backup_period')
+        self.add_line('self.backup_delay = backup_delay')
+        self.add_line('self.msgRCount = kwargs.get("msgRCount", 0)')
+        self.add_line('self.msgSCount = kwargs.get("msgSCount", 0)')
 
         for init_float_param in agent.init_floats.values():
-            self.add_line(f'self.{init_float_param.name} = {init_float_param.value}')
+            self.add_line(f'self.{init_float_param.name} = kwargs.get("{init_float_param.name}", {init_float_param.value})')
         
         for dist_normal_float_param in agent.dist_normal_floats.values():
-            self.add_line(f'self.{dist_normal_float_param.name} = numpy.random.normal({dist_normal_float_param.mean}, {dist_normal_float_param.std_dev})')
+            self.add_line(f'self.{dist_normal_float_param.name} = kwargs.get("{dist_normal_float_param.name}", numpy.random.normal({dist_normal_float_param.mean}, {dist_normal_float_param.std_dev}))')
         
         for dist_exp_float_param in agent.dist_exp_floats.values():
-            self.add_line(f'self.{dist_exp_float_param.name} = numpy.random.exponential(1/{dist_exp_float_param.lambda_})')
+            self.add_line(f'self.{dist_exp_float_param.name} = kwargs.get("{dist_exp_float_param.name}", numpy.random.exponential(1/{dist_exp_float_param.lambda_}))')
         
-        for enum_param in agent.enums.values():            
+        for enum_param in agent.enums.values():
             values = []
             percentages = []
             for enum_value in enum_param.enum_values:
@@ -138,13 +145,13 @@ class PythonSpadeCode(PythonCode):
                 percentages.append(enum_value.percentage)
             values = f'[{", ".join(values)}]'
             percentages = f'[{", ".join(percentages)}]'
-            self.add_line(f'self.{enum_param.name} = random.choices({values}, {percentages})[0]')
+            self.add_line(f'self.{enum_param.name} = kwargs.get("{enum_param.name}", random.choices({values}, {percentages})[0])')
         
         for connection_list_param in agent.connection_lists.values():
-            self.add_line(f'self.{connection_list_param.name} = []')
+            self.add_line(f'self.{connection_list_param.name} = kwargs.get("{connection_list_param.name}", [])')
         
         for message_list_param in agent.message_lists.values():
-            self.add_line(f'self.{message_list_param.name} = []')
+            self.add_line(f'self.{message_list_param.name} = kwargs.get("{message_list_param.name}", [])')
         
         self.indent_left()
         self.add_newline()
@@ -178,10 +185,10 @@ class PythonSpadeCode(PythonCode):
         self.add_line('def setup(self):')
         self.indent_right()
 
-        if not agent.behaviour_names:
-            self.add_line('...')
-            self.indent_left()
-            return
+        self.add_line('if self.backup_url:')
+        self.indent_right()
+        self.add_line('self.add_behaviour(self.BackupBehaviour(start_at=datetime.datetime.now() + datetime.timedelta(seconds=self.backup_delay), period=self.backup_period))')
+        self.indent_left()
         
         for setup_behaviour in agent.setup_behaviours.values():
             self.add_line(f'self.add_behaviour(self.{setup_behaviour.name}())')
@@ -198,6 +205,24 @@ class PythonSpadeCode(PythonCode):
             self.add_line(f'{message_received_behaviour.name}_template.set_metadata(\"performative\", \"{message_received_behaviour.received_message.performative}\")')
             self.add_line(f'self.add_behaviour(self.{message_received_behaviour.name}(), {message_received_behaviour.name}_template)')
         
+        self.indent_left()
+
+    def add_backup_behaviour(self, agent: Agent) -> None:
+        self.add_line('class BackupBehaviour(spade.behaviour.PeriodicBehaviour):')
+        self.indent_right()
+        self.add_line('async def run(self):')
+        self.indent_right()
+        self.add_line('data = {')
+        self.indent_right()
+        for param_name in agent.param_names:
+            self.add_line(f'\"{param_name}\": self.agent.{param_name},')
+        self.indent_left()
+        self.add_line('}')
+        self.add_line('async with httpx.AsyncClient() as client:')
+        self.indent_right()
+        self.add_line('await client.post(self.agent.backup_url, json=data)')
+        self.indent_left()
+        self.indent_left()
         self.indent_left()
         
     def add_agent_behaviour(self, behaviour: Behaviour, behaviour_type: str) -> None:

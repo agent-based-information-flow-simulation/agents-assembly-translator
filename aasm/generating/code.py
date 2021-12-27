@@ -12,7 +12,7 @@ class Code:
         self._iter_num_code_lines: int | None = None
 
     def __iter__(self) -> Code:
-        self._iter_code_lines = self.agent_code_lines + self.graph_code_lines
+        self._iter_code_lines = self.agent_code_lines + ["\n"] + self.graph_code_lines
         self._iter_num_code_lines = len(self._iter_code_lines)
         self._iter_idx = -1
         return self
