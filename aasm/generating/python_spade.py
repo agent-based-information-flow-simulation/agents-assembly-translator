@@ -214,6 +214,7 @@ class PythonSpadeCode(PythonCode):
         self.indent_right()
         self.add_line('data = {')
         self.indent_right()
+        self.add_line('\"jid\": self.agent.jid,')
         for param_name in agent.param_names:
             self.add_line(f'\"{param_name}\": self.agent.{param_name},')
         self.indent_left()
