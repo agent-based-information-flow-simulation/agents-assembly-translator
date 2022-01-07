@@ -238,6 +238,7 @@ class PythonSpadeCode(PythonCode):
         self.add_line('if self.agent.logger: self.agent.logger.warn(f"[{self.agent.jid}] Backup error: {e}")')
         self.indent_left()
         self.indent_left()
+        self.indent_left()
         
     def add_agent_behaviour(self, behaviour: Behaviour, behaviour_type: str) -> None:
         self.add_line(f'class {behaviour.name}({behaviour_type}):')
