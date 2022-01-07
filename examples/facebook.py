@@ -53,8 +53,11 @@ class average_user(spade.agent.Agent):
                 "friends": self.agent.friends,
             }
             if self.agent.logger: self.agent.logger.debug(f"[{self.agent.jid}] Sending backup data: {data}")
-            async with httpx.AsyncClient() as client:
-                await client.post(self.agent.backup_url, json=data)
+            try:
+                async with httpx.AsyncClient() as client:
+                    await client.post(self.agent.backup_url, json=data)
+            except Exception as e:
+                if self.agent.logger: self.agent.logger.warn(f"[{self.agent.jid}] Backup error: {e}")
     
     class facebook_activity(spade.behaviour.PeriodicBehaviour):
         async def post_photos(self):
