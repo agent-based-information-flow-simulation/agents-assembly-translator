@@ -76,10 +76,10 @@ class PythonSpadeCode(PythonCode):
     def add_required_imports(self) -> List[str]:
         self.add_line('import copy')
         self.add_line('import datetime')
-        self.add_line('import json')
         self.add_line('import random')
         self.add_line('import httpx')
         self.add_line('import numpy')
+        self.add_line('import orjson')
         self.add_line('import spade')
     
     def generate_agent(self, agent: Agent) -> None:
@@ -170,7 +170,7 @@ class PythonSpadeCode(PythonCode):
     def add_message_utils(self) -> None:
         self.add_line('def get_json_from_spade_message(self, msg):')
         self.indent_right()
-        self.add_line('return json.loads(msg.body)')
+        self.add_line('return orjson.loads(msg.body)')
         self.indent_left()
         self.add_newline()
 
@@ -180,7 +180,7 @@ class PythonSpadeCode(PythonCode):
         self.add_line('body[\"sender\"] = str(self.jid)')
         self.add_line('msg.metadata[\"type\"] = body[\"type\"]')
         self.add_line('msg.metadata[\"performative\"] = body[\"performative\"]')
-        self.add_line('msg.body = json.dumps(body)')
+        self.add_line('msg.body = str(orjson.dumps(body), encoding="utf-8")')
         self.add_line('return msg')
 
         self.indent_left()
