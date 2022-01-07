@@ -191,17 +191,21 @@ class PythonSpadeCode(PythonCode):
 
         self.add_line('if self.backup_url:')
         self.indent_right()
-        self.add_line('self.add_behaviour(self.BackupBehaviour(start_at=datetime.datetime.now() + datetime.timedelta(seconds=self.backup_delay), period=self.backup_period))')
+        self.add_no_match_template('BackupBehaviour')
+        self.add_line('self.add_behaviour(self.BackupBehaviour(start_at=datetime.datetime.now() + datetime.timedelta(seconds=self.backup_delay), period=self.backup_period), BackupBehaviour_template)')
         self.indent_left()
         
         for setup_behaviour in agent.setup_behaviours.values():
-            self.add_line(f'self.add_behaviour(self.{setup_behaviour.name}())')
+            self.add_no_match_template(f'{setup_behaviour.name}')
+            self.add_line(f'self.add_behaviour(self.{setup_behaviour.name}(), {setup_behaviour.name}_template)')
         
         for one_time_behaviour in agent.one_time_behaviours.values():
-            self.add_line(f'self.add_behaviour(self.{one_time_behaviour.name}(start_at=datetime.datetime.now() + datetime.timedelta(seconds={one_time_behaviour.delay})))')
+            self.add_no_match_template(f'{one_time_behaviour.name}')
+            self.add_line(f'self.add_behaviour(self.{one_time_behaviour.name}(start_at=datetime.datetime.now() + datetime.timedelta(seconds={one_time_behaviour.delay})), {one_time_behaviour.name}_template)')
         
         for cyclic_behaviour in agent.cyclic_behaviours.values():
-            self.add_line(f'self.add_behaviour(self.{cyclic_behaviour.name}(period={cyclic_behaviour.period}))')
+            self.add_no_match_template(f'{cyclic_behaviour.name}')
+            self.add_line(f'self.add_behaviour(self.{cyclic_behaviour.name}(period={cyclic_behaviour.period}), {cyclic_behaviour.name}_template)')
         
         for message_received_behaviour in agent.message_received_behaviours.values():
             self.add_line(f'{message_received_behaviour.name}_template = spade.template.Template()')
@@ -212,6 +216,10 @@ class PythonSpadeCode(PythonCode):
         self.add_line('if self.logger: self.logger.debug(f"[{self.jid}] Class dict after setup: {self.__dict__}")')
         
         self.indent_left()
+        
+    def add_no_match_template(self, behaviour_name: str) -> None:
+        self.add_line(f'{behaviour_name}_template = spade.template.Template()')
+        self.add_line(f'{behaviour_name}_template.set_metadata("reserved", "no_message_match")')
 
     def add_backup_behaviour(self, agent: Agent) -> None:
         self.add_line('class BackupBehaviour(spade.behaviour.PeriodicBehaviour):')
