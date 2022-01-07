@@ -1,9 +1,9 @@
 import copy
 import datetime
-import json
 import random
 import httpx
 import numpy
+import orjson
 import spade
 
 
@@ -26,14 +26,14 @@ class average_user(spade.agent.Agent):
         return len(self.connections)
     
     def get_json_from_spade_message(self, msg):
-        return json.loads(msg.body)
+        return orjson.loads(msg.body)
     
     def get_spade_message(self, receiver_jid, body):
         msg = spade.message.Message(to=receiver_jid)
         body["sender"] = str(self.jid)
         msg.metadata["type"] = body["type"]
         msg.metadata["performative"] = body["performative"]
-        msg.body = json.dumps(body)
+        msg.body = str(orjson.dumps(body), encoding="utf-8")
         return msg
     
     def setup(self):
