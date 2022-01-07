@@ -469,7 +469,8 @@ class PythonSpadeCode(PythonCode):
                             self.add_line(f'{arg1} *= {arg2}')
 
                         case Divide():
-                            self.add_line(f'if {arg2} != 0: {arg1} /= {arg2}')
+                            self.add_line(f'if {arg2} == 0: return')
+                            self.add_line(f'{arg1} /= {arg2}')
                             
                         case AddElement():
                             self.add_line(f'if {arg2} not in {arg1}: {arg1}.append({arg2})')
