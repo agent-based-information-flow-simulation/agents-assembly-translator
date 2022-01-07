@@ -278,7 +278,7 @@ class PythonSpadeCode(PythonCode):
         self.indent_left()
 
     def add_rcv_message(self) -> None:
-        self.add_line('rcv = await self.receive(timeout=10)')
+        self.add_line('rcv = await self.receive(timeout=100000)')
         self.add_line('if rcv:')
         self.indent_right()
         self.add_line('rcv = self.agent.get_json_from_spade_message(rcv)')
