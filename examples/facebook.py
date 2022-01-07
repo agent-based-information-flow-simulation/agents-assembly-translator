@@ -38,8 +38,12 @@ class average_user(spade.agent.Agent):
     
     def setup(self):
         if self.backup_url:
-            self.add_behaviour(self.BackupBehaviour(start_at=datetime.datetime.now() + datetime.timedelta(seconds=self.backup_delay), period=self.backup_period))
-        self.add_behaviour(self.facebook_activity(period=30))
+            BackupBehaviour_template = spade.template.Template()
+            BackupBehaviour_template.set_metadata("reserved", "no_message_match")
+            self.add_behaviour(self.BackupBehaviour(start_at=datetime.datetime.now() + datetime.timedelta(seconds=self.backup_delay), period=self.backup_period), BackupBehaviour_template)
+        facebook_activity_template = spade.template.Template()
+        facebook_activity_template.set_metadata("reserved", "no_message_match")
+        self.add_behaviour(self.facebook_activity(period=30), facebook_activity_template)
         if self.logger: self.logger.debug(f"[{self.jid}] Class dict after setup: {self.__dict__}")
     
     class BackupBehaviour(spade.behaviour.PeriodicBehaviour):
