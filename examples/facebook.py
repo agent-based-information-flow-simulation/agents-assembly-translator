@@ -53,25 +53,28 @@ class average_user(spade.agent.Agent):
                 "friends": self.agent.friends,
             }
             if self.agent.logger: self.agent.logger.debug(f"[{self.agent.jid}] Sending backup data: {data}")
-            async with httpx.AsyncClient() as client:
-                await client.post(self.agent.backup_url, json=data)
-    
-    class facebook_activity(spade.behaviour.PeriodicBehaviour):
-        async def post_photos(self):
-            if self.agent.logger: self.agent.logger.debug(f"[{self.agent.jid}] Run action post_photos")
-            send = { "type": "facebook_post", "performative": "query", "photos": 0.0, }
-            num_photos = 0
-            num_photos = numpy.random.normal(21, 37)
-            num_photos = round(num_photos)
-            send["photos"] = num_photos
-            if self.agent.logger: self.agent.logger.debug(f"[{self.agent.jid}] Send message {send} to self.agent.friends")
-            for receiver in self.agent.friends:
-                await self.send(self.agent.get_spade_message(receiver, send))
-                self.agent.msgSCount += 1
+            try:
+                async with httpx.AsyncClient() as client:
+                    await client.post(self.agent.backup_url, json=data)
+            except Exception as e:
+                if self.agent.logger: self.agent.logger.warn(f"[{self.agent.jid}] Backup error: {e}")
         
-        async def run(self):
-            await self.post_photos()
-    
+        class facebook_activity(spade.behaviour.PeriodicBehaviour):
+            async def post_photos(self):
+                if self.agent.logger: self.agent.logger.debug(f"[{self.agent.jid}] Run action post_photos")
+                send = { "type": "facebook_post", "performative": "query", "photos": 0.0, }
+                num_photos = 0
+                num_photos = numpy.random.normal(21, 37)
+                num_photos = round(num_photos)
+                send["photos"] = num_photos
+                if self.agent.logger: self.agent.logger.debug(f"[{self.agent.jid}] Send message {send} to self.agent.friends")
+                for receiver in self.agent.friends:
+                    await self.send(self.agent.get_spade_message(receiver, send))
+                    self.agent.msgSCount += 1
+            
+            async def run(self):
+                await self.post_photos()
+        
 
 import random
 import uuid
