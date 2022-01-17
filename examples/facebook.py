@@ -47,21 +47,33 @@ class average_user(spade.agent.Agent):
         if self.logger: self.logger.debug(f"[{self.jid}] Class dict after setup: {self.__dict__}")
     
     class BackupBehaviour(spade.behaviour.PeriodicBehaviour):
+        def __init__(self, start_at, period):
+            super().__init__(start_at=start_at, period=period)
+            self.httpx_client = httpx.AsyncClient(timeout=period)
+        
         async def run(self):
             data = {
                 "jid": str(self.agent.jid),
-                "connections": self.agent.connections,
-                "connCount": self.agent.connCount,
-                "msgRCount": self.agent.msgRCount,
-                "msgSCount": self.agent.msgSCount,
-                "friends": self.agent.friends,
+                "type": "average_user",
+                "floats": {
+                    "msgRCount": self.agent.msgRCount,
+                    "msgSCount": self.agent.msgSCount,
+                    "connCount": self.agent.connCount,
+                },
+                "enums": {
+                },
+                "connections": {
+                    "connections": self.agent.connections,
+                    "friends": self.agent.friends,
+                },
+                "messages": {
+                }
             }
             if self.agent.logger: self.agent.logger.debug(f"[{self.agent.jid}] Sending backup data: {data}")
             try:
-                async with httpx.AsyncClient() as client:
-                    await client.post(self.agent.backup_url, json=data)
+                await self.http_client.post(self.agent.backup_url, json=data)
             except Exception as e:
-                if self.agent.logger: self.agent.logger.warn(f"[{self.agent.jid}] Backup error: {e}")
+                if self.agent.logger: self.agent.logger.error(f"[{self.agent.jid}] Backup error type: {e.__class__}, additional info: {e}")
     
     class facebook_activity(spade.behaviour.PeriodicBehaviour):
         async def post_photos(self):
