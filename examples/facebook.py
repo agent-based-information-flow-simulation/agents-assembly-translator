@@ -8,14 +8,14 @@ import spade
 
 
 class average_user(spade.agent.Agent):
-    def __init__(self, jid, password, connections, backup_url = None, backup_period = 60, backup_delay = 0, logger = None, **kwargs):
+    def __init__(self, jid, password, backup_url = None, backup_period = 60, backup_delay = 0, logger = None, **kwargs):
         super().__init__(jid, password, verify_security=False)
-        if logger: logger.debug(f"[{jid}] Received parameters: jid: {jid}, password: {password}, connections: {connections}, backup_url: {backup_url}, backup_period: {backup_period}, backup_delay: {backup_delay}, kwargs: {kwargs}")
+        if logger: logger.debug(f"[{jid}] Received parameters: jid: {jid}, password: {password}, backup_url: {backup_url}, backup_period: {backup_period}, backup_delay: {backup_delay}, kwargs: {kwargs}")
         self.logger = logger
-        self.connections = connections
         self.backup_url = backup_url
         self.backup_period = backup_period
         self.backup_delay = backup_delay
+        self.connections = kwargs.get("connections", [])
         self.msgRCount = kwargs.get("msgRCount", 0)
         self.msgSCount = kwargs.get("msgSCount", 0)
         self.friends = kwargs.get("friends", [])

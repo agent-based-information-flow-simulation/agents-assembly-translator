@@ -117,16 +117,16 @@ class PythonSpadeCode(PythonCode):
         self.indent_left()
         
     def add_agent_constructor(self, agent: Agent) -> None:
-        self.add_line('def __init__(self, jid, password, connections, backup_url = None, backup_period = 60, backup_delay = 0, logger = None, **kwargs):')
+        self.add_line('def __init__(self, jid, password, backup_url = None, backup_period = 60, backup_delay = 0, logger = None, **kwargs):')
         self.indent_right()
 
         self.add_line('super().__init__(jid, password, verify_security=False)')
-        self.add_line('if logger: logger.debug(f"[{jid}] Received parameters: jid: {jid}, password: {password}, connections: {connections}, backup_url: {backup_url}, backup_period: {backup_period}, backup_delay: {backup_delay}, kwargs: {kwargs}")')
+        self.add_line('if logger: logger.debug(f"[{jid}] Received parameters: jid: {jid}, password: {password}, backup_url: {backup_url}, backup_period: {backup_period}, backup_delay: {backup_delay}, kwargs: {kwargs}")')
         self.add_line('self.logger = logger')
-        self.add_line('self.connections = connections')
         self.add_line('self.backup_url = backup_url')
         self.add_line('self.backup_period = backup_period')
         self.add_line('self.backup_delay = backup_delay')
+        self.add_line('self.connections = kwargs.get("connections", [])')
         self.add_line('self.msgRCount = kwargs.get("msgRCount", 0)')
         self.add_line('self.msgSCount = kwargs.get("msgSCount", 0)')
 
