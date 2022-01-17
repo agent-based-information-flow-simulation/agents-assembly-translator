@@ -100,7 +100,7 @@ import numpy
 def generate_graph_structure(domain):
     _num_average_user = round(100 / 100 * 150)
     num_agents = _num_average_user
-    random_id = str(uuid.uuid4())[:4]
+    random_id = str(uuid.uuid4())[:5]
     jids = [f"{i}_{random_id}@{domain}" for i in range(num_agents)]
     agents = []
     next_agent_idx = 0
