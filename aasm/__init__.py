@@ -1,6 +1,6 @@
 """Agents Assembly translator"""
 
-__version__ = "0.0.17"
+__version__ = "0.0.18"
 
 from aasm.generating.code import Code
 from aasm.generating.python_spade import get_spade_code
