@@ -47,7 +47,7 @@ class PythonGraph(PythonCode):
             num_agents.append(f'_num_{agent.name}')
         self.add_line(f'num_agents = {" + ".join(num_agents)}')
 
-        self.add_line('random_id = str(uuid.uuid4())[:4]')
+        self.add_line('random_id = str(uuid.uuid4())[:5]')
         self.add_line('jids = [f"{i}_{random_id}@{domain}" for i in range(num_agents)]')
 
         self.add_line('agents = []')
