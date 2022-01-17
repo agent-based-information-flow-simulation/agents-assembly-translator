@@ -227,7 +227,7 @@ class PythonSpadeCode(PythonCode):
         self.add_line('def __init__(self, start_at, period):')
         self.indent_right()
         self.add_line('super().__init__(start_at=start_at, period=period)')
-        self.add_line('self.httpx_client = httpx.AsyncClient(timeout=period)')
+        self.add_line('self.http_client = httpx.AsyncClient(timeout=period)')
         self.indent_left()
         self.add_newline()
         
