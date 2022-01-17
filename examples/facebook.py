@@ -49,7 +49,7 @@ class average_user(spade.agent.Agent):
     class BackupBehaviour(spade.behaviour.PeriodicBehaviour):
         def __init__(self, start_at, period):
             super().__init__(start_at=start_at, period=period)
-            self.httpx_client = httpx.AsyncClient(timeout=period)
+            self.http_client = httpx.AsyncClient(timeout=period)
         
         async def run(self):
             data = {
