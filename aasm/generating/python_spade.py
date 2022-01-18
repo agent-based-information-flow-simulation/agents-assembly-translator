@@ -121,7 +121,7 @@ class PythonSpadeCode(PythonCode):
         self.indent_right()
 
         self.add_line('super().__init__(jid, password, verify_security=False)')
-        self.add_line('if logger: logger.debug(f"[{jid}] Received parameters: jid: {jid}, password: {password}, backup_url: {backup_url}, backup_period: {backup_period}, backup_delay: {backup_delay}, kwargs: {kwargs}")')
+        self.add_line('if logger: logger.debug(f\'[{jid}] Received parameters: jid: {jid}, password: {password}, backup_url: {backup_url}, backup_period: {backup_period}, backup_delay: {backup_delay}, kwargs: {kwargs}\')')
         self.add_line('self.logger = logger')
         self.add_line('self.backup_url = backup_url')
         self.add_line('self.backup_period = backup_period')
@@ -155,7 +155,7 @@ class PythonSpadeCode(PythonCode):
         for message_list_param in agent.message_lists.values():
             self.add_line(f'self.{message_list_param.name} = kwargs.get("{message_list_param.name}", [])')
             
-        self.add_line('if self.logger: self.logger.debug(f"[{self.jid}] Class dict after initialization: {self.__dict__}")')
+        self.add_line('if self.logger: self.logger.debug(f\'[{self.jid}] Class dict after initialization: {self.__dict__}\')')
         
         self.indent_left()
         self.add_newline()
@@ -213,7 +213,7 @@ class PythonSpadeCode(PythonCode):
             self.add_line(f'{message_received_behaviour.name}_template.set_metadata(\"performative\", \"{message_received_behaviour.received_message.performative}\")')
             self.add_line(f'self.add_behaviour(self.{message_received_behaviour.name}(), {message_received_behaviour.name}_template)')
         
-        self.add_line('if self.logger: self.logger.debug(f"[{self.jid}] Class dict after setup: {self.__dict__}")')
+        self.add_line('if self.logger: self.logger.debug(f\'[{self.jid}] Class dict after setup: {self.__dict__}\')')
         
         self.indent_left()
         
@@ -272,14 +272,14 @@ class PythonSpadeCode(PythonCode):
         
         self.indent_left()
         self.add_line('}')
-        self.add_line('if self.agent.logger: self.agent.logger.debug(f"[{self.agent.jid}] Sending backup data: {data}")')
+        self.add_line('if self.agent.logger: self.agent.logger.debug(f\'[{self.agent.jid}] Sending backup data: {data}\')')
         self.add_line('try:')
         self.indent_right()
         self.add_line('await self.http_client.post(self.agent.backup_url, headers={"Content-Type": "application/json"}, data=orjson.dumps(data))')
         self.indent_left()
         self.add_line('except Exception as e:')
         self.indent_right()
-        self.add_line('if self.agent.logger: self.agent.logger.error(f"[{self.agent.jid}] Backup error type: {e.__class__}, additional info: {e}")')
+        self.add_line('if self.agent.logger: self.agent.logger.error(f\'[{self.agent.jid}] Backup error type: {e.__class__}, additional info: {e}\')')
         self.indent_left()
         self.indent_left()
         self.indent_left()
@@ -319,7 +319,7 @@ class PythonSpadeCode(PythonCode):
         self.indent_right()
         self.add_line('rcv = self.agent.get_json_from_spade_message(rcv)')
         self.add_line('self.agent.msgRCount += 1')
-        self.add_line('if self.agent.logger: self.agent.logger.debug(f"[{self.agent.jid}] Received message: {rcv}")')
+        self.add_line('if self.agent.logger: self.agent.logger.debug(f\'[{self.agent.jid}] Received message: {rcv}\')')
         self.indent_left()
 
     def add_action_call(self, behaviour: Behaviour, action: Action) -> None:
@@ -337,7 +337,7 @@ class PythonSpadeCode(PythonCode):
         self.add_action_def(behaviour, action)
         self.indent_right()
         
-        self.add_line(f'if self.agent.logger: self.agent.logger.debug(f"[{{self.agent.jid}}] Run action {action.name}")')
+        self.add_line(f'if self.agent.logger: self.agent.logger.debug(f\'[{{self.agent.jid}}] Run action {action.name}\')')
 
         if isinstance(action, SendMessageAction):
             self.add_send_message(action.send_message)
@@ -419,13 +419,13 @@ class PythonSpadeCode(PythonCode):
                     
                 case Send() if isinstance(statement.arg1.type_in_op, Connection):
                     receiver = self.parse_arg(statement.arg1)
-                    self.add_line(f'if self.agent.logger: self.agent.logger.debug(f"[{{self.agent.jid}}] Send message {{send}} to {receiver}")')
+                    self.add_line(f'if self.agent.logger: self.agent.logger.debug(f\'[{{self.agent.jid}}] Send message {{send}} to \u007b{receiver}\u007d\')')
                     self.add_line(f'await self.send(self.agent.get_spade_message({receiver}, send))')
                     self.add_line('self.agent.msgSCount += 1')
                     
                 case Send() if isinstance(statement.arg1.type_in_op, ConnectionList):
                     receivers = self.parse_arg(statement.arg1)
-                    self.add_line(f'if self.agent.logger: self.agent.logger.debug(f"[{{self.agent.jid}}] Send message {{send}} to {receivers}")')
+                    self.add_line(f'if self.agent.logger: self.agent.logger.debug(f\'[{{self.agent.jid}}] Send message {{send}} to \u007b{receivers}\u007d\')')
                     self.add_line(f'for receiver in {receivers}:')
                     self.indent_right()
                     self.add_line('await self.send(self.agent.get_spade_message(receiver, send))')
