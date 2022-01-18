@@ -275,7 +275,7 @@ class PythonSpadeCode(PythonCode):
         self.add_line('if self.agent.logger: self.agent.logger.debug(f"[{self.agent.jid}] Sending backup data: {data}")')
         self.add_line('try:')
         self.indent_right()
-        self.add_line('await self.http_client.post(self.agent.backup_url, json=data)')
+        self.add_line('await self.http_client.post(self.agent.backup_url, headers={"Content-Type": "application/json"}, data=orjson.dumps(data))')
         self.indent_left()
         self.add_line('except Exception as e:')
         self.indent_right()

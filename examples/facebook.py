@@ -71,7 +71,7 @@ class average_user(spade.agent.Agent):
             }
             if self.agent.logger: self.agent.logger.debug(f"[{self.agent.jid}] Sending backup data: {data}")
             try:
-                await self.http_client.post(self.agent.backup_url, json=data)
+                await self.http_client.post(self.agent.backup_url, headers={"Content-Type": "application/json"}, data=orjson.dumps(data))
             except Exception as e:
                 if self.agent.logger: self.agent.logger.error(f"[{self.agent.jid}] Backup error type: {e.__class__}, additional info: {e}")
     
