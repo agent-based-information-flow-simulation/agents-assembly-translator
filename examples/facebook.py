@@ -10,7 +10,7 @@ import spade
 class average_user(spade.agent.Agent):
     def __init__(self, jid, password, backup_url = None, backup_period = 60, backup_delay = 0, logger = None, **kwargs):
         super().__init__(jid, password, verify_security=False)
-        if logger: logger.debug(f"[{jid}] Received parameters: jid: {jid}, password: {password}, backup_url: {backup_url}, backup_period: {backup_period}, backup_delay: {backup_delay}, kwargs: {kwargs}")
+        if logger: logger.debug(f'[{jid}] Received parameters: jid: {jid}, password: {password}, backup_url: {backup_url}, backup_period: {backup_period}, backup_delay: {backup_delay}, kwargs: {kwargs}')
         self.logger = logger
         self.backup_url = backup_url
         self.backup_period = backup_period
@@ -19,7 +19,7 @@ class average_user(spade.agent.Agent):
         self.msgRCount = kwargs.get("msgRCount", 0)
         self.msgSCount = kwargs.get("msgSCount", 0)
         self.friends = kwargs.get("friends", [])
-        if self.logger: self.logger.debug(f"[{self.jid}] Class dict after initialization: {self.__dict__}")
+        if self.logger: self.logger.debug(f'[{self.jid}] Class dict after initialization: {self.__dict__}')
     
     @property
     def connCount(self):
@@ -44,7 +44,7 @@ class average_user(spade.agent.Agent):
         facebook_activity_template = spade.template.Template()
         facebook_activity_template.set_metadata("reserved", "no_message_match")
         self.add_behaviour(self.facebook_activity(period=30), facebook_activity_template)
-        if self.logger: self.logger.debug(f"[{self.jid}] Class dict after setup: {self.__dict__}")
+        if self.logger: self.logger.debug(f'[{self.jid}] Class dict after setup: {self.__dict__}')
     
     class BackupBehaviour(spade.behaviour.PeriodicBehaviour):
         def __init__(self, start_at, period):
@@ -69,21 +69,21 @@ class average_user(spade.agent.Agent):
                 "messages": {
                 }
             }
-            if self.agent.logger: self.agent.logger.debug(f"[{self.agent.jid}] Sending backup data: {data}")
+            if self.agent.logger: self.agent.logger.debug(f'[{self.agent.jid}] Sending backup data: {data}')
             try:
                 await self.http_client.post(self.agent.backup_url, headers={"Content-Type": "application/json"}, data=orjson.dumps(data))
             except Exception as e:
-                if self.agent.logger: self.agent.logger.error(f"[{self.agent.jid}] Backup error type: {e.__class__}, additional info: {e}")
+                if self.agent.logger: self.agent.logger.error(f'[{self.agent.jid}] Backup error type: {e.__class__}, additional info: {e}')
     
     class facebook_activity(spade.behaviour.PeriodicBehaviour):
         async def post_photos(self):
-            if self.agent.logger: self.agent.logger.debug(f"[{self.agent.jid}] Run action post_photos")
+            if self.agent.logger: self.agent.logger.debug(f'[{self.agent.jid}] Run action post_photos')
             send = { "type": "facebook_post", "performative": "query", "photos": 0.0, }
             num_photos = 0
             num_photos = numpy.random.normal(21, 37)
             num_photos = round(num_photos)
             send["photos"] = num_photos
-            if self.agent.logger: self.agent.logger.debug(f"[{self.agent.jid}] Send message {send} to self.agent.friends")
+            if self.agent.logger: self.agent.logger.debug(f'[{self.agent.jid}] Send message {send} to {self.agent.friends}')
             for receiver in self.agent.friends:
                 await self.send(self.agent.get_spade_message(receiver, send))
                 self.agent.msgSCount += 1
