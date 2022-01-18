@@ -106,11 +106,12 @@ def generate_graph_structure(domain):
     next_agent_idx = 0
     for _ in range(_num_average_user):
         num_connections = int(numpy.random.normal(0, 15))
-        num_connections = max(min(num_connections, len(jids)), 0)
+        num_connections = max(min(num_connections, len(jids) - 1), 0)
+        jid = jids[next_agent_idx]
         agents.append({
-            "jid": jids[next_agent_idx],
+            "jid": jid,
             "type": "average_user",
-            "connections": random.sample(jids, num_connections),
+            "connections": random.sample([other_jid for other_jid in jids if other_jid != jid], num_connections),
         })
         next_agent_idx += 1
     return agents
