@@ -4,13 +4,12 @@
 
 - [About](#about)
 - [Getting Started](#getting_started)
-- [Usage](#usage)
 - [Structure](#structure)
 - [Design](#Design)
 
 ## About <a name = "about"></a>
 
-A translator from Agents Assembly to SPADE (Python).
+A target agnostic translator for Agents Assembly.
 
 ## Getting Started <a name = "getting_started"></a>
 
@@ -20,9 +19,15 @@ A translator from Agents Assembly to SPADE (Python).
 Python 3.10
 ```
 
-## Usage <a name = "usage"></a>
+### Installation
+The translator can be installed by running:
+```
+pip install aasm
+```
+If you are afraid of pip, you can download this repository. No additional dependencies are required.
 
-Translate agent.aa to SPADE:
+### Usage
+You can run the translator as a package. To translate *agent.aasm* to SPADE, run:
 ```
 python -m aasm.translate agent.aasm
 ```
@@ -54,7 +59,9 @@ python -m aasm.translate --help
     * `op/` - Agents Assembly operations
     * `state.py` - state definition used for the parsing process
 * `utils`
-    * `validation.py` - variables validation
+    * `exception.py`
+    * `validation.py`
+    * `iteration.py`
 * `translate.py` - entrypoint
 
 ## Design <a name = "design"></a>

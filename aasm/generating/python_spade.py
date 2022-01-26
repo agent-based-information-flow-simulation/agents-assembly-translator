@@ -409,14 +409,12 @@ class PythonSpadeCode(PythonCode):
                     dst_list = self.parse_arg(statement.dst_list)
                     src_list = self.parse_arg(statement.src_list)
                     num = self.parse_arg(statement.num)
-                    self.add_line(f'if round({num}) > 0:')
+                    self.add_line(f'if round({num}) <= 0:')
                     self.indent_right()
+                    self.add_line(f'if self.agent.logger: self.agent.logger.debug(f\'[{{self.agent.jid}}] Non-positive subset size (rounded): \u007b{num}\u007d\')')
+                    self.add_line('return')
+                    self.indent_left()
                     self.add_line(f'{dst_list} = [copy.deepcopy(elem) for elem in random.sample({src_list}, min(round({num}), len({src_list})))]')
-                    self.indent_left()
-                    self.add_line('else:')
-                    self.indent_right()
-                    self.add_line(f'{dst_list} = []')
-                    self.indent_left()
                 
                 case Clear():
                     list_ = self.parse_arg(statement.list_)
@@ -440,14 +438,12 @@ class PythonSpadeCode(PythonCode):
                 case Set() if isinstance(statement.value.type_in_op, MessageList):
                     msg = self.parse_arg(statement.dst)
                     msg_list = self.parse_arg(statement.value)
-                    self.add_line(f'if len(list(filter(lambda msg: msg.body["type"] == {msg}.body["type"] and msg.body["performative"] == {msg}.body["performative"], {msg_list}))):')
+                    self.add_line(f'if not any([msg["type"] == {msg}["type"] and msg["performative"] == {msg}["performative"] for msg in {msg_list}]):')
                     self.indent_right()
-                    self.add_line(f'{msg} = copy.deepcopy(random.choice(list(filter(lambda msg: msg.body["type"] == {msg}.body["type"] and msg.body["performative"] == {msg}.body["performative"], {msg_list}))))')
-                    self.indent_left()
-                    self.add_line('else:')
-                    self.indent_right()
+                    self.add_line(f'if self.agent.logger: self.agent.logger.warning(f\'[{{self.agent.jid}}] No messages with type/performative \u007b{msg}["type"]\u007d/\u007b{msg}["performative"]\u007d found in list {msg_list}\')')
                     self.add_line('return')
                     self.indent_left()
+                    self.add_line(f'{msg} = copy.deepcopy(random.choice(list(filter(lambda msg: msg["type"] == {msg}["type"] and msg["performative"] == {msg}["performative"], {msg_list}))))')
                 
                 case Set():
                     dst = self.parse_arg(statement.dst)
@@ -539,7 +535,11 @@ class PythonSpadeCode(PythonCode):
                             self.add_line(f'{dst} *= {num}')
 
                         case Divide():
-                            self.add_line(f'if {num} == 0: return')
+                            self.add_line(f'if {num} == 0:')
+                            self.indent_right()
+                            self.add_line(f'if self.agent.logger: self.agent.logger.warning(f\'[{{self.agent.jid}}] Division by zero: \u007b{num}\u007d\')')
+                            self.add_line('return')
+                            self.indent_left()
                             self.add_line(f'{dst} /= {num}')
                 
                 case ListElementAccess():
@@ -561,18 +561,13 @@ class PythonSpadeCode(PythonCode):
                 case RemoveNElements():
                     list_ = self.parse_arg(statement.list_)
                     num = self.parse_arg(statement.num)
-                    self.add_line(f'if round({num}) > 0:')
+                    self.add_line(f'if round({num}) < 0 or round({num}) > len({list_}):')
                     self.indent_right()
-                    self.add_line(f'if round({num}) < len({list_}):')
-                    self.indent_right()
+                    self.add_line(f'if self.agent.logger: self.agent.logger.debug(f\'[{{self.agent.jid}}] Incorrect number of elements to remove (rounded, either negative or bigger than the list size): \u007b{num}\u007d\')')
+                    self.add_line('return')
+                    self.indent_left()
                     self.add_line(f'random.shuffle({list_})')
                     self.add_line(f'{list_} = {list_}[:len({list_}) - round({num})]')
-                    self.indent_left()
-                    self.add_line('else:')
-                    self.indent_right()
-                    self.add_line(f'{list_} = []')
-                    self.indent_left()
-                    self.indent_left()
                 
                 case Length():
                     dst = self.parse_arg(statement.dst)
