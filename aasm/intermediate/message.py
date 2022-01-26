@@ -33,16 +33,15 @@ class Message:
                  *list(self.float_params) ]
     
     @property
-    def are_all_params_set(self) -> bool:
-        return all([float_param.is_value_set for float_param in self.float_params.values()])
-    
-    @property
     def unset_params(self) -> List[str]:
         unset_params: List[str] = []
         for name, float_param in self.float_params.items():
             if not float_param.is_value_set:
                 unset_params.append(name)
         return unset_params
+    
+    def are_all_params_set(self) -> bool:
+        return all([float_param.is_value_set for float_param in self.float_params.values()])
     
     def param_exists(self, name: str) -> bool:
         return name in self.param_names
