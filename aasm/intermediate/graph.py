@@ -31,7 +31,7 @@ class AgentPercentAmount(AgentAmount):
 
 class ConnectionAmount:
     def print(self) -> None:
-        ...
+        raise NotImplementedError()
 
 
 class ConnectionConstantAmount(ConnectionAmount):
@@ -74,7 +74,7 @@ class Graph:
         return self.size is not None
     
     def add_agent(self, graph_agent: Any) -> None:
-        ...
+        raise NotImplementedError()
 
     def print(self) -> None:
         print(f'Graph size = {self.size}')
