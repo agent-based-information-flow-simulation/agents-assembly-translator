@@ -73,7 +73,7 @@ class PythonSpadeCode(PythonCode):
                 self.add_newlines(2)
                 self.generate_agent(agent)
     
-    def add_required_imports(self) -> List[str]:
+    def add_required_imports(self) -> None:
         self.add_line('import copy')
         self.add_line('import datetime')
         self.add_line('import random')
@@ -140,13 +140,13 @@ class PythonSpadeCode(PythonCode):
             self.add_line(f'self.{dist_exp_float_param.name} = kwargs.get("{dist_exp_float_param.name}", numpy.random.exponential(1/{dist_exp_float_param.lambda_}))')
         
         for enum_param in agent.enums.values():
-            values = []
-            percentages = []
+            value_list: List[str] = []
+            percentage_list: List[str] = []
             for enum_value in enum_param.enum_values:
-                values.append(f'\"{enum_value.value}\"')
-                percentages.append(enum_value.percentage)
-            values = f'[{", ".join(values)}]'
-            percentages = f'[{", ".join(percentages)}]'
+                value_list.append(f'\"{enum_value.value}\"')
+                percentage_list.append(enum_value.percentage)
+            values = f'[{", ".join(value_list)}]'
+            percentages = f'[{", ".join(percentage_list)}]'
             self.add_line(f'self.{enum_param.name} = kwargs.get("{enum_param.name}", random.choices({values}, {percentages})[0])')
         
         for connection_list_param in agent.connection_lists.values():
