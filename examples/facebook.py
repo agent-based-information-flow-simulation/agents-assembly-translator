@@ -80,6 +80,9 @@ class average_user(spade.agent.Agent):
             if self.agent.logger: self.agent.logger.debug(f'[{self.agent.jid}] Run action post_photos')
             send = { "type": "facebook_post", "performative": "query", "photos": 0.0, }
             num_photos = 0
+            if 37 < 0:
+                if self.agent.logger: self.agent.logger.warning(f'[{self.agent.jid}] Negative standard deviation: {37}')
+                return
             num_photos = numpy.random.normal(21, 37)
             num_photos = round(num_photos)
             send["photos"] = num_photos
