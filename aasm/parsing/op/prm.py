@@ -7,6 +7,8 @@ from aasm.intermediate.agent import \
 from aasm.intermediate.agent import DistExpFloatParam as AgentDistExpFloatParam
 from aasm.intermediate.agent import \
     DistNormalFloatParam as AgentDistNormalFloatParam
+from aasm.intermediate.agent import \
+    DistUniformFloatParam as AgentDistUniformFloatParam
 from aasm.intermediate.agent import EnumParam as AgentEnumParam
 from aasm.intermediate.agent import InitFloatParam as AgentInitFloatParam
 from aasm.intermediate.agent import MessageListParam as AgentMessageListParam
@@ -45,6 +47,11 @@ def op_agent_PRM(state: State, name: str, category: str, args: List[str]) -> Non
         case 'float', [ 'dist', 'normal', mean, std_dev ]:
             state.require(is_float(mean), f'{mean} is not a valid float.')
             state.require(is_float(std_dev), f'{std_dev} is not a valid float.')
+            state.require(
+                float(std_dev) >= 0, 
+                f'{std_dev} is not a valid standard deviation parameter.', 
+                'Standard deviation must be non-negative.'
+            )
 
             state.last_agent.add_dist_normal_float(AgentDistNormalFloatParam(name, mean, std_dev))
             
@@ -53,10 +60,16 @@ def op_agent_PRM(state: State, name: str, category: str, args: List[str]) -> Non
             state.require(
                 float(lambda_) > 0, 
                 f'{lambda_} is not a valid lambda parameter.', 
-                'Lambda must be non-negative.'
+                'Lambda must be positive.'
             )
 
             state.last_agent.add_dist_exp_float(AgentDistExpFloatParam(name, lambda_))
+            
+        case 'float', [ 'dist', 'uniform', a, b ]:
+            state.require(is_float(a), f'{a} is not a valid float.')
+            state.require(is_float(b), f'{b} is not a valid float.')
+
+            state.last_agent.add_dist_uniform_float(AgentDistUniformFloatParam(name, a, b))
             
         case 'list', [ 'conn' ]:
             state.last_agent.add_connection_list(AgentConnectionListParam(name))

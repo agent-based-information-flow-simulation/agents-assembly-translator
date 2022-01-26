@@ -140,6 +140,9 @@ class PythonSpadeCode(PythonCode):
         
         for dist_exp_float_param in agent.dist_exp_floats.values():
             self.add_line(f'self.{dist_exp_float_param.name} = kwargs.get("{dist_exp_float_param.name}", numpy.random.exponential(1/{dist_exp_float_param.lambda_}))')
+            
+        for dist_uniform_float_param in agent.dist_unifrom_floats.values():
+            self.add_line(f'self.{dist_uniform_float_param.name} = kwargs.get("{dist_uniform_float_param.name}", random.uniform({dist_uniform_float_param.a}, {dist_uniform_float_param.b}))')
         
         for enum_param in agent.enums.values():
             value_list: List[str] = []
@@ -465,12 +468,22 @@ class PythonSpadeCode(PythonCode):
                     dst = self.parse_arg(statement.dst)
                     mean = self.parse_arg(statement.mean)
                     std_dev = self.parse_arg(statement.std_dev)
+                    self.add_line(f'if {std_dev} < 0:')
+                    self.indent_right()
+                    self.add_line(f'if self.agent.logger: self.agent.logger.warning(f\'[{{self.agent.jid}}] Negative standard deviation: \u007b{std_dev}\u007d\')')
+                    self.add_line('return')
+                    self.indent_left()
                     self.add_line(f'{dst} = numpy.random.normal({mean}, {std_dev})')
                 
                 case ExpDist():
                     dst = self.parse_arg(statement.dst)
                     lambda_ = self.parse_arg(statement.lambda_)
-                    self.add_line(f'{dst} = numpy.random.exponential(1/{lambda_}) if {lambda_} > 0 else 0')
+                    self.add_line(f'if {lambda_} <= 0:')
+                    self.indent_right()
+                    self.add_line(f'if self.agent.logger: self.agent.logger.warning(f\'[{{self.agent.jid}}] Non-positive lambda: \u007b{lambda_}\u007d\')')
+                    self.add_line('return')
+                    self.indent_left()
+                    self.add_line(f'{dst} = numpy.random.exponential(1 / {lambda_})')
                 
                 case Comparaison():
                     left = self.parse_arg(statement.left)
