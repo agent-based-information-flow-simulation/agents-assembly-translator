@@ -108,7 +108,7 @@ class Argument:
             self.types.append(self.compose(Float, AgentParam, Immutable))
             
         elif self.expr in state.last_agent.RESERVED_CONNECTION_LIST_PARAMS:
-            self.types.append(self.compose(List, ConnectionList, AgentParam, Immutable))
+            self.types.append(self.compose(List, ConnectionList, AgentParam, Mutable))
             
         elif self.expr in state.last_agent.float_param_names:
             self.types.append(self.compose(Float, AgentParam, Mutable))
