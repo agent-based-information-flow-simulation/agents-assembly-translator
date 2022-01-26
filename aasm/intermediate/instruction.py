@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from aasm.intermediate.argument import Argument
 
 
 class Instruction:
-    def __init__(self, **kwargs: Dict[str, Argument]):
+    def __init__(self, **kwargs: Argument):
         for key in kwargs:
             self.__dict__[key] = kwargs[key]
   
