@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import List as typingList
+from typing import Type
 
 from aasm.intermediate.action import SendMessageAction
 from aasm.intermediate.behaviour import MessageReceivedBehaviour
@@ -169,13 +170,13 @@ class Argument:
             elif self.expr.lower() == 'send':
                 self.types.append(self.compose(Message, SendMessage, Mutable))
     
-    def compose(self, *classes, **args) -> ArgumentType:
+    def compose(self, *classes: Type[ArgumentType], **args: str) -> ArgumentType:
         name = "_".join([klass.__name__ for klass in classes])
         if args:
             name += '|' +  "|".join([f'{key}={value}' for key, value in args.items()])
         return type(name, classes, args)()
 
-    def has_arg(self, argument_type: ArgumentType, key: str, value: any) -> bool:
+    def has_arg(self, argument_type: ArgumentType, key: str, value: str) -> bool:
         try:
             if getattr(argument_type, key) == value:
                 return True
@@ -183,13 +184,13 @@ class Argument:
             ...
         return False
 
-    def has_type(self, *classes, **args) -> bool:
+    def has_type(self, *classes: Type[ArgumentType], **args: str) -> bool:
         for type_ in self.types:
             if all([isinstance(type_, klass) for klass in classes]) and all([self.has_arg(type_, key, value) for key, value in args.items()]):
                 return True
         return False
                     
-    def set_op_type(self, *classes, **args) -> None:
+    def set_op_type(self, *classes: Type[ArgumentType], **args: str) -> None:
         for type_ in self.types:
             if all([isinstance(type_, klass) for klass in classes]) and all([self.has_arg(type_, key, value) for key, value in args.items()]):
                 self.type_in_op = type_
