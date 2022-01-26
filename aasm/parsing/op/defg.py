@@ -21,7 +21,7 @@ def op_DEFG(state: State, agent_name: str, amount: str, args: List[str]) -> None
         'Try defining new graphs using GRAPH.'
     )
     state.require(
-        isinstance(state.graph, StatisticalGraph), 
+        isinstance(state.last_graph, StatisticalGraph), 
         'DEFG can be used with statistical graphs.', 
         'Define statistical graphs with GRAPH statistical.'
     )
@@ -67,4 +67,4 @@ def op_DEFG(state: State, agent_name: str, amount: str, args: List[str]) -> None
         case _:
             state.panic(f'Incorrect operation: DEFG {agent_name} {amount} {args}')
 
-    state.graph.add_agent(StatisticalAgent(agent_name, agent_amount, connection_amount))
+    state.last_graph.add_agent(StatisticalAgent(agent_name, agent_amount, connection_amount))

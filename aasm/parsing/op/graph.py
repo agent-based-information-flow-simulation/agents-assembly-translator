@@ -30,9 +30,9 @@ def op_GRAPH(state: State, category: str) -> None:
 
 def op_EGRAPH(state: State) -> None:    
     state.require(state.in_graph, 'Not inside any graph.', 'Try defining new graphs using GRAPH.')
-    if isinstance(state.graph, StatisticalGraph) and state.graph.is_agent_percent_amount_used():
+    if isinstance(state.last_graph, StatisticalGraph) and state.last_graph.is_agent_percent_amount_used():
         state.require(
-            state.graph.is_size_defined(), 
+            state.last_graph.is_size_defined(), 
             'Graph size is not defined.', 
             'Graph size must be defined to use agent percent amount.'
         )

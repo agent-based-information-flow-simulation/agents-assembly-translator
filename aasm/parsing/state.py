@@ -51,6 +51,12 @@ class State:
     def last_message(self) -> Message:
         return self.messages[list(self.messages.keys())[-1]]
     
+    @property
+    def last_graph(self) -> Graph:
+        if self.graph is None:
+            raise Exception('Graph is not defined')
+        return self.graph
+    
     def add_agent(self, agent: Agent) -> None:
         self.agents[agent.name] = agent
         
