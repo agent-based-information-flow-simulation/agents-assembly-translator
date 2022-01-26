@@ -468,12 +468,22 @@ class PythonSpadeCode(PythonCode):
                     dst = self.parse_arg(statement.dst)
                     mean = self.parse_arg(statement.mean)
                     std_dev = self.parse_arg(statement.std_dev)
+                    self.add_line(f'if {std_dev} < 0:')
+                    self.indent_right()
+                    self.add_line(f'if self.agent.logger: self.agent.logger.warning(f\'[{{self.agent.jid}}] Negative standard deviation: \u007b{std_dev}\u007d\')')
+                    self.add_line('return')
+                    self.indent_left()
                     self.add_line(f'{dst} = numpy.random.normal({mean}, {std_dev})')
                 
                 case ExpDist():
                     dst = self.parse_arg(statement.dst)
                     lambda_ = self.parse_arg(statement.lambda_)
-                    self.add_line(f'{dst} = numpy.random.exponential(1/{lambda_}) if {lambda_} > 0 else 0')
+                    self.add_line(f'if {lambda_} <= 0:')
+                    self.indent_right()
+                    self.add_line(f'if self.agent.logger: self.agent.logger.warning(f\'[{{self.agent.jid}}] Non-positive lambda: \u007b{lambda_}\u007d\')')
+                    self.add_line('return')
+                    self.indent_left()
+                    self.add_line(f'{dst} = numpy.random.exponential(1 / {lambda_})')
                 
                 case Comparaison():
                     left = self.parse_arg(statement.left)
