@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from aasm.parsing.state import State
 
 
-def op_MESSAGE(state: State, msg_type: str, msg_performative) -> None:
+def op_MESSAGE(state: State, msg_type: str, msg_performative: str) -> None:
     state.require(not state.in_message, 'Already inside a message.', 'First end current message using EMESSAGE.')
     state.require(not state.in_agent, 'Cannot define messages inside agents.', 'First end current agent using EAGENT.')
     state.require(not state.in_graph, 'Cannot define messages inside graphs.', 'First end current graph using EGRAPH.')
