@@ -15,7 +15,11 @@ class Action:
         self.name: str = name
         self._block_stack: List[Block] = [Block([])]
         self._nested_blocks_count: int = 0
-        
+    
+    @property
+    def nested_blocks_count(self) -> int:
+        return self._nested_blocks_count
+    
     @property
     def main_block(self) -> Block:
         return self._block_stack[0]
@@ -34,7 +38,7 @@ class Action:
         self.current_block.add_statement(instruction)
         
     def start_block(self) -> None:
-        new_block = Block(self.current_block._declared_names)
+        new_block = Block(self.current_block.declarations_in_scope)
         self.current_block.add_statement(new_block)
         self._block_stack.append(new_block)
         self._nested_blocks_count += 1

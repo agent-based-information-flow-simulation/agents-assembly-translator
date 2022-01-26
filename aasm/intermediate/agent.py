@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Dict, List
 
+from aasm.utils.iteration import zip_consecutive_pairs
+
 if TYPE_CHECKING:
     from aasm.intermediate.behaviour import (Behaviour, CyclicBehaviour,
                                              MessageReceivedBehaviour,
@@ -39,7 +41,9 @@ class DistExpFloatParam:
 class EnumParam:
     def __init__(self, name: str, enums: List[str]):
         self.name: str = name
-        self.enum_values: List[EnumValue] = [EnumValue(name, value, percentage) for value, percentage in zip(*[iter(enums)] * 2)]
+        self.enum_values: List[EnumValue] = [
+            EnumValue(name, value, percentage) for value, percentage in zip_consecutive_pairs(enums)
+        ]
         
     def print(self) -> None:
         print(f'EnumParam {self.name} = {self.enum_values}')
@@ -87,11 +91,13 @@ class Agent:
         self.one_time_behaviours: Dict[str, OneTimeBehaviour] = {}
         self.cyclic_behaviours: Dict[str, CyclicBehaviour] = {}
         self.message_received_behaviours: Dict[str, MessageReceivedBehaviour] = {}
-        self._last_modified_behaviours: Dict[str, Behaviour] | None = None
+        self._last_modified_behaviour: Behaviour | None = None
     
     @property
     def last_behaviour(self) -> Behaviour:
-        return self._last_modified_behaviours[list(self._last_modified_behaviours.keys())[-1]]
+        if self._last_modified_behaviour is None:
+            raise Exception('No behaviour added to agent')
+        return self._last_modified_behaviour
     
     @property
     def param_names(self) -> List[str]:
@@ -137,19 +143,19 @@ class Agent:
     
     def add_setup_behaviour(self, behaviour: SetupBehaviour) -> None:
         self.setup_behaviours[behaviour.name] = behaviour
-        self._last_modified_behaviours = self.setup_behaviours
+        self._last_modified_behaviour = behaviour
     
     def add_one_time_behaviour(self, behaviour: OneTimeBehaviour) -> None:
         self.one_time_behaviours[behaviour.name] = behaviour
-        self._last_modified_behaviours = self.one_time_behaviours
+        self._last_modified_behaviour = behaviour
     
     def add_cyclic_behaviour(self, behaviour: CyclicBehaviour) -> None:
         self.cyclic_behaviours[behaviour.name] = behaviour
-        self._last_modified_behaviours = self.cyclic_behaviours
+        self._last_modified_behaviour = behaviour
     
     def add_message_received_behaviour(self, behaviour: MessageReceivedBehaviour) -> None:
         self.message_received_behaviours[behaviour.name] = behaviour
-        self._last_modified_behaviours = self.message_received_behaviours
+        self._last_modified_behaviour = behaviour
 
     def param_exists(self, name: str) -> bool:
         return name in self.param_names

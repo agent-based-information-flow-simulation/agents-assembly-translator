@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 from pprint import pprint
-from typing import TYPE_CHECKING, Dict, Generator, List, Tuple
+from typing import TYPE_CHECKING, Dict, Generator, List, NoReturn, Tuple
 
 from aasm.utils.exception import PanicException
 
@@ -15,10 +15,10 @@ if TYPE_CHECKING:
 
 
 class ParsedData:
-    def __init__(self, agents: List[Agent], messages: List[Message], graph: Graph):
+    def __init__(self, agents: List[Agent], messages: List[Message], graph: Graph | None):
         self.agents: List[Agent] = agents
         self.messages: List[Message] = messages
-        self.graph: Graph = graph
+        self.graph: Graph | None = graph
 
 
 class State:
@@ -33,7 +33,7 @@ class State:
         self.in_graph: bool = False
         self.agents: Dict[str, Agent] = {}
         self.messages: Dict[Tuple[str, str], Message] = {}
-        self.graph: Graph = None
+        self.graph: Graph | None = None
         
     @property
     def last_agent(self) -> Agent:
@@ -50,6 +50,12 @@ class State:
     @property
     def last_message(self) -> Message:
         return self.messages[list(self.messages.keys())[-1]]
+    
+    @property
+    def last_graph(self) -> Graph:
+        if self.graph is None:
+            raise Exception('Graph is not defined')
+        return self.graph
     
     def add_agent(self, agent: Agent) -> None:
         self.agents[agent.name] = agent
@@ -111,7 +117,7 @@ class State:
             self.print()
         return ParsedData(list(self.agents.values()), list(self.messages.values()), self.graph)
 
-    def panic(self, reason: str, suggestion: str = '') -> None:
+    def panic(self, reason: str, suggestion: str = '') -> NoReturn:
         if self.debug:
             pprint(self.__dict__)
             self.print()

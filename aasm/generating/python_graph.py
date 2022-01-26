@@ -13,14 +13,14 @@ if TYPE_CHECKING:
 
 
 class PythonGraph(PythonCode):
-    def __init__(self, indent_size: int, graph: Graph):
+    def __init__(self, indent_size: int, graph: Graph | None):
         super().__init__(indent_size)
         if graph:
             self.add_required_imports()
             self.add_newlines(2)
             self.generate_graph(graph)
 
-    def add_required_imports(self) -> List[str]:
+    def add_required_imports(self) -> None:
         self.add_line('import random')
         self.add_line('import uuid')
         self.add_line('import numpy')
@@ -38,14 +38,14 @@ class PythonGraph(PythonCode):
             self.indent_left()
             return
         
-        num_agents = []
+        num_agents_expr: List[str] = []
         for agent in graph.agents.values():
             if isinstance(agent.amount, AgentConstantAmount):
                 self.add_line(f'_num_{agent.name} = {agent.amount.value}')
             elif isinstance(agent.amount, AgentPercentAmount):
                 self.add_line(f'_num_{agent.name} = round({agent.amount.value} / 100 * {graph.size})')
-            num_agents.append(f'_num_{agent.name}')
-        self.add_line(f'num_agents = {" + ".join(num_agents)}')
+            num_agents_expr.append(f'_num_{agent.name}')
+        self.add_line(f'num_agents = {" + ".join(num_agents_expr)}')
 
         self.add_line('random_id = str(uuid.uuid4())[:5]')
         self.add_line('jids = [f"{i}_{random_id}@{domain}" for i in range(num_agents)]')

@@ -21,13 +21,13 @@ def op_DEFG(state: State, agent_name: str, amount: str, args: List[str]) -> None
         'Try defining new graphs using GRAPH.'
     )
     state.require(
-        isinstance(state.graph, StatisticalGraph), 
+        isinstance(state.last_graph, StatisticalGraph), 
         'DEFG can be used with statistical graphs.', 
         'Define statistical graphs with GRAPH statistical.'
     )
     state.require(state.agent_exists(agent_name), f'Agent {agent_name} is not defined.')
     
-    agent_amount: AgentAmount = None
+    agent_amount: AgentAmount | None = None
     if amount.endswith('%'):
         percent_value = amount[:-1]
         state.require(is_float(percent_value), f'{amount} is not a valid float.')
@@ -46,7 +46,7 @@ def op_DEFG(state: State, agent_name: str, amount: str, args: List[str]) -> None
         agent_amount = AgentConstantAmount(amount)
             
 
-    connection_amount: ConnectionAmount = None
+    connection_amount: ConnectionAmount | None = None
     match args:
         case [ value ]:
             state.require(is_int(value), f'{value} is not a valid integer.')
@@ -67,4 +67,4 @@ def op_DEFG(state: State, agent_name: str, amount: str, args: List[str]) -> None
         case _:
             state.panic(f'Incorrect operation: DEFG {agent_name} {amount} {args}')
 
-    state.graph.add_agent(StatisticalAgent(agent_name, agent_amount, connection_amount))
+    state.last_graph.add_agent(StatisticalAgent(agent_name, agent_amount, connection_amount))

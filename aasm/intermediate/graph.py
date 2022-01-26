@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict
+from typing import Any, Dict
 
 
 class AgentAmount:
@@ -30,7 +30,8 @@ class AgentPercentAmount(AgentAmount):
 
 
 class ConnectionAmount:
-    ...
+    def print(self) -> None:
+        raise NotImplementedError()
 
 
 class ConnectionConstantAmount(ConnectionAmount):
@@ -71,6 +72,9 @@ class Graph:
 
     def is_size_defined(self) -> bool:
         return self.size is not None
+    
+    def add_agent(self, graph_agent: Any) -> None:
+        raise NotImplementedError()
 
     def print(self) -> None:
         print(f'Graph size = {self.size}')
@@ -81,8 +85,8 @@ class StatisticalGraph(Graph):
         super().__init__()
         self.agents: Dict[str, StatisticalAgent] = {}
 
-    def add_agent(self, agent: StatisticalAgent) -> None:
-        self.agents[agent.name] = agent
+    def add_agent(self, graph_agent: StatisticalAgent) -> None:
+        self.agents[graph_agent.name] = graph_agent
 
     def is_agent_defined(self, agent_type: str) -> bool:
         return agent_type in self.agents

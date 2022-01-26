@@ -2,6 +2,8 @@ import keyword
 from decimal import Decimal
 from typing import List
 
+from aasm.utils.iteration import zip_consecutive_pairs
+
 
 def is_float(value: str) -> bool:
     try:
@@ -15,11 +17,11 @@ def is_int(value: str) -> bool:
     return value.isdigit() or (value[0] == '-' and value[1:].isdigit())
 
 
-def is_valid_enum_list(enums: list[str]):
-    if not len(enums) or len(enums) % 2:
+def is_valid_enum_list(enums: List[str]) -> bool:
+    if len(enums) == 0 or len(enums) % 2:
         return False
     total_sum = Decimal(0.0)
-    for enum_pair in zip(*[iter(enums)] * 2):
+    for enum_pair in zip_consecutive_pairs(enums):
         if not is_float(enum_pair[1]) or float(enum_pair[1]) < 0.0:
             return False
         total_sum += Decimal(float(enum_pair[1]))
@@ -29,7 +31,10 @@ def is_valid_enum_list(enums: list[str]):
 
 
 def is_valid_name(name: str) -> bool:
-    return len(name) and not name[0].isdigit() and (name.isalnum() or "_" in name) and name.lower() not in get_invalid_names()
+    return (len(name) != 0 
+            and not name[0].isdigit() 
+            and (name.isalnum() or "_" in name) 
+            and name.lower() not in get_invalid_names())
 
 
 def get_invalid_names() -> List[str]:

@@ -12,11 +12,13 @@ from aasm.intermediate.argument import (AgentParam, Connection, ConnectionList,
 from aasm.intermediate.behaviour import MessageReceivedBehaviour
 from aasm.intermediate.block import Block
 from aasm.intermediate.declaration import Declaration
-from aasm.intermediate.instruction import (Add, AddElement, Clear, Divide,
-                                           ExpDist, IfEqual, IfGreaterThan,
-                                           IfGreaterThanOrEqual, IfInList,
-                                           IfLessThan, IfLessThanOrEqual,
-                                           IfNotEqual, IfNotInList, Length,
+from aasm.intermediate.instruction import (Add, AddElement, Clear, Comparaison,
+                                           Divide, ExpDist, IfEqual,
+                                           IfGreaterThan, IfGreaterThanOrEqual,
+                                           IfInList, IfLessThan,
+                                           IfLessThanOrEqual, IfNotEqual,
+                                           IfNotInList, Length,
+                                           ListElementAccess, MathOperation,
                                            Multiply, NormalDist, RemoveElement,
                                            RemoveNElements, Round, Send, Set,
                                            Subset, Subtract, UniformDist,
@@ -73,7 +75,7 @@ class PythonSpadeCode(PythonCode):
                 self.add_newlines(2)
                 self.generate_agent(agent)
     
-    def add_required_imports(self) -> List[str]:
+    def add_required_imports(self) -> None:
         self.add_line('import copy')
         self.add_line('import datetime')
         self.add_line('import random')
@@ -140,13 +142,13 @@ class PythonSpadeCode(PythonCode):
             self.add_line(f'self.{dist_exp_float_param.name} = kwargs.get("{dist_exp_float_param.name}", numpy.random.exponential(1/{dist_exp_float_param.lambda_}))')
         
         for enum_param in agent.enums.values():
-            values = []
-            percentages = []
+            value_list: List[str] = []
+            percentage_list: List[str] = []
             for enum_value in enum_param.enum_values:
-                values.append(f'\"{enum_value.value}\"')
-                percentages.append(enum_value.percentage)
-            values = f'[{", ".join(values)}]'
-            percentages = f'[{", ".join(percentages)}]'
+                value_list.append(f'\"{enum_value.value}\"')
+                percentage_list.append(enum_value.percentage)
+            values = f'[{", ".join(value_list)}]'
+            percentages = f'[{", ".join(percentage_list)}]'
             self.add_line(f'self.{enum_param.name} = kwargs.get("{enum_param.name}", random.choices({values}, {percentages})[0])')
         
         for connection_list_param in agent.connection_lists.values():
@@ -395,46 +397,46 @@ class PythonSpadeCode(PythonCode):
                     self.indent_right()
                     self.add_block(statement)
                     self.indent_left()
-            
+
                 case Declaration():
                     value = self.parse_arg(statement.value)
                     self.add_line(f'{statement.name} = {value}')
-                    
+                
                 case Subset():
-                    to_list = self.parse_arg(statement.arg1)
-                    from_list = self.parse_arg(statement.arg2)
-                    num = self.parse_arg(statement.arg3)
+                    dst_list = self.parse_arg(statement.dst_list)
+                    src_list = self.parse_arg(statement.src_list)
+                    num = self.parse_arg(statement.num)
                     self.add_line(f'if round({num}) > 0:')
                     self.indent_right()
-                    self.add_line(f'{to_list} = [copy.deepcopy(elem) for elem in random.sample({from_list}, min(round({num}), len({from_list})))]')
+                    self.add_line(f'{dst_list} = [copy.deepcopy(elem) for elem in random.sample({src_list}, min(round({num}), len({src_list})))]')
                     self.indent_left()
                     self.add_line('else:')
                     self.indent_right()
-                    self.add_line(f'{to_list} = []')
+                    self.add_line(f'{dst_list} = []')
                     self.indent_left()
-                    
+                
                 case Clear():
-                    list_ = self.parse_arg(statement.arg1)
+                    list_ = self.parse_arg(statement.list_)
                     self.add_line(f'{list_}.clear()')
-                    
-                case Send() if isinstance(statement.arg1.type_in_op, Connection):
-                    receiver = self.parse_arg(statement.arg1)
+                
+                case Send() if isinstance(statement.receivers.type_in_op, Connection):
+                    receiver = self.parse_arg(statement.receivers)
                     self.add_line(f'if self.agent.logger: self.agent.logger.debug(f\'[{{self.agent.jid}}] Send message {{send}} to \u007b{receiver}\u007d\')')
                     self.add_line(f'await self.send(self.agent.get_spade_message({receiver}, send))')
                     self.add_line('self.agent.msgSCount += 1')
-                    
-                case Send() if isinstance(statement.arg1.type_in_op, ConnectionList):
-                    receivers = self.parse_arg(statement.arg1)
+                
+                case Send() if isinstance(statement.receivers.type_in_op, ConnectionList):
+                    receivers = self.parse_arg(statement.receivers)
                     self.add_line(f'if self.agent.logger: self.agent.logger.debug(f\'[{{self.agent.jid}}] Send message {{send}} to \u007b{receivers}\u007d\')')
                     self.add_line(f'for receiver in {receivers}:')
                     self.indent_right()
                     self.add_line('await self.send(self.agent.get_spade_message(receiver, send))')
                     self.add_line('self.agent.msgSCount += 1')
                     self.indent_left()
-                    
-                case Set() if isinstance(statement.arg2.type_in_op, MessageList):
-                    msg = self.parse_arg(statement.arg1)
-                    msg_list = self.parse_arg(statement.arg2)
+                
+                case Set() if isinstance(statement.value.type_in_op, MessageList):
+                    msg = self.parse_arg(statement.dst)
+                    msg_list = self.parse_arg(statement.value)
                     self.add_line(f'if len(list(filter(lambda msg: msg.body["type"] == {msg}.body["type"] and msg.body["performative"] == {msg}.body["performative"], {msg_list}))):')
                     self.indent_right()
                     self.add_line(f'{msg} = copy.deepcopy(random.choice(list(filter(lambda msg: msg.body["type"] == {msg}.body["type"] and msg.body["performative"] == {msg}.body["performative"], {msg_list}))))')
@@ -443,111 +445,126 @@ class PythonSpadeCode(PythonCode):
                     self.indent_right()
                     self.add_line('return')
                     self.indent_left()
-                    
-                case Set():
-                    arg1 = self.parse_arg(statement.arg1)
-                    arg2 = self.parse_arg(statement.arg2)
-                    self.add_line(f'{arg1} = {arg2}')
-                    
-                case Round():
-                    num = self.parse_arg(statement.arg1)
-                    self.add_line(f'{num} = round({num})')
-                    
-                case UniformDist():
-                    result = self.parse_arg(statement.arg1)
-                    a = self.parse_arg(statement.arg2)
-                    b = self.parse_arg(statement.arg3)
-                    self.add_line(f'{result} = random.uniform({a}, {b})')
-                    
-                case NormalDist():
-                    result = self.parse_arg(statement.arg1)
-                    mean = self.parse_arg(statement.arg2)
-                    std_dev = self.parse_arg(statement.arg3)
-                    self.add_line(f'{result} = numpy.random.normal({mean}, {std_dev})')
-                    
-                case ExpDist():
-                    result = self.parse_arg(statement.arg1)
-                    lambda_ = self.parse_arg(statement.arg2)
-                    self.add_line(f'{result} = numpy.random.exponential(1/{lambda_}) if {lambda_} > 0 else 0')
                 
-                case _:
-                    arg1 = self.parse_arg(statement.arg1)
-                    arg2 = self.parse_arg(statement.arg2)
+                case Set():
+                    dst = self.parse_arg(statement.dst)
+                    value = self.parse_arg(statement.value)
+                    self.add_line(f'{dst} = {value}')
+                
+                case Round():
+                    dst = self.parse_arg(statement.dst)
+                    self.add_line(f'{dst} = round({dst})')
+                
+                case UniformDist():
+                    dst = self.parse_arg(statement.dst)
+                    a = self.parse_arg(statement.a)
+                    b = self.parse_arg(statement.b)
+                    self.add_line(f'{dst} = random.uniform({a}, {b})')
+                
+                case NormalDist():
+                    dst = self.parse_arg(statement.dst)
+                    mean = self.parse_arg(statement.mean)
+                    std_dev = self.parse_arg(statement.std_dev)
+                    self.add_line(f'{dst} = numpy.random.normal({mean}, {std_dev})')
+                
+                case ExpDist():
+                    dst = self.parse_arg(statement.dst)
+                    lambda_ = self.parse_arg(statement.lambda_)
+                    self.add_line(f'{dst} = numpy.random.exponential(1/{lambda_}) if {lambda_} > 0 else 0')
+                
+                case Comparaison():
+                    left = self.parse_arg(statement.left)
+                    right = self.parse_arg(statement.right)
                     match statement:
                         case IfGreaterThan():
-                            self.add_line(f'if {arg1} > {arg2}:')
+                            self.add_line(f'if {left} > {right}:')
                             
                         case IfGreaterThanOrEqual():
-                            self.add_line(f'if {arg1} >= {arg2}:')
+                            self.add_line(f'if {left} >= {right}:')
                 
                         case IfLessThan():
-                            self.add_line(f'if {arg1} < {arg2}:')
+                            self.add_line(f'if {left} < {right}:')
                             
                         case IfLessThanOrEqual():
-                            self.add_line(f'if {arg1} <= {arg2}:')
+                            self.add_line(f'if {left} <= {right}:')
                     
                         case IfEqual():
-                            self.add_line(f'if {arg1} == {arg2}:')
+                            self.add_line(f'if {left} == {right}:')
 
                         case IfNotEqual():
-                            self.add_line(f'if {arg1} != {arg2}:')
+                            self.add_line(f'if {left} != {right}:')
                             
                         case WhileGreaterThan():
-                            self.add_line(f'while {arg1} > {arg2}:')
+                            self.add_line(f'while {left} > {right}:')
 
                         case WhileGreaterThanOrEqual():
-                            self.add_line(f'while {arg1} >= {arg2}:')
+                            self.add_line(f'while {left} >= {right}:')
 
                         case WhileLessThan():
-                            self.add_line(f'while {arg1} < {arg2}:')
+                            self.add_line(f'while {left} < {right}:')
                     
                         case WhileLessThanOrEqual():
-                            self.add_line(f'while {arg1} <= {arg2}:')
+                            self.add_line(f'while {left} <= {right}:')
                     
                         case WhileEqual():
-                            self.add_line(f'while {arg1} == {arg2}:')
+                            self.add_line(f'while {left} == {right}:')
                     
                         case WhileNotEqual():
-                            self.add_line(f'while {arg1} != {arg2}:')
-                    
+                            self.add_line(f'while {left} != {right}:')
+
+                case MathOperation():
+                    dst = self.parse_arg(statement.dst)
+                    num = self.parse_arg(statement.num)
+                    match statement:                    
                         case Add():
-                            self.add_line(f'{arg1} += {arg2}')
+                            self.add_line(f'{dst} += {num}')
 
                         case Subtract():
-                            self.add_line(f'{arg1} -= {arg2}')
+                            self.add_line(f'{dst} -= {num}')
 
                         case Multiply():
-                            self.add_line(f'{arg1} *= {arg2}')
+                            self.add_line(f'{dst} *= {num}')
 
                         case Divide():
-                            self.add_line(f'if {arg2} == 0: return')
-                            self.add_line(f'{arg1} /= {arg2}')
-                            
+                            self.add_line(f'if {num} == 0: return')
+                            self.add_line(f'{dst} /= {num}')
+                
+                case ListElementAccess():
+                    list_ = self.parse_arg(statement.list_)
+                    element = self.parse_arg(statement.element)
+                    match statement:                                                
                         case AddElement():
-                            self.add_line(f'if {arg2} not in {arg1}: {arg1}.append({arg2})')
+                            self.add_line(f'if {element} not in {list_}: {list_}.append({element})')
                     
                         case RemoveElement():
-                            self.add_line(f'if {arg2} in {arg1}: {arg1}.remove({arg2})')
+                            self.add_line(f'if {element} in {list_}: {list_}.remove({element})')
                             
                         case IfInList():
-                            self.add_line(f'if {arg2} in {arg1}:')
+                            self.add_line(f'if {element} in {list_}:')
                             
                         case IfNotInList():
-                            self.add_line(f'if {arg2} not in {arg1}:')
-                            
-                        case Length():
-                            self.add_line(f'{arg1} = len({arg2})')
-                            
-                        case RemoveNElements():
-                            self.add_line(f'if round({arg2}) > 0:')
-                            self.indent_right()
-                            self.add_line(f'if round({arg2}) < len({arg1}):')
-                            self.indent_right()
-                            self.add_line(f'random.shuffle({arg1})')
-                            self.add_line(f'{arg1} = {arg1}[:len({arg1}) - round({arg2})]')
-                            self.indent_left()
-                            self.add_line('else:')
-                            self.indent_right()
-                            self.add_line(f'{arg1} = []')
-                            self.indent_left()
-                            self.indent_left()
+                            self.add_line(f'if {element} not in {list_}:')
+                
+                case RemoveNElements():
+                    list_ = self.parse_arg(statement.list_)
+                    num = self.parse_arg(statement.num)
+                    self.add_line(f'if round({num}) > 0:')
+                    self.indent_right()
+                    self.add_line(f'if round({num}) < len({list_}):')
+                    self.indent_right()
+                    self.add_line(f'random.shuffle({list_})')
+                    self.add_line(f'{list_} = {list_}[:len({list_}) - round({num})]')
+                    self.indent_left()
+                    self.add_line('else:')
+                    self.indent_right()
+                    self.add_line(f'{list_} = []')
+                    self.indent_left()
+                    self.indent_left()
+                
+                case Length():
+                    dst = self.parse_arg(statement.dst)
+                    list_ = self.parse_arg(statement.list_)
+                    self.add_line(f'{dst} = len({list_})')
+                
+                case _:
+                    raise Exception(f"Unknown statement: {statement.print()}")
