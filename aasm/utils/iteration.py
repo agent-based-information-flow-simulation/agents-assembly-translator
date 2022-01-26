@@ -6,7 +6,7 @@ if TYPE_CHECKING:
     T = TypeVar("T")
 
 
-def zip_consecutive_pairs(iterable: List[T]) -> List[Tuple[T, T]]:
+def zip_consecutive_pairs(iterable: List[T]) -> List[Tuple[T, ...]]:
     if len(iterable) % 2 != 0:
         raise Exception("Iterable must have an even number of elements")
     iterator = iter(iterable)
