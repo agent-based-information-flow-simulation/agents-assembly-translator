@@ -30,7 +30,8 @@ class AgentPercentAmount(AgentAmount):
 
 
 class ConnectionAmount:
-    ...
+    def print(self) -> None:
+        ...
 
 
 class ConnectionConstantAmount(ConnectionAmount):
