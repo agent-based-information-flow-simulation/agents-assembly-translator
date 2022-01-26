@@ -38,6 +38,16 @@ class DistExpFloatParam:
         print(f'DistExpFloatParam {self.name} = exp(lambda={self.lambda_})')
 
 
+class DistUniformFloatParam:
+    def __init__(self, name: str, a: str, b: str):
+        self.name: str = name
+        self.a: str = a
+        self.b: str = b
+
+    def print(self) -> None:
+        print(f'DistUniformFloatParam {self.name} = uniform(a={self.a}, b={self.b})')
+
+
 class EnumParam:
     def __init__(self, name: str, enums: List[str]):
         self.name: str = name
@@ -84,6 +94,7 @@ class Agent:
         self.init_floats: Dict[str, InitFloatParam] = {}
         self.dist_normal_floats: Dict[str, DistNormalFloatParam] = {}
         self.dist_exp_floats: Dict[str, DistExpFloatParam] = {}
+        self.dist_unifrom_floats: Dict[str, DistUniformFloatParam] = {}
         self.enums: Dict[str, EnumParam] = {}
         self.connection_lists: Dict[str, ConnectionListParam] = {}
         self.message_lists: Dict[str, MessageListParam] = {}
@@ -106,6 +117,7 @@ class Agent:
                  *list(self.init_floats), 
                  *list(self.dist_normal_floats),
                  *list(self.dist_exp_floats),
+                 *list(self.dist_unifrom_floats),
                  *list(self.enums), 
                  *list(self.connection_lists),
                  *list(self.message_lists) ]
@@ -121,7 +133,8 @@ class Agent:
     def float_param_names(self) -> List[str]:
         return [ *list(self.init_floats),
                  *list(self.dist_normal_floats), 
-                 *list(self.dist_exp_floats) ]
+                 *list(self.dist_exp_floats),
+                 *list(self.dist_unifrom_floats) ]
     
     def add_init_float(self, float_param: InitFloatParam) -> None:
         self.init_floats[float_param.name] = float_param
@@ -131,6 +144,9 @@ class Agent:
     
     def add_dist_exp_float(self, float_param: DistExpFloatParam) -> None:
         self.dist_exp_floats[float_param.name] = float_param
+        
+    def add_dist_uniform_float(self, float_param: DistUniformFloatParam) -> None:
+        self.dist_unifrom_floats[float_param.name] = float_param
     
     def add_enum(self, enum_param: EnumParam) -> None:
         self.enums[enum_param.name] = enum_param
@@ -166,10 +182,11 @@ class Agent:
     def name_exists(self, name: str) -> bool:
         return self.param_exists(name) or self.behaviour_exists(name)
         
-    def behaviour_for_template_exists(self, msg_type: str, msg_performative: str):
+    def behaviour_for_template_exists(self, msg_type: str, msg_performative: str) -> bool:
         for msg_rcv_behav in self.message_received_behaviours.values():
             if msg_rcv_behav.received_message.type == msg_type and msg_rcv_behav.received_message.performative == msg_performative:
                 return True
+        return False
     
     def print(self) -> None:
         print(f'Agent {self.name}')
@@ -179,6 +196,8 @@ class Agent:
             dist_normal_float_param.print()
         for dist_exp_float_param in self.dist_exp_floats.values():
             dist_exp_float_param.print()
+        for dist_uniform_float_param in self.dist_unifrom_floats.values():
+            dist_uniform_float_param.print()
         for enum_param in self.enums.values():
             enum_param.print()
         for connection_list_param in self.connection_lists.values():

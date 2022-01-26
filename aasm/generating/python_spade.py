@@ -140,6 +140,9 @@ class PythonSpadeCode(PythonCode):
         
         for dist_exp_float_param in agent.dist_exp_floats.values():
             self.add_line(f'self.{dist_exp_float_param.name} = kwargs.get("{dist_exp_float_param.name}", numpy.random.exponential(1/{dist_exp_float_param.lambda_}))')
+            
+        for dist_uniform_float_param in agent.dist_unifrom_floats.values():
+            self.add_line(f'self.{dist_uniform_float_param.name} = kwargs.get("{dist_uniform_float_param.name}", random.uniform({dist_uniform_float_param.a}, {dist_uniform_float_param.b}))')
         
         for enum_param in agent.enums.values():
             value_list: List[str] = []
