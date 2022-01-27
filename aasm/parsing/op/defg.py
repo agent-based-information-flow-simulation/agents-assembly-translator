@@ -4,7 +4,9 @@ from typing import TYPE_CHECKING, List
 
 from aasm.intermediate.graph import (AgentConstantAmount, AgentPercentAmount,
                                      ConnectionConstantAmount,
+                                     ConnectionDistExpAmount,
                                      ConnectionDistNormalAmount,
+                                     ConnectionDistUniformAmount,
                                      StatisticalAgent, StatisticalGraph)
 from aasm.utils.validation import is_float, is_int
 
@@ -61,8 +63,29 @@ def op_DEFG(state: State, agent_name: str, amount: str, args: List[str]) -> None
         case [ 'dist_normal', mean, std_dev ]:
             state.require(is_float(mean), f'{mean} is not a valid float.')
             state.require(is_float(std_dev), f'{std_dev} is not a valid float.')
+            state.require(
+                float(std_dev) >= 0, 
+                f'{std_dev} is not a valid standard deviation parameter.', 
+                'Standard deviation must be non-negative.'
+            )
 
             connection_amount = ConnectionDistNormalAmount(mean, std_dev)
+            
+        case [ 'dist_exp', lambda_ ]:
+            state.require(is_float(lambda_), f'{lambda_} is not a valid float.')
+            state.require(
+                float(lambda_) > 0, 
+                f'{lambda_} is not a valid lambda parameter.', 
+                'Lambda must be positive.'
+            )
+            
+            connection_amount = ConnectionDistExpAmount(lambda_)
+            
+        case [ 'dist_uniform', a, b ]:
+            state.require(is_float(a), f'{a} is not a valid float.')
+            state.require(is_float(b), f'{b} is not a valid float.')
+            
+            connection_amount = ConnectionDistUniformAmount(a, b)
 
         case _:
             state.panic(f'Incorrect operation: DEFG {agent_name} {amount} {args}')

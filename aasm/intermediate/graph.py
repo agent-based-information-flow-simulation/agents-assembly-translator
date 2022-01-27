@@ -51,6 +51,23 @@ class ConnectionDistNormalAmount(ConnectionAmount):
         print(f'ConnectionDistNormalAmount mean = {self.mean}, std_dev = {self.std_dev}')
 
 
+class ConnectionDistExpAmount(ConnectionAmount):
+    def __init__(self, lambda_: str):
+        self.lambda_ = lambda_
+
+    def print(self) -> None:
+        print(f'ConnectionDistExpAmount lambda = {self.lambda_}')
+
+
+class ConnectionDistUniformAmount(ConnectionAmount):
+    def __init__(self, a: str, b: str):
+        self.a = a
+        self.b = b
+
+    def print(self) -> None:
+        print(f'ConnectionDistUniformAmount a = {self.a}, b = {self.b}')
+
+
 class StatisticalAgent:
     def __init__(self, name: str, amount: AgentAmount, connections: ConnectionAmount):
         self.name = name

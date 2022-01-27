@@ -80,10 +80,7 @@ class average_user(spade.agent.Agent):
             if self.agent.logger: self.agent.logger.debug(f'[{self.agent.jid}] Run action post_photos')
             send = { "type": "facebook_post", "performative": "query", "photos": 0.0, }
             num_photos = 0
-            if 37 < 0:
-                if self.agent.logger: self.agent.logger.warning(f'[{self.agent.jid}] Negative standard deviation: {37}')
-                return
-            num_photos = numpy.random.normal(21, 37)
+            num_photos = random.uniform(21, 37)
             num_photos = round(num_photos)
             send["photos"] = num_photos
             if self.agent.logger: self.agent.logger.debug(f'[{self.agent.jid}] Send message {send} to {self.agent.friends}')
@@ -108,7 +105,7 @@ def generate_graph_structure(domain):
     agents = []
     next_agent_idx = 0
     for _ in range(_num_average_user):
-        num_connections = int(numpy.random.normal(0, 15))
+        num_connections = int(numpy.random.exponential(1 / 0.1))
         num_connections = max(min(num_connections, len(jids) - 1), 0)
         jid = jids[next_agent_idx]
         agents.append({
