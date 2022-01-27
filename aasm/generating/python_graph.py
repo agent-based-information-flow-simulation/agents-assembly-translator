@@ -5,7 +5,9 @@ from typing import TYPE_CHECKING, List
 from aasm.generating.python_code import PythonCode
 from aasm.intermediate.graph import (AgentConstantAmount, AgentPercentAmount,
                                      ConnectionConstantAmount,
+                                     ConnectionDistExpAmount,
                                      ConnectionDistNormalAmount,
+                                     ConnectionDistUniformAmount,
                                      StatisticalGraph)
 
 if TYPE_CHECKING:
@@ -55,10 +57,23 @@ class PythonGraph(PythonCode):
         for agent in graph.agents.values():
             self.add_line(f'for _ in range(_num_{agent.name}):')
             self.indent_right()
-            if isinstance(agent.connections, ConnectionDistNormalAmount):
-                self.add_line(f'num_connections = int(numpy.random.normal({agent.connections.mean}, {agent.connections.std_dev}))')
-            elif isinstance(agent.connections, ConnectionConstantAmount):
-                self.add_line(f'num_connections = {agent.connections.value}')
+                
+            match agent.connections:
+                case ConnectionConstantAmount():
+                    self.add_line(f'num_connections = {agent.connections.value}')
+                
+                case ConnectionDistNormalAmount():
+                    self.add_line(f'num_connections = int(numpy.random.normal({agent.connections.mean}, {agent.connections.std_dev}))')
+                    
+                case ConnectionDistExpAmount():
+                    self.add_line(f'num_connections = int(numpy.random.exponential(1 / {agent.connections.lambda_}))')
+                    
+                case ConnectionDistUniformAmount():
+                    self.add_line(f'num_connections = int(random.uniform({agent.connections.a}, {agent.connections.b}))')
+                    
+                case _:
+                    raise Exception(f'Unknown connection amount: {agent.connections.print()}')
+            
             self.add_line('num_connections = max(min(num_connections, len(jids) - 1), 0)')
             self.add_line('jid = jids[next_agent_idx]')
             self.add_line('agents.append({')
