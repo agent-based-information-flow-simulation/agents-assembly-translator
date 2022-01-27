@@ -7,7 +7,7 @@ agent average_user
 	behav facebook_activity, cyclic, 30
 		action post_photos, send_msg, facebook_post, query
 			decl num_photos, 0
-			rand num_photos, int, normal, 21, 37
+			rand num_photos, int, uniform, 21, 37
 			set send.photos, num_photos
 			send friends
 		eaction
@@ -16,5 +16,5 @@ eagent
 
 graph statistical
     size 150
-    defg average_user, 100%, dist_normal, 0, 15
+    defg average_user, 100%, dist_exp, 0.1
 egraph
