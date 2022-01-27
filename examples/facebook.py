@@ -1,7 +1,6 @@
 import copy
 import datetime
 import random
-
 import httpx
 import numpy
 import orjson
@@ -95,7 +94,6 @@ class average_user(spade.agent.Agent):
 
 import random
 import uuid
-
 import numpy
 
 
