@@ -5,6 +5,7 @@ import httpx
 import numpy
 import orjson
 import spade
+import sys
 
 
 class average_user(spade.agent.Agent):
@@ -16,14 +17,17 @@ class average_user(spade.agent.Agent):
         self.backup_period = backup_period
         self.backup_delay = backup_delay
         self.connections = kwargs.get("connections", [])
-        self.msgRCount = kwargs.get("msgRCount", 0)
-        self.msgSCount = kwargs.get("msgSCount", 0)
+        self.msgRCount = self.limit_number(kwargs.get("msgRCount", 0))
+        self.msgSCount = self.limit_number(kwargs.get("msgSCount", 0))
         self.friends = kwargs.get("friends", [])
         if self.logger: self.logger.debug(f'[{self.jid}] Class dict after initialization: {self.__dict__}')
     
     @property
     def connCount(self):
-        return len(self.connections)
+        return self.limit_number(len(self.connections))
+    
+    def limit_number(self, value):
+        return float(max(sys.float_info.min, min(value, sys.float_info.max)))
     
     def get_json_from_spade_message(self, msg):
         return orjson.loads(msg.body)
@@ -79,14 +83,14 @@ class average_user(spade.agent.Agent):
         async def post_photos(self):
             if self.agent.logger: self.agent.logger.debug(f'[{self.agent.jid}] Run action post_photos')
             send = { "type": "facebook_post", "performative": "query", "photos": 0.0, }
-            num_photos = 0
-            num_photos = random.uniform(21, 37)
-            num_photos = round(num_photos)
-            send["photos"] = num_photos
+            num_photos = self.agent.limit_number(0)
+            num_photos = self.agent.limit_number(random.uniform(self.agent.limit_number(21), self.agent.limit_number(37)))
+            num_photos = self.agent.limit_number(round(self.agent.limit_number(num_photos)))
+            send["photos"] = self.agent.limit_number(num_photos)
             if self.agent.logger: self.agent.logger.debug(f'[{self.agent.jid}] Send message {send} to {self.agent.friends}')
             for receiver in self.agent.friends:
                 await self.send(self.agent.get_spade_message(receiver, send))
-                self.agent.msgSCount += 1
+                self.agent.msgSCount = self.agent.limit_number(self.agent.msgSCount + 1)
         
         async def run(self):
             await self.post_photos()
