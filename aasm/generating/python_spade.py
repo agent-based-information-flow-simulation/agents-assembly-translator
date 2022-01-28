@@ -7,7 +7,7 @@ from aasm.generating.python_code import PythonCode
 from aasm.generating.python_graph import PythonGraph
 from aasm.intermediate.action import SendMessageAction
 from aasm.intermediate.argument import (AgentParam, Connection, ConnectionList,
-                                        EnumValue, MessageList,
+                                        EnumValue, Float, MessageList,
                                         ReceivedMessageParam, SendMessageParam)
 from aasm.intermediate.behaviour import MessageReceivedBehaviour
 from aasm.intermediate.block import Block
@@ -83,12 +83,16 @@ class PythonSpadeCode(PythonCode):
         self.add_line('import numpy')
         self.add_line('import orjson')
         self.add_line('import spade')
+        self.add_line('import sys')
     
     def generate_agent(self, agent: Agent) -> None:
         self.add_line(f'class {agent.name}(spade.agent.Agent):')
         self.indent_right()
 
         self.add_agent_constructor(agent)
+        self.add_newline()
+        
+        self.add_float_utils()
         self.add_newline()
 
         self.add_message_utils()
@@ -129,20 +133,30 @@ class PythonSpadeCode(PythonCode):
         self.add_line('self.backup_period = backup_period')
         self.add_line('self.backup_delay = backup_delay')
         self.add_line('self.connections = kwargs.get("connections", [])')
-        self.add_line('self.msgRCount = kwargs.get("msgRCount", 0)')
-        self.add_line('self.msgSCount = kwargs.get("msgSCount", 0)')
+        self.add_line('self.msgRCount = self.limit_number(kwargs.get("msgRCount", 0))')
+        self.add_line('self.msgSCount = self.limit_number(kwargs.get("msgSCount", 0))')
 
         for init_float_param in agent.init_floats.values():
-            self.add_line(f'self.{init_float_param.name} = kwargs.get("{init_float_param.name}", {init_float_param.value})')
+            name = init_float_param.name
+            value = init_float_param.value
+            self.add_line(f'self.{name} = self.limit_number(kwargs.get("{name}", {value}))')
         
         for dist_normal_float_param in agent.dist_normal_floats.values():
-            self.add_line(f'self.{dist_normal_float_param.name} = kwargs.get("{dist_normal_float_param.name}", numpy.random.normal({dist_normal_float_param.mean}, {dist_normal_float_param.std_dev}))')
+            name = dist_normal_float_param.name
+            mean = f'self.limit_number({dist_normal_float_param.mean})'
+            std_dev = f'self.limit_number({dist_normal_float_param.std_dev})'
+            self.add_line(f'self.{name} = self.limit_number(kwargs.get("{name}", numpy.random.normal({mean}, {std_dev})))')
         
         for dist_exp_float_param in agent.dist_exp_floats.values():
-            self.add_line(f'self.{dist_exp_float_param.name} = kwargs.get("{dist_exp_float_param.name}", numpy.random.exponential(1/{dist_exp_float_param.lambda_}))')
+            name = dist_exp_float_param.name
+            lambda_ = f'self.limit_number({dist_exp_float_param.lambda_})'
+            self.add_line(f'self.{name} = self.limit_number(kwargs.get("{name}", numpy.random.exponential(self.limit_number(1 / {lambda_}))))')
             
         for dist_uniform_float_param in agent.dist_unifrom_floats.values():
-            self.add_line(f'self.{dist_uniform_float_param.name} = kwargs.get("{dist_uniform_float_param.name}", random.uniform({dist_uniform_float_param.a}, {dist_uniform_float_param.b}))')
+            name = dist_uniform_float_param.name
+            a = f'self.limit_number({dist_uniform_float_param.a})'
+            b = f'self.limit_number({dist_uniform_float_param.b})'
+            self.add_line(f'self.{name} = self.limit_number(kwargs.get("{name}", random.uniform({a}, {b})))')
         
         for enum_param in agent.enums.values():
             value_list: List[str] = []
@@ -168,10 +182,16 @@ class PythonSpadeCode(PythonCode):
         self.add_line('@property')
         self.add_line('def connCount(self):')
         self.indent_right()
-        self.add_line('return len(self.connections)')
+        self.add_line('return self.limit_number(len(self.connections))')
 
         self.indent_left()
-
+    
+    def add_float_utils(self) -> None:
+        self.add_line('def limit_number(self, value):')
+        self.indent_right()
+        self.add_line('return float(max(sys.float_info.min, min(value, sys.float_info.max)))')
+        self.indent_left()
+    
     def add_message_utils(self) -> None:
         self.add_line('def get_json_from_spade_message(self, msg):')
         self.indent_right()
@@ -323,7 +343,7 @@ class PythonSpadeCode(PythonCode):
         self.add_line('if rcv:')
         self.indent_right()
         self.add_line('rcv = self.agent.get_json_from_spade_message(rcv)')
-        self.add_line('self.agent.msgRCount += 1')
+        self.add_line('self.agent.msgRCount = self.agent.limit_number(self.agent.msgRCount + 1)')
         self.add_line('if self.agent.logger: self.agent.logger.debug(f\'[{self.agent.jid}] Received message: {rcv}\')')
         self.indent_left()
 
@@ -402,19 +422,19 @@ class PythonSpadeCode(PythonCode):
                     self.indent_left()
 
                 case Declaration():
-                    value = self.parse_arg(statement.value)
+                    value = f'self.agent.limit_number({self.parse_arg(statement.value)})'
                     self.add_line(f'{statement.name} = {value}')
                 
                 case Subset():
                     dst_list = self.parse_arg(statement.dst_list)
                     src_list = self.parse_arg(statement.src_list)
-                    num = self.parse_arg(statement.num)
-                    self.add_line(f'if round({num}) <= 0:')
+                    num = f'self.agent.limit_number({self.parse_arg(statement.num)})'
+                    self.add_line(f'if self.agent.limit_number(round({num})) <= 0:')
                     self.indent_right()
-                    self.add_line(f'if self.agent.logger: self.agent.logger.debug(f\'[{{self.agent.jid}}] Non-positive subset size (rounded): \u007b{num}\u007d\')')
+                    self.add_line(f'if self.agent.logger: self.agent.logger.debug(f\'[{{self.agent.jid}}] Non-positive subset size (rounded): \u007bself.agent.limit_number(round({num}))\u007d\')')
                     self.add_line('return')
                     self.indent_left()
-                    self.add_line(f'{dst_list} = [copy.deepcopy(elem) for elem in random.sample({src_list}, min(round({num}), len({src_list})))]')
+                    self.add_line(f'{dst_list} = [copy.deepcopy(elem) for elem in random.sample({src_list}, min(self.agent.limit_number(round({num})), self.agent.limit_number(len({src_list}))))]')
                 
                 case Clear():
                     list_ = self.parse_arg(statement.list_)
@@ -424,7 +444,7 @@ class PythonSpadeCode(PythonCode):
                     receiver = self.parse_arg(statement.receivers)
                     self.add_line(f'if self.agent.logger: self.agent.logger.debug(f\'[{{self.agent.jid}}] Send message {{send}} to \u007b{receiver}\u007d\')')
                     self.add_line(f'await self.send(self.agent.get_spade_message({receiver}, send))')
-                    self.add_line('self.agent.msgSCount += 1')
+                    self.add_line('self.agent.msgSCount = self.agent.limit_number(self.agent.msgSCount + 1)')
                 
                 case Send() if isinstance(statement.receivers.type_in_op, ConnectionList):
                     receivers = self.parse_arg(statement.receivers)
@@ -432,7 +452,7 @@ class PythonSpadeCode(PythonCode):
                     self.add_line(f'for receiver in {receivers}:')
                     self.indent_right()
                     self.add_line('await self.send(self.agent.get_spade_message(receiver, send))')
-                    self.add_line('self.agent.msgSCount += 1')
+                    self.add_line('self.agent.msgSCount = self.agent.limit_number(self.agent.msgSCount + 1)')
                     self.indent_left()
                 
                 case Set() if isinstance(statement.value.type_in_op, MessageList):
@@ -445,6 +465,11 @@ class PythonSpadeCode(PythonCode):
                     self.indent_left()
                     self.add_line(f'{msg} = copy.deepcopy(random.choice(list(filter(lambda msg: msg["type"] == {msg}["type"] and msg["performative"] == {msg}["performative"], {msg_list}))))')
                 
+                case Set() if isinstance(statement.value.type_in_op, Float):
+                    dst = self.parse_arg(statement.dst)
+                    num = f'self.agent.limit_number({self.parse_arg(statement.value)})'
+                    self.add_line(f'{dst} = {num}')
+                
                 case Set():
                     dst = self.parse_arg(statement.dst)
                     value = self.parse_arg(statement.value)
@@ -452,38 +477,46 @@ class PythonSpadeCode(PythonCode):
                 
                 case Round():
                     dst = self.parse_arg(statement.dst)
-                    self.add_line(f'{dst} = round({dst})')
+                    self.add_line(f'{dst} = self.agent.limit_number(round(self.agent.limit_number({dst})))')
                 
                 case UniformDist():
                     dst = self.parse_arg(statement.dst)
-                    a = self.parse_arg(statement.a)
-                    b = self.parse_arg(statement.b)
-                    self.add_line(f'{dst} = random.uniform({a}, {b})')
+                    a = f'self.agent.limit_number({self.parse_arg(statement.a)})'
+                    b = f'self.agent.limit_number({self.parse_arg(statement.b)})'
+                    self.add_line(f'{dst} = self.agent.limit_number(random.uniform({a}, {b}))')
                 
                 case NormalDist():
                     dst = self.parse_arg(statement.dst)
-                    mean = self.parse_arg(statement.mean)
-                    std_dev = self.parse_arg(statement.std_dev)
+                    mean = f'self.agent.limit_number({self.parse_arg(statement.mean)})'
+                    std_dev = f'self.agent.limit_number({self.parse_arg(statement.std_dev)})'
                     self.add_line(f'if {std_dev} < 0:')
                     self.indent_right()
                     self.add_line(f'if self.agent.logger: self.agent.logger.warning(f\'[{{self.agent.jid}}] Negative standard deviation: \u007b{std_dev}\u007d\')')
                     self.add_line('return')
                     self.indent_left()
-                    self.add_line(f'{dst} = numpy.random.normal({mean}, {std_dev})')
+                    self.add_line(f'{dst} = self.agent.limit_number(numpy.random.normal({mean}, {std_dev}))')
                 
                 case ExpDist():
                     dst = self.parse_arg(statement.dst)
-                    lambda_ = self.parse_arg(statement.lambda_)
+                    lambda_ = f'self.agent.limit_number({self.parse_arg(statement.lambda_)})'
                     self.add_line(f'if {lambda_} <= 0:')
                     self.indent_right()
                     self.add_line(f'if self.agent.logger: self.agent.logger.warning(f\'[{{self.agent.jid}}] Non-positive lambda: \u007b{lambda_}\u007d\')')
                     self.add_line('return')
                     self.indent_left()
-                    self.add_line(f'{dst} = numpy.random.exponential(1 / {lambda_})')
+                    self.add_line(f'{dst} = self.agent.limit_number(numpy.random.exponential(self.agent.limit_number(1 / {lambda_})))')
                 
                 case Comparaison():
-                    left = self.parse_arg(statement.left)
-                    right = self.parse_arg(statement.right)
+                    if isinstance(statement.left.type_in_op, Float):
+                        left = f'self.agent.limit_number({self.parse_arg(statement.left)})'
+                    else:
+                        left = self.parse_arg(statement.left)
+                    
+                    if isinstance(statement.right.type_in_op, Float):
+                        right = f'self.agent.limit_number({self.parse_arg(statement.right)})'
+                    else:
+                        right = self.parse_arg(statement.right)
+                    
                     match statement:
                         case IfGreaterThan():
                             self.add_line(f'if {left} > {right}:')
@@ -499,10 +532,10 @@ class PythonSpadeCode(PythonCode):
                     
                         case IfEqual():
                             self.add_line(f'if {left} == {right}:')
-
+                        
                         case IfNotEqual():
                             self.add_line(f'if {left} != {right}:')
-                            
+                        
                         case WhileGreaterThan():
                             self.add_line(f'while {left} > {right}:')
 
@@ -511,28 +544,31 @@ class PythonSpadeCode(PythonCode):
 
                         case WhileLessThan():
                             self.add_line(f'while {left} < {right}:')
-                    
+
                         case WhileLessThanOrEqual():
                             self.add_line(f'while {left} <= {right}:')
-                    
+
                         case WhileEqual():
                             self.add_line(f'while {left} == {right}:')
-                    
+
                         case WhileNotEqual():
                             self.add_line(f'while {left} != {right}:')
+                        
+                        case _:
+                            raise Exception(f"Unknown comparaison statement: {statement.print()}")
 
                 case MathOperation():
                     dst = self.parse_arg(statement.dst)
-                    num = self.parse_arg(statement.num)
-                    match statement:                    
+                    num = f'self.agent.limit_number({self.parse_arg(statement.num)})'
+                    match statement:
                         case Add():
-                            self.add_line(f'{dst} += {num}')
+                            self.add_line(f'{dst} = self.agent.limit_number({dst} + {num})')
 
                         case Subtract():
-                            self.add_line(f'{dst} -= {num}')
+                            self.add_line(f'{dst} = self.agent.limit_number({dst} - {num})')
 
                         case Multiply():
-                            self.add_line(f'{dst} *= {num}')
+                            self.add_line(f'{dst} = self.agent.limit_number({dst} * {num})')
 
                         case Divide():
                             self.add_line(f'if {num} == 0:')
@@ -540,7 +576,10 @@ class PythonSpadeCode(PythonCode):
                             self.add_line(f'if self.agent.logger: self.agent.logger.warning(f\'[{{self.agent.jid}}] Division by zero: \u007b{num}\u007d\')')
                             self.add_line('return')
                             self.indent_left()
-                            self.add_line(f'{dst} /= {num}')
+                            self.add_line(f'{dst} = self.agent.limit_number({dst} / {num})')
+                            
+                        case _:
+                            raise Exception(f"Unknown math operation statement: {statement.print()}")
                 
                 case ListElementAccess():
                     list_ = self.parse_arg(statement.list_)
@@ -557,22 +596,25 @@ class PythonSpadeCode(PythonCode):
                             
                         case IfNotInList():
                             self.add_line(f'if {element} not in {list_}:')
+                            
+                        case _:
+                            raise Exception(f"Unknown list element access statement: {statement.print()}")
                 
                 case RemoveNElements():
                     list_ = self.parse_arg(statement.list_)
-                    num = self.parse_arg(statement.num)
-                    self.add_line(f'if round({num}) < 0 or round({num}) > len({list_}):')
+                    num = f'self.agent.limit_number({self.parse_arg(statement.num)})'
+                    self.add_line(f'if self.agent.limit_number(round({num})) < 0 or self.agent.limit_number(round({num})) > self.agent.limit_number(len({list_})):')
                     self.indent_right()
-                    self.add_line(f'if self.agent.logger: self.agent.logger.debug(f\'[{{self.agent.jid}}] Incorrect number of elements to remove (rounded, either negative or bigger than the list size): \u007b{num}\u007d\')')
+                    self.add_line(f'if self.agent.logger: self.agent.logger.debug(f\'[{{self.agent.jid}}] Incorrect number of elements to remove (rounded, either negative or bigger than the list size): \u007bself.agent.limit_number(round({num}))\u007d\')')
                     self.add_line('return')
                     self.indent_left()
                     self.add_line(f'random.shuffle({list_})')
-                    self.add_line(f'{list_} = {list_}[:len({list_}) - round({num})]')
+                    self.add_line(f'{list_} = {list_}[:self.agent.limit_number(self.agent.limit_number(len({list_})) - self.agent.limit_number(round({num})))]')
                 
                 case Length():
                     dst = self.parse_arg(statement.dst)
                     list_ = self.parse_arg(statement.list_)
-                    self.add_line(f'{dst} = len({list_})')
+                    self.add_line(f'{dst} = self.agent.limit_number(len({list_}))')
                 
                 case _:
                     raise Exception(f"Unknown statement: {statement.print()}")
