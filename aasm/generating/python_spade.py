@@ -428,13 +428,14 @@ class PythonSpadeCode(PythonCode):
                 case Subset():
                     dst_list = self.parse_arg(statement.dst_list)
                     src_list = self.parse_arg(statement.src_list)
-                    num = f'self.agent.limit_number({self.parse_arg(statement.num)})'
-                    self.add_line(f'if self.agent.limit_number(round({num})) <= 0:')
+                    src_list_len = f'int(self.agent.limit_number(len({src_list})))'
+                    num = f'int(self.agent.limit_number(round(self.agent.limit_number({self.parse_arg(statement.num)}))))'
+                    self.add_line(f'if {num} <= 0:')
                     self.indent_right()
-                    self.add_line(f'if self.agent.logger: self.agent.logger.debug(f\'[{{self.agent.jid}}] Non-positive subset size (rounded): \u007bself.agent.limit_number(round({num}))\u007d\')')
+                    self.add_line(f'if self.agent.logger: self.agent.logger.debug(f\'[{{self.agent.jid}}] Non-positive subset size (rounded): \u007b{num}\u007d\')')
                     self.add_line('return')
                     self.indent_left()
-                    self.add_line(f'{dst_list} = [copy.deepcopy(elem) for elem in random.sample({src_list}, min(self.agent.limit_number(round({num})), self.agent.limit_number(len({src_list}))))]')
+                    self.add_line(f'{dst_list} = [copy.deepcopy(elem) for elem in random.sample({src_list}, min({num}, {src_list_len}))]')
                 
                 case Clear():
                     list_ = self.parse_arg(statement.list_)
@@ -602,14 +603,15 @@ class PythonSpadeCode(PythonCode):
                 
                 case RemoveNElements():
                     list_ = self.parse_arg(statement.list_)
-                    num = f'self.agent.limit_number({self.parse_arg(statement.num)})'
-                    self.add_line(f'if self.agent.limit_number(round({num})) < 0 or self.agent.limit_number(round({num})) > self.agent.limit_number(len({list_})):')
+                    list_len = f'int(self.agent.limit_number(len({list_})))'
+                    num = f'int(self.agent.limit_number(round(self.agent.limit_number({self.parse_arg(statement.num)}))))'
+                    self.add_line(f'if {num} < 0 or {num} > {list_len}:')
                     self.indent_right()
-                    self.add_line(f'if self.agent.logger: self.agent.logger.debug(f\'[{{self.agent.jid}}] Incorrect number of elements to remove (rounded, either negative or bigger than the list size): \u007bself.agent.limit_number(round({num}))\u007d\')')
+                    self.add_line(f'if self.agent.logger: self.agent.logger.debug(f\'[{{self.agent.jid}}] Incorrect number of elements to remove (rounded, either negative or bigger than the list size): \u007b{num}\u007d\')')
                     self.add_line('return')
                     self.indent_left()
                     self.add_line(f'random.shuffle({list_})')
-                    self.add_line(f'{list_} = {list_}[:self.agent.limit_number(self.agent.limit_number(len({list_})) - self.agent.limit_number(round({num})))]')
+                    self.add_line(f'{list_} = {list_}[:int(self.agent.limit_number({list_len} - {num}))]')
                 
                 case Length():
                     dst = self.parse_arg(statement.dst)
