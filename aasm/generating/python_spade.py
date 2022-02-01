@@ -189,7 +189,7 @@ class PythonSpadeCode(PythonCode):
     def add_float_utils(self) -> None:
         self.add_line('def limit_number(self, value):')
         self.indent_right()
-        self.add_line('return float(max(sys.float_info.min, min(value, sys.float_info.max)))')
+        self.add_line('return float(max(-sys.float_info.max, min(value, sys.float_info.max)))')
         self.indent_left()
     
     def add_message_utils(self) -> None:
