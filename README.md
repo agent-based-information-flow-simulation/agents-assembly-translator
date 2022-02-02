@@ -24,7 +24,7 @@ The translator can be installed by running:
 ```
 pip install aasm
 ```
-If you are afraid of pip, you can download this repository. No additional dependencies are required.
+Alternatively, you can download this repository. No additional dependencies are required.
 
 ### Usage
 You can run the translator as a package. To translate *agent.aasm* to SPADE, run:
