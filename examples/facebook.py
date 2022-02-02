@@ -27,7 +27,7 @@ class average_user(spade.agent.Agent):
         return self.limit_number(len(self.connections))
     
     def limit_number(self, value):
-        return float(max(-sys.float_info.max, min(value, sys.float_info.max)))
+        return float(max(-2147483648, min(value, 2147483647)))
     
     def get_json_from_spade_message(self, msg):
         return orjson.loads(msg.body)
