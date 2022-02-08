@@ -8,8 +8,9 @@
 
 `Float` -
 
-`ACLPerformative`
+`ACLPerformative` -
 
+`DistArgs` - 
 
 
 ## Scope Modifiers
@@ -84,3 +85,88 @@ AGENT
 #
 EAGENT
 ```
+
+## Message Scope
+`PRM` | **args:** `name: Name, type: {float}` | Creates a new message parameter of specified type. `name` cannot be `sender`, `type`, `performative`.
+
+## Agent Scope
+`PRM` | **args:** `name: Name, type: {float, enum, list}, subtype: {init, dist, conn, msg}, p_args<sup>**</sup>` | Creates an agent parameter of specified type and subtype. Describes the initial state of an agent by passing arguments `p_args`.
+
+`p_args:`
+ * `float`
+   * `init`: | `val: Float` | Creates a float parameter. Value `name` is set to `val` during agent initiation.
+   * `dist`: | `dist: {normal, uniform, exp}, dist_args: DistArgs}` | Creates a float parameter. Value `name` is set to a value drawn from specified `dist` distribution.
+ * `enum`: | `[val1, val1%, ..., valn, valn%]` | Creates an enum parameter. Value `name` is set to one of `[val1,...,val n]`. Corresponding `valn%` arguments specify the percentage of the total agent population to have a specific value set on startup.
+ * `list`
+   * `conn`: | - | Creates a connection list parameter. List is empty on startup.
+   * `msg`: | - | Creates a message list parameter. List is empty on startup.
+
+## Action Scope: modifiers
+
+`DECL` | **args:** `name: Name, value: Float` | Creates a float variable with name and value. The new variable can only be used in given action's scope.
+
+`SET` | **args:** `dst: MutFloat/Enum, value: Float/EnumVal` | Sets value of `dst` to `value`
+
+`SUBS` | **args:** `dst: List, src: List, num: Integer` | Chooses `num` elements from `src` and sets `dst` to them.
+
+## Action Scope: math expressions
+
+`ADD` | **args:** `dst: MutFlost, arg: Float` | Adds `arg` to `dst` and stores result in `dst`.
+
+`MULT` | **args:** `dst: MutFlost, arg: Float` | Multiplies `arg` by `dst` and stores result in `dst`.
+
+`SUBT` | **args:** `dst: MutFlost, arg: Float` | Subtracts `arg` from `dst` and stores result in `dst`.
+
+`DIV` | **args:** `dst: MutFlost, arg: Float` | Divides `arg` by `dst` and stores result in `dst`. If `arg` is `0` then the `ACTION` will finish early.
+
+## Action Scope: conditionals
+`IEQ` | **args** `a: Float/Enum, b: Float/EnumVal` | Begins conditional block if `a` is equal to `b`. Needs matching `EBLOCK`.
+
+`INEQ` | **args** `a: Float/Enum, b: Float/EnumVal` | Begins conditional block if `a` is not equal to `b`. Needs matching `EBLOCK`.
+
+`ILT` | **args** `a: Float, b: Float` | Begins conditional block if `a` is less than `b`. Needs matching `EBLOCK`.
+
+`IGT` | **args** `a: Float, b: Float` | Begins conditional block if `a` is greater than `b`. Needs matching `EBLOCK`.
+
+`ILTEQ` | **args** `a: Float, b: Float` | Begins conditional block if `a` is less or equal`b`. Needs matching `EBLOCK`.
+
+`IGTEQ` | **args** `a: Float, b: Float` | Begins conditional block if `a` is greater or equal`b`. Needs matching `EBLOCK`.
+
+## Action Scope: loops
+`WEQ` | **args** `a: Float/Enum, b: Float/EnumVal` | Begins loop block if `a` is equal to `b`. Needs matching `EBLOCK`.
+
+`WNEQ` | **args** `a: Float/Enum, b: Float/EnumVal` | Begins loop block if `a` is not equal to `b`. Needs matching `EBLOCK`.
+
+`WLT` | **args** `a: Float, b: Float` | Begins loop block if `a` is less than `b`. Needs matching `EBLOCK`.
+
+`WGT` | **args** `a: Float, b: Float` | Begins loop block if `a` is greater than `b`. Needs matching `EBLOCK`.
+
+`WLTEQ` | **args** `a: Float, b: Float` | Begins loop block if `a` is less or equal`b`. Needs matching `EBLOCK`.
+
+`WGTEQ` | **args** `a: Float, b: Float` | Begins loop block if `a` is greater or equal`b`. Needs matching `EBLOCK`.
+
+## Action scope: lists
+
+`ADDE` | **args:** `list: List, value: Message/Jid` | Adds `value` to `list`.
+
+`REME` | **args:** `list: List, value: Message/Jid` | Removes `value` from `list`. If `value` is not in the list, does nothing.
+
+`REMEN` | **args:** `list: List, num, Integer` | Removes `num` random elements from `list`. If `list` is too short, it clears it.
+
+`LEN` | **args:** `result: MutFlost, list: List` | Saves length of `list` in `result`.
+
+`CLR` | **args:** `list: List` | Clears contents of `list`
+
+`IN` | **args:** `list: List, value: Message/Jid` | Begins conditional block if `val` is in `list`. Needs matching `EBLOCK`
+
+`NIN` | **args:** `list: List, value: Message/Jid` | Begins conditional block if `val` is not in `list`. Needs matching `EBLOCK`
+
+## Action scope: special
+
+`EBLOCK` | - | Ends current conditional or loop block.
+
+`SEND` | **args:** `rcv: ConnList/Jid` | Sends message to `rcv`. Can only be used inside `send_msg` actions.
+
+`RAND` | **args:** `result: MutFloat, cast: {float, int}, dist: {uniform, normal, exp}, dist_args: DistArgs` | Stores a value drawn from specified `dist` distribution, casts it to `cast` type and stores it in `result`
+
+`(Message Access)` | **usage:** `[MSG].[prm]` | Allows to access the value of `prm` from `MSG`
