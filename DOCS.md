@@ -1,16 +1,28 @@
 # Agents Assembly instructions
 
-## How to use this documentation
+## Type annotation definitions
 
-`{...}` -
+`{...}` - one of the options from the brackets needs to be chosen, written as specified within brackets
 
-`Name` - 
+`Name` - A unique within alphanumeric string, which does not contain any forbidden characters and does not begin with a numberA unique within alphanumeric string, which does not contain any forbidden characters and does not begin with a number. Some instructions put further restrictions on `Name`s. Some instructions put further restrictions on `Name`s.
 
-`Float` -
+`Float` - A floating point number or variable
 
-`ACLPerformative` -
+`MutFloat` - A floating point variable with possibility of modification
 
-`DistArgs` - 
+`Integer` - An integer. If a `Float` is passed as an argument of this type it will be rounded down.
+
+`Enum` - An enumerable, stores a state in the form of `EnumVal`
+
+`EnumVal` - A distinct enumerable state
+
+`Message` - A message defined using the `MESSAGE` instruction
+
+`Jid` - Systemic agent identifier
+
+`ACLPerformative` - One of FIPA defined ACL performative types.
+
+`DistArgs` - Arguments for a specified distribution. Mathematical constraints apply.
 
 
 ## Scope Modifiers
