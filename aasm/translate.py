@@ -11,13 +11,14 @@ if TYPE_CHECKING:
     from aasm.generating.code import Code
 
 
-def get_args() -> Tuple[str, str, bool]:
+def get_args() -> Tuple[str, str, bool, bool]:
     parser = ArgumentParser()
     parser.add_argument('input_path', type=str, help='path to the input file')
     parser.add_argument('-d', '--debug', action='store_true', help='toggle the compiler debug mode')
+    parser.add_argument('-P', '--enable-preprocessor', action='store_true', help="enable preprocessor directives")
     parser.add_argument('-o', '--output-path', type=str, default='out', help='the output file path')
     args = parser.parse_args()
-    return args.input_path, args.output_path, args.debug
+    return args.input_path, args.output_path, args.debug, args.enable_preprocessor
 
 
 def get_input(input_path: str) -> List[str]:
@@ -32,9 +33,11 @@ def save_output(output_path: str, code: Code) -> None:
             f.write(code_line)
 
 
-def main(input_path: str, output_path: str, debug: bool) -> None:
+def main(input_path: str, output_path: str, debug: bool, enable_preprocessor: bool) -> None:
     lines = get_input(input_path)
     start_time = datetime.now()
+    if enable_preprocessor:
+        pass
     try:
         spade_code = get_spade_code(lines, indent_size=4, debug=debug)
     except PanicException as e:
@@ -46,5 +49,5 @@ def main(input_path: str, output_path: str, debug: bool) -> None:
 
 
 if __name__ == '__main__':
-    input_path, output_path, debug = get_args()
+    input_path, output_path, debug, enable_preprocessor = get_args()
     main(input_path, output_path, debug)

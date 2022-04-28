@@ -35,7 +35,7 @@ if TYPE_CHECKING:
 def parse_lines(lines: List[str], debug: bool) -> ParsedData:
     state = State(lines, debug)
     for tokens in state.tokens_from_lines():
-        match tokens:                                        
+        match tokens:
             case [ 'AGENT', name ]:
                 op_AGENT(state, name)
             

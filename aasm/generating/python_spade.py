@@ -46,7 +46,7 @@ def get_spade_code(aasm_lines: List[str], indent_size: int = 4, debug: bool = Fa
 
         indent_size: int, optional
             Python code indentation size
-            
+
         debug: bool, optional
             Print the translator debug information to the standard output
 
@@ -61,7 +61,7 @@ def get_spade_code(aasm_lines: List[str], indent_size: int = 4, debug: bool = Fa
     """
     parsed = parse_lines(aasm_lines, debug)
     return Code(
-        PythonSpadeCode(indent_size, parsed.agents).code_lines, 
+        PythonSpadeCode(indent_size, parsed.agents).code_lines,
         PythonGraph(indent_size, parsed.graph).code_lines
     )
 
@@ -74,7 +74,7 @@ class PythonSpadeCode(PythonCode):
             for agent in agents:
                 self.add_newlines(2)
                 self.generate_agent(agent)
-    
+
     def add_required_imports(self) -> None:
         self.add_line('import copy')
         self.add_line('import datetime')
@@ -84,14 +84,14 @@ class PythonSpadeCode(PythonCode):
         self.add_line('import orjson')
         self.add_line('import spade')
         self.add_line('import sys')
-    
+
     def generate_agent(self, agent: Agent) -> None:
         self.add_line(f'class {agent.name}(spade.agent.Agent):')
         self.indent_right()
 
         self.add_agent_constructor(agent)
         self.add_newline()
-        
+
         self.add_float_utils()
         self.add_newline()
 

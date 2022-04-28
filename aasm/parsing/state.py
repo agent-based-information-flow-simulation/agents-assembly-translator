@@ -86,7 +86,7 @@ class State:
             if tokens:
                 tokens[0] = tokens[0].upper()
                 yield tokens
-                
+
     def print(self) -> None:
         if self.messages:
             print('- Messages:')
