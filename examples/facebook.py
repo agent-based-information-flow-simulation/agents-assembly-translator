@@ -71,7 +71,9 @@ class average_user(spade.agent.Agent):
                     "friends": self.agent.friends,
                 },
                 "messages": {
-                }
+                },
+                "float_lists": {
+                },
             }
             if self.agent.logger: self.agent.logger.debug(f'[{self.agent.jid}] Sending backup data: {data}')
             try:

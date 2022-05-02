@@ -16,6 +16,8 @@ from aasm.parsing.op.graph import op_EGRAPH, op_GRAPH
 from aasm.parsing.op.len import op_LEN
 from aasm.parsing.op.list import (handle_list_inclusion,
                                   handle_list_modification)
+from aasm.parsing.op.lr import op_LR
+from aasm.parsing.op.lw import op_LW
 from aasm.parsing.op.math import handle_math_statement
 from aasm.parsing.op.message import op_EMESSAGE, op_MESSAGE
 from aasm.parsing.op.prm import op_agent_PRM, op_message_PRM
@@ -125,6 +127,12 @@ def parse_lines(lines: List[str], debug: bool) -> ParsedData:
 
             case [ 'DEFG',  agent_name, amount, *args ]:
                 op_DEFG(state, agent_name, amount, args)
+                
+            case [ 'LR', dst, list_, idx ]:
+                op_LR(state, dst, list_, idx)
+                
+            case [ 'LW', list_, idx, value ]:
+                op_LW(state, list_, idx, value)
                 
             case _:
                 state.panic(f'Unknown tokens: {tokens}')

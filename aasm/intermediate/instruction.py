@@ -332,3 +332,17 @@ class ExpDist(Instruction):
         print('ExpDist')
         self.dst.print()
         self.lambda_.print()
+
+
+class ListRead(Instruction):
+    def __init__(self, dst: Argument, list_: Argument, idx: Argument):
+        self.dst = dst
+        self.list_ = list_
+        self.idx = idx
+
+
+class ListWrite(Instruction):
+    def __init__(self, list_: Argument, idx: Argument, value: Argument):
+        self.list_ = list_
+        self.idx = idx
+        self.value = value
