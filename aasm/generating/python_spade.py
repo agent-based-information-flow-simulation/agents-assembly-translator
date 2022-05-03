@@ -652,7 +652,7 @@ class PythonSpadeCode(PythonCode):
                     list_len = f'int(self.agent.limit_number(len({list_})))'
                     self.add_line(f'if {idx} < 0 or {idx} >= {list_len}:')
                     self.indent_right()
-                    self.add_line(f'if self.agent.logger: self.agent.logger.warn(f\'[{{self.agent.jid}}] Incorrect index (rounded, either negative or bigger than the list size): \u007b{idx}\u007d\')')
+                    self.add_line(f'if self.agent.logger: self.agent.logger.warning(f\'[{{self.agent.jid}}] Incorrect index (rounded, either negative or bigger than the list size): \u007b{idx}\u007d\')')
                     self.add_line('return')
                     self.indent_left()
                     self.add_line(f'{list_}[{idx}] = {value}')
