@@ -56,6 +56,10 @@ class MessageList(ArgumentType):
     ...
 
 
+class FloatList(ArgumentType):
+    ...
+
+
 class AgentParam(ArgumentType):
     ...
 
@@ -123,6 +127,9 @@ class Argument:
         elif self.expr in state.last_agent.connection_lists:
             self.types.append(self.compose(List, ConnectionList, AgentParam, Mutable))
             
+        elif self.expr in state.last_agent.float_lists:
+            self.types.append(self.compose(List, FloatList, AgentParam, Mutable))
+
         for enum_param in state.last_agent.enums.values():
             for enum_value in enum_param.enum_values:
                 if self.expr == enum_value.value:
@@ -195,6 +202,7 @@ class Argument:
             if all([isinstance(type_, klass) for klass in classes]) and all([self.has_arg(type_, key, value) for key, value in args.items()]):
                 self.type_in_op = type_
 
+    # DECL
     def declaration_context(self, rhs: Argument) -> bool:
         if rhs.has_type(Float):
             self.type_in_op = self.compose(Float, Declared, Mutable)
@@ -203,6 +211,7 @@ class Argument:
         
         return False
     
+    # IEQ, INEQ, WEQ, WNEQ
     def unordered_comparaison_context(self, rhs: Argument) -> bool:
         if self.has_type(Float) and rhs.has_type(Float):
             self.set_op_type(Float)
@@ -217,6 +226,7 @@ class Argument:
         
         return True
 
+    # IGT, IGTEQ, ILT, ILTEQ, WGT, WGTEQ, WLT, WLTEQ
     def ordered_comparaison_context(self, rhs: Argument) -> bool:
         if self.has_type(Float) and rhs.has_type(Float):
             self.set_op_type(Float)
@@ -225,6 +235,7 @@ class Argument:
         
         return False
 
+    # ADD, SUBT, MULT, DIV
     def math_context(self, rhs: Argument) -> bool:
         if self.has_type(Float, Mutable) and rhs.has_type(Float):
             self.set_op_type(Float, Mutable)
@@ -233,6 +244,7 @@ class Argument:
         
         return False
 
+    # ADDE, REME
     def list_modification_context(self, rhs: Argument) -> bool:
         if self.has_type(ConnectionList, Mutable) and rhs.has_type(Connection):
             self.set_op_type(ConnectionList, Mutable)
@@ -242,11 +254,16 @@ class Argument:
             self.set_op_type(MessageList, Mutable)
             rhs.set_op_type(Message)
             
+        elif self.has_type(FloatList, Mutable) and rhs.has_type(Float):
+            self.set_op_type(FloatList, Mutable)
+            rhs.set_op_type(Float)
+            
         else:
             return False
         
         return True
     
+    # REMEN
     def list_n_removal_context(self, rhs: Argument) -> bool:
         if self.has_type(List, Mutable) and rhs.has_type(Float):
             self.set_op_type(List, Mutable)
@@ -255,6 +272,7 @@ class Argument:
         
         return False
     
+    # SET
     def assignment_context(self, rhs: Argument) -> bool:
         if self.has_type(Enum, Mutable) and rhs.has_type(EnumValue, from_enum=self.expr):
             self.set_op_type(Enum, Mutable)
@@ -277,6 +295,7 @@ class Argument:
         
         return True
     
+    # SUBS
     def list_subset_context(self, from_list: Argument, num: Argument) -> bool:
         if self.has_type(ConnectionList, Mutable) and from_list.has_type(ConnectionList) and num.has_type(Float):
             self.set_op_type(ConnectionList, Mutable)
@@ -286,6 +305,7 @@ class Argument:
         
         return False
     
+    # IN, NIN
     def list_inclusion_context(self, rhs: Argument) -> bool:
         if self.has_type(ConnectionList) and rhs.has_type(Connection):
             self.set_op_type(ConnectionList)
@@ -294,12 +314,17 @@ class Argument:
         elif self.has_type(MessageList) and rhs.has_type(Message):
             self.set_op_type(MessageList)
             rhs.set_op_type(Message)
+            
+        elif self.has_type(FloatList) and rhs.has_type(Float):
+            self.set_op_type(FloatList)
+            rhs.set_op_type(Float)
 
         else:
             return False
         
         return True
     
+    # CLR
     def list_clear_context(self) -> bool:
         if self.has_type(List, Mutable):
             self.set_op_type(List, Mutable)
@@ -307,6 +332,7 @@ class Argument:
         
         return False
     
+    # LEN
     def list_length_context(self, rhs: Argument) -> bool:
         if self.has_type(Float, Mutable) and rhs.has_type(List):
             self.set_op_type(Float, Mutable)
@@ -315,6 +341,7 @@ class Argument:
         
         return False
     
+    # SEND
     def send_context(self) -> bool:
         if self.has_type(ConnectionList):
             self.set_op_type(ConnectionList)
@@ -327,6 +354,7 @@ class Argument:
         
         return True
 
+    # RAND
     def random_number_generation_context(self, *args: Argument) -> bool:
         if self.has_type(Float, Mutable) and all([arg.has_type(Float) for arg in args]):
             self.set_op_type(Float, Mutable)
@@ -336,11 +364,32 @@ class Argument:
 
         return False
 
+    # ROUND
     def round_number_context(self) -> bool:
         if self.has_type(Float, Mutable):
             self.set_op_type(Float, Mutable)
             return True
 
+        return False
+
+    # LR
+    def list_read_context(self, src: Argument, idx: Argument) -> bool:
+        if self.has_type(Float, Mutable) and src.has_type(FloatList) and idx.has_type(Float):
+            self.set_op_type(Float, Mutable)
+            src.set_op_type(FloatList)
+            idx.set_op_type(Float)
+            return True
+        
+        return False
+    
+    # LW
+    def list_write_context(self, idx: Argument, value: Argument) -> bool:
+        if self.has_type(FloatList, Mutable) and idx.has_type(Float) and value.has_type(Float):
+            self.set_op_type(FloatList, Mutable)
+            idx.set_op_type(Float)
+            value.set_op_type(Float)
+            return True
+        
         return False
 
     def explain(self) -> str:

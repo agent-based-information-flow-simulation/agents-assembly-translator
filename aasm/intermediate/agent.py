@@ -85,6 +85,14 @@ class ConnectionListParam:
         print(f'ConnectionListParam {self.name} = []')
 
 
+class FloatListParam:
+    def __init__(self, name: str):
+        self.name: str = name
+    
+    def print(self) -> None:
+        print(f'FloatListParam {self.name} = []')
+
+
 class Agent:
     RESERVED_CONNECTION_LIST_PARAMS = [ 'connections' ]
     RESERVED_FLOAT_PARAMS = [ 'connCount', 'msgRCount', 'msgSCount' ]
@@ -98,6 +106,7 @@ class Agent:
         self.enums: Dict[str, EnumParam] = {}
         self.connection_lists: Dict[str, ConnectionListParam] = {}
         self.message_lists: Dict[str, MessageListParam] = {}
+        self.float_lists: Dict[str, FloatListParam] = {}
         self.setup_behaviours: Dict[str, SetupBehaviour] = {}
         self.one_time_behaviours: Dict[str, OneTimeBehaviour] = {}
         self.cyclic_behaviours: Dict[str, CyclicBehaviour] = {}
@@ -120,7 +129,8 @@ class Agent:
                  *list(self.dist_unifrom_floats),
                  *list(self.enums), 
                  *list(self.connection_lists),
-                 *list(self.message_lists) ]
+                 *list(self.message_lists),
+                 *list(self.float_lists) ]
     
     @property
     def behaviour_names(self) -> List[str]:
@@ -156,6 +166,9 @@ class Agent:
     
     def add_message_list(self, list_param: MessageListParam) -> None:
         self.message_lists[list_param.name] = list_param
+        
+    def add_float_list(self, list_param: FloatListParam) -> None:
+        self.float_lists[list_param.name] = list_param
     
     def add_setup_behaviour(self, behaviour: SetupBehaviour) -> None:
         self.setup_behaviours[behaviour.name] = behaviour
@@ -204,6 +217,8 @@ class Agent:
             connection_list_param.print()
         for message_list_param in self.message_lists.values():
             message_list_param.print()
+        for float_list_param in self.float_lists.values():
+            float_list_param.print()
         for setup_behaviour in self.setup_behaviours.values():
             setup_behaviour.print()
         for one_time_behaviour in self.one_time_behaviours.values():

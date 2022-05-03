@@ -10,6 +10,7 @@ from aasm.intermediate.agent import \
 from aasm.intermediate.agent import \
     DistUniformFloatParam as AgentDistUniformFloatParam
 from aasm.intermediate.agent import EnumParam as AgentEnumParam
+from aasm.intermediate.agent import FloatListParam as AgentFloatListParam
 from aasm.intermediate.agent import InitFloatParam as AgentInitFloatParam
 from aasm.intermediate.agent import MessageListParam as AgentMessageListParam
 from aasm.intermediate.message import FloatParam as MessageFloatParam
@@ -76,6 +77,9 @@ def op_agent_PRM(state: State, name: str, category: str, args: List[str]) -> Non
             
         case 'list', [ 'msg' ]:
             state.last_agent.add_message_list(AgentMessageListParam(name))
+            
+        case 'list', [ 'float']:            
+            state.last_agent.add_float_list(AgentFloatListParam(name))
             
         case 'enum', enums:
             state.require(

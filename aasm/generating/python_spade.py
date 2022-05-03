@@ -7,8 +7,9 @@ from aasm.generating.python_code import PythonCode
 from aasm.generating.python_graph import PythonGraph
 from aasm.intermediate.action import SendMessageAction
 from aasm.intermediate.argument import (AgentParam, Connection, ConnectionList,
-                                        EnumValue, Float, MessageList,
-                                        ReceivedMessageParam, SendMessageParam)
+                                        EnumValue, Float, FloatList,
+                                        MessageList, ReceivedMessageParam,
+                                        SendMessageParam)
 from aasm.intermediate.behaviour import MessageReceivedBehaviour
 from aasm.intermediate.block import Block
 from aasm.intermediate.declaration import Declaration
@@ -18,8 +19,9 @@ from aasm.intermediate.instruction import (Add, AddElement, Clear, Comparaison,
                                            IfInList, IfLessThan,
                                            IfLessThanOrEqual, IfNotEqual,
                                            IfNotInList, Length,
-                                           ListElementAccess, MathOperation,
-                                           Multiply, NormalDist, RemoveElement,
+                                           ListElementAccess, ListRead,
+                                           ListWrite, MathOperation, Multiply,
+                                           NormalDist, RemoveElement,
                                            RemoveNElements, Round, Send, Set,
                                            Subset, Subtract, UniformDist,
                                            WhileEqual, WhileGreaterThan,
@@ -174,6 +176,9 @@ class PythonSpadeCode(PythonCode):
         for message_list_param in agent.message_lists.values():
             self.add_line(f'self.{message_list_param.name} = kwargs.get("{message_list_param.name}", [])')
             
+        for float_list_param in agent.float_lists.values():
+            self.add_line(f'self.{float_list_param.name} = kwargs.get("{float_list_param.name}", [])')
+            
         self.add_line('if self.logger: self.logger.debug(f\'[{self.jid}] Class dict after initialization: {self.__dict__}\')')
         
         self.indent_left()
@@ -293,7 +298,14 @@ class PythonSpadeCode(PythonCode):
         for message_list_param_name in agent.message_lists:
             self.add_line(f'"{message_list_param_name}": self.agent.{message_list_param_name},')
         self.indent_left()
-        self.add_line('}')
+        self.add_line('},')
+        
+        self.add_line('"float_lists": {')
+        self.indent_right()
+        for float_list_param_name in agent.float_lists:
+            self.add_line(f'"{float_list_param_name}": self.agent.{float_list_param_name},')
+        self.indent_left()
+        self.add_line('},')
         
         self.indent_left()
         self.add_line('}')
@@ -585,10 +597,13 @@ class PythonSpadeCode(PythonCode):
                 case ListElementAccess():
                     list_ = self.parse_arg(statement.list_)
                     element = self.parse_arg(statement.element)
-                    match statement:                                                
+                    match statement:
+                        case AddElement() if isinstance(statement.list_.type_in_op, FloatList):
+                            self.add_line(f'{list_}.append({element})')
+
                         case AddElement():
                             self.add_line(f'if {element} not in {list_}: {list_}.append({element})')
-                    
+
                         case RemoveElement():
                             self.add_line(f'if {element} in {list_}: {list_}.remove({element})')
                             
@@ -617,6 +632,30 @@ class PythonSpadeCode(PythonCode):
                     dst = self.parse_arg(statement.dst)
                     list_ = self.parse_arg(statement.list_)
                     self.add_line(f'{dst} = self.agent.limit_number(len({list_}))')
+                    
+                case ListRead():
+                    dst = self.parse_arg(statement.dst)
+                    list_ = self.parse_arg(statement.list_)
+                    idx = f'int(self.agent.limit_number(round(self.agent.limit_number({self.parse_arg(statement.idx)}))))'
+                    list_len = f'int(self.agent.limit_number(len({list_})))'
+                    self.add_line(f'if {idx} < 0 or {idx} >= {list_len}:')
+                    self.indent_right()
+                    self.add_line(f'if self.agent.logger: self.agent.logger.warn(f\'[{{self.agent.jid}}] Incorrect index (rounded, either negative or bigger than the list size): \u007b{idx}\u007d\')')
+                    self.add_line('return')
+                    self.indent_left()
+                    self.add_line(f'{dst} = self.agent.limit_number({list_}[{idx}])')
+                
+                case ListWrite():
+                    list_ = self.parse_arg(statement.list_)
+                    idx = f'int(self.agent.limit_number(round(self.agent.limit_number({self.parse_arg(statement.idx)}))))'
+                    value = f'self.agent.limit_number({self.parse_arg(statement.value)})'
+                    list_len = f'int(self.agent.limit_number(len({list_})))'
+                    self.add_line(f'if {idx} < 0 or {idx} >= {list_len}:')
+                    self.indent_right()
+                    self.add_line(f'if self.agent.logger: self.agent.logger.warn(f\'[{{self.agent.jid}}] Incorrect index (rounded, either negative or bigger than the list size): \u007b{idx}\u007d\')')
+                    self.add_line('return')
+                    self.indent_left()
+                    self.add_line(f'{list_}[{idx}] = {value}')
                 
                 case _:
                     raise Exception(f"Unknown statement: {statement.print()}")
