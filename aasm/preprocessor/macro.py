@@ -10,6 +10,7 @@ class Macro(PreprocessorItem):
         self.lines = []
         self.argument_names = []
         self.name = ""
+        self.expand_len = 0
 
     def expand(self, macro_args: List[str]) -> List[str]:
         expanded = []
@@ -29,6 +30,8 @@ class Macro(PreprocessorItem):
 
     def add_line(self, line: str):
         self.lines.append(line)
+        self.expand_len += 1
+
 
 class MacroException(Exception):
     pass

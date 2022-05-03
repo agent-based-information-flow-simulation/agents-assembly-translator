@@ -19,18 +19,25 @@ class Preprocessor:
         self.ignore = []
         self.processed_lines = lines
         self.macros = []
+        self.offset = 0
 
-    def expandMacros(self):
+    def expand_macros(self):
         line_idx = 0
         to_expand = []
         names = [macro.name for macro in self.macros]
-        for line in self.lines:
-            if line_idx not in ignore:
+        for line in self.processed_lines:
+            if line_idx not in self.ignore:
                 tokens = [token.strip() for token in line.strip().replace(',', ' ')]
                 if tokens[0] in names:
-                    to_expand.append(line_idx)
+                    to_expand.append((line_idx, tokens[0]))
+        offset = 0
+        for makro in to_expand:
+            line_idx = makro[0] + offset
+            macro_item = [x for x in self.macros if x.name == makro[1]][0]# guaranteed to exist
+            self.processed_lines[line_idx:line_idx] = macro_item.lines
+            del self.processed_lines[line_idx]
 
-    def parseItems(self):
+    def parse_items(self):
         line_idx = 0
         currentItem = None
         for line in self.lines:

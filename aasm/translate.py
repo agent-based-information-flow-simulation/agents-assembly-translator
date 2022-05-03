@@ -50,4 +50,4 @@ def main(input_path: str, output_path: str, debug: bool, enable_preprocessor: bo
 
 if __name__ == '__main__':
     input_path, output_path, debug, enable_preprocessor = get_args()
-    main(input_path, output_path, debug)
+    main(input_path, output_path, debug, enable_preprocessor)
