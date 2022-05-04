@@ -57,6 +57,7 @@ class average_user(spade.agent.Agent):
         
         async def run(self):
             data = {
+                "__timestamp__": int(datetime.datetime.timestamp(datetime.datetime.utcnow()) * 1000),
                 "jid": str(self.agent.jid),
                 "type": "average_user",
                 "floats": {
