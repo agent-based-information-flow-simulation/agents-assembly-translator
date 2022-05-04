@@ -265,7 +265,7 @@ class PythonSpadeCode(PythonCode):
         self.indent_right()
         self.add_line('data = {')
         self.indent_right()
-        self.add_line('"__timestamp__": int(datetime.datetime.timestamp(datetime.datetime.utcnow()) * 1000),')
+        self.add_line('"__timestamp__": int(datetime.datetime.timestamp(datetime.datetime.utcnow())),')
         self.add_line('"jid": str(self.agent.jid),')
         self.add_line(f'"type": "{agent.name}",')
         
