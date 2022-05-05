@@ -339,6 +339,12 @@ class ListRead(Instruction):
         self.dst = dst
         self.list_ = list_
         self.idx = idx
+        
+    def print(self) -> None:
+        print('ListRead')
+        self.dst.print()
+        self.list_.print()
+        self.idx.print()
 
 
 class ListWrite(Instruction):
@@ -346,7 +352,13 @@ class ListWrite(Instruction):
         self.list_ = list_
         self.idx = idx
         self.value = value
-
+        
+    def print(self) -> None:
+        print('ListWrite')
+        self.list_.print()
+        self.idx.print()
+        self.value.print()
+        
 
 class TrigonometryOperation(Instruction):
     def __init__(self, dst: Argument, rad_angle: Argument):
