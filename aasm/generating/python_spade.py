@@ -438,10 +438,16 @@ class PythonSpadeCode(PythonCode):
                     self.indent_left()
 
                 case Declaration():
+                    self.add_line('')
+                    self.add_line("# declaration")
+                    
                     value = f'self.agent.limit_number({self.parse_arg(statement.value)})'
                     self.add_line(f'{statement.name} = {value}')
                 
                 case Subset():
+                    self.add_line('')
+                    self.add_line("# subset")
+                    
                     dst_list = self.parse_arg(statement.dst_list)
                     src_list = self.parse_arg(statement.src_list)
                     src_list_len = f'int(self.agent.limit_number(len({src_list})))'
@@ -454,16 +460,24 @@ class PythonSpadeCode(PythonCode):
                     self.add_line(f'{dst_list} = [copy.deepcopy(elem) for elem in random.sample({src_list}, min({num}, {src_list_len}))]')
                 
                 case Clear():
+                    self.add_line('')
+                    self.add_line("# clear")
                     list_ = self.parse_arg(statement.list_)
                     self.add_line(f'{list_}.clear()')
                 
                 case Send() if isinstance(statement.receivers.type_in_op, Connection):
+                    self.add_line('')
+                    self.add_line("# send")
+                    
                     receiver = self.parse_arg(statement.receivers)
                     self.add_line(f'if self.agent.logger: self.agent.logger.debug(f\'[{{self.agent.jid}}] Send message {{send}} to \u007b{receiver}\u007d\')')
                     self.add_line(f'await self.send(self.agent.get_spade_message({receiver}, send))')
                     self.add_line('self.agent.msgSCount = self.agent.limit_number(self.agent.msgSCount + 1)')
                 
                 case Send() if isinstance(statement.receivers.type_in_op, ConnectionList):
+                    self.add_line('')
+                    self.add_line("# send")
+                    
                     receivers = self.parse_arg(statement.receivers)
                     self.add_line(f'if self.agent.logger: self.agent.logger.debug(f\'[{{self.agent.jid}}] Send message {{send}} to \u007b{receivers}\u007d\')')
                     self.add_line(f'for receiver in {receivers}:')
@@ -473,6 +487,9 @@ class PythonSpadeCode(PythonCode):
                     self.indent_left()
                 
                 case Set() if isinstance(statement.value.type_in_op, MessageList):
+                    self.add_line('')
+                    self.add_line("# set")
+                    
                     msg = self.parse_arg(statement.dst)
                     msg_list = self.parse_arg(statement.value)
                     self.add_line(f'if not any([msg["type"] == {msg}["type"] and msg["performative"] == {msg}["performative"] for msg in {msg_list}]):')
@@ -483,26 +500,41 @@ class PythonSpadeCode(PythonCode):
                     self.add_line(f'{msg} = copy.deepcopy(random.choice(list(filter(lambda msg: msg["type"] == {msg}["type"] and msg["performative"] == {msg}["performative"], {msg_list}))))')
                 
                 case Set() if isinstance(statement.value.type_in_op, Float):
+                    self.add_line('')
+                    self.add_line("# set")
+                    
                     dst = self.parse_arg(statement.dst)
                     num = f'self.agent.limit_number({self.parse_arg(statement.value)})'
                     self.add_line(f'{dst} = {num}')
                 
                 case Set():
+                    self.add_line('')
+                    self.add_line("# set")
+                    
                     dst = self.parse_arg(statement.dst)
                     value = self.parse_arg(statement.value)
                     self.add_line(f'{dst} = {value}')
                 
                 case Round():
+                    self.add_line('')
+                    self.add_line("# round")
+                    
                     dst = self.parse_arg(statement.dst)
                     self.add_line(f'{dst} = self.agent.limit_number(round(self.agent.limit_number({dst})))')
                 
                 case UniformDist():
+                    self.add_line('')
+                    self.add_line("# uniform distribution")
+                    
                     dst = self.parse_arg(statement.dst)
                     a = f'self.agent.limit_number({self.parse_arg(statement.a)})'
                     b = f'self.agent.limit_number({self.parse_arg(statement.b)})'
                     self.add_line(f'{dst} = self.agent.limit_number(random.uniform({a}, {b}))')
                 
                 case NormalDist():
+                    self.add_line('')
+                    self.add_line("# normal distribution")
+                    
                     dst = self.parse_arg(statement.dst)
                     mean = f'self.agent.limit_number({self.parse_arg(statement.mean)})'
                     std_dev = f'self.agent.limit_number({self.parse_arg(statement.std_dev)})'
@@ -514,6 +546,9 @@ class PythonSpadeCode(PythonCode):
                     self.add_line(f'{dst} = self.agent.limit_number(numpy.random.normal({mean}, {std_dev}))')
                 
                 case ExpDist():
+                    self.add_line('')
+                    self.add_line("# exponential distribution")
+                    
                     dst = self.parse_arg(statement.dst)
                     lambda_ = f'self.agent.limit_number({self.parse_arg(statement.lambda_)})'
                     self.add_line(f'if {lambda_} <= 0:')
@@ -536,39 +571,75 @@ class PythonSpadeCode(PythonCode):
                     
                     match statement:
                         case IfGreaterThan():
+                            self.add_line('')
+                            self.add_line("# if greater than")
+                            
                             self.add_line(f'if {left} > {right}:')
                             
                         case IfGreaterThanOrEqual():
+                            self.add_line('')
+                            self.add_line("# if greater than or equal")
+                            
                             self.add_line(f'if {left} >= {right}:')
                 
                         case IfLessThan():
+                            self.add_line('')
+                            self.add_line("# if less than")
+                            
                             self.add_line(f'if {left} < {right}:')
                             
                         case IfLessThanOrEqual():
+                            self.add_line('')
+                            self.add_line("# if greater than or equal")
+                            
                             self.add_line(f'if {left} <= {right}:')
                     
                         case IfEqual():
+                            self.add_line('')
+                            self.add_line("# if equal")
+                            
                             self.add_line(f'if {left} == {right}:')
                         
                         case IfNotEqual():
+                            self.add_line('')
+                            self.add_line("# if not equal")
+                            
                             self.add_line(f'if {left} != {right}:')
                         
                         case WhileGreaterThan():
+                            self.add_line('')
+                            self.add_line("# while greater than")
+                            
                             self.add_line(f'while {left} > {right}:')
 
                         case WhileGreaterThanOrEqual():
+                            self.add_line('')
+                            self.add_line("# while greater than or equal")
+                            
                             self.add_line(f'while {left} >= {right}:')
 
                         case WhileLessThan():
+                            self.add_line('')
+                            self.add_line("# while less than")
+                            
                             self.add_line(f'while {left} < {right}:')
 
                         case WhileLessThanOrEqual():
+                            self.add_line('')
+                            self.add_line("# while less than or equal")
+                            
                             self.add_line(f'while {left} <= {right}:')
 
                         case WhileEqual():
+                            self.add_line('')
+                            self.add_line("# while equal")
+                            
                             self.add_line(f'while {left} == {right}:')
 
                         case WhileNotEqual():
+                            self.add_line('')
+                            self.add_line("# while not equal")
+                            
                             self.add_line(f'while {left} != {right}:')
                         
                         case _:
@@ -579,15 +650,27 @@ class PythonSpadeCode(PythonCode):
                     num = f'self.agent.limit_number({self.parse_arg(statement.num)})'
                     match statement:
                         case Add():
+                            self.add_line('')
+                            self.add_line("# add")
+                            
                             self.add_line(f'{dst} = self.agent.limit_number({dst} + {num})')
 
                         case Subtract():
+                            self.add_line('')
+                            self.add_line("# subtract")
+                            
                             self.add_line(f'{dst} = self.agent.limit_number({dst} - {num})')
 
                         case Multiply():
+                            self.add_line('')
+                            self.add_line("# multiply")
+                            
                             self.add_line(f'{dst} = self.agent.limit_number({dst} * {num})')
 
                         case Divide():
+                            self.add_line('')
+                            self.add_line("# divide")
+                            
                             self.add_line(f'if {num} == 0:')
                             self.indent_right()
                             self.add_line(f'if self.agent.logger: self.agent.logger.warning(f\'[{{self.agent.jid}}] Division by zero: \u007b{num}\u007d\')')
@@ -603,24 +686,42 @@ class PythonSpadeCode(PythonCode):
                     element = self.parse_arg(statement.element)
                     match statement:
                         case AddElement() if isinstance(statement.list_.type_in_op, FloatList):
+                            self.add_line('')
+                            self.add_line("# add element")
+                            
                             self.add_line(f'{list_}.append({element})')
 
                         case AddElement():
+                            self.add_line('')
+                            self.add_line("# add element")
+                            
                             self.add_line(f'if {element} not in {list_}: {list_}.append({element})')
 
                         case RemoveElement():
+                            self.add_line('')
+                            self.add_line("# remove element")
+                            
                             self.add_line(f'if {element} in {list_}: {list_}.remove({element})')
                             
                         case IfInList():
+                            self.add_line('')
+                            self.add_line("# if in list")
+                            
                             self.add_line(f'if {element} in {list_}:')
                             
                         case IfNotInList():
+                            self.add_line('')
+                            self.add_line("# if not in list")
+                            
                             self.add_line(f'if {element} not in {list_}:')
                             
                         case _:
                             raise Exception(f"Unknown list element access statement: {statement.print()}")
                 
                 case RemoveNElements():
+                    self.add_line('')
+                    self.add_line("# remove n elements")
+                    
                     list_ = self.parse_arg(statement.list_)
                     list_len = f'int(self.agent.limit_number(len({list_})))'
                     num = f'int(self.agent.limit_number(round(self.agent.limit_number({self.parse_arg(statement.num)}))))'
@@ -633,11 +734,17 @@ class PythonSpadeCode(PythonCode):
                     self.add_line(f'{list_} = {list_}[:int(self.agent.limit_number({list_len} - {num}))]')
                 
                 case Length():
+                    self.add_line('')
+                    self.add_line("# length")
+                    
                     dst = self.parse_arg(statement.dst)
                     list_ = self.parse_arg(statement.list_)
                     self.add_line(f'{dst} = self.agent.limit_number(len({list_}))')
                     
                 case ListRead():
+                    self.add_line('')
+                    self.add_line("# list read")
+                    
                     dst = self.parse_arg(statement.dst)
                     list_ = self.parse_arg(statement.list_)
                     idx = f'int(self.agent.limit_number(round(self.agent.limit_number({self.parse_arg(statement.idx)}))))'
@@ -650,6 +757,9 @@ class PythonSpadeCode(PythonCode):
                     self.add_line(f'{dst} = self.agent.limit_number({list_}[{idx}])')
                 
                 case ListWrite():
+                    self.add_line('')
+                    self.add_line("# list write")
+                    
                     list_ = self.parse_arg(statement.list_)
                     idx = f'int(self.agent.limit_number(round(self.agent.limit_number({self.parse_arg(statement.idx)}))))'
                     value = f'self.agent.limit_number({self.parse_arg(statement.value)})'
@@ -667,9 +777,15 @@ class PythonSpadeCode(PythonCode):
                     
                     match statement:
                         case Sin():
+                            self.add_line('')
+                            self.add_line("# sin")
+                            
                             self.add_line(f'{dst} = self.agent.limit_number(numpy.sin({angle_rad}))')
                             
                         case Cos():
+                            self.add_line('')
+                            self.add_line("# cos")
+                            
                             self.add_line(f'{dst} = self.agent.limit_number(numpy.cos({angle_rad}))')
                             
                         case _:
@@ -682,9 +798,15 @@ class PythonSpadeCode(PythonCode):
                     
                     match statement:
                         case Power():
+                            self.add_line('')
+                            self.add_line("# power")
+                            
                             self.add_line(f'{dst} = self.agent.limit_number(numpy.power({base}, {num}))')
                             
                         case Logarithm():
+                            self.add_line('')
+                            self.add_line("# logarithm")
+                            
                             self.add_line(f'if {base} <= 0 or {num} <= 0 or {base} == 1:')
                             self.indent_right()
                             self.add_line(f'if self.agent.logger: self.agent.logger.warning(f\'[{{self.agent.jid}}] Incorrect logarithm arguments: log(\u007b{base}\u007d, \u007b{num}\u007d\')')
