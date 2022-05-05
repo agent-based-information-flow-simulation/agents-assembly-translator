@@ -14,8 +14,8 @@ from aasm.parsing.op.defg import op_DEFG
 from aasm.parsing.op.eblock import op_EBLOCK
 from aasm.parsing.op.graph import op_EGRAPH, op_GRAPH
 from aasm.parsing.op.len import op_LEN
-from aasm.parsing.op.list import (handle_list_inclusion,
-                                  handle_list_modification)
+from aasm.parsing.op.list_modification import handle_list_modification
+from aasm.parsing.op.list_inclusion import handle_list_inclusion
 from aasm.parsing.op.lr import op_LR
 from aasm.parsing.op.lw import op_LW
 from aasm.parsing.op.math import handle_math_statement
