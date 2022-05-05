@@ -19,6 +19,7 @@ from aasm.parsing.op.list import (handle_list_inclusion,
 from aasm.parsing.op.lr import op_LR
 from aasm.parsing.op.lw import op_LW
 from aasm.parsing.op.math import handle_math_statement
+from aasm.parsing.op.math_exp import handle_math_exp_statement
 from aasm.parsing.op.message import op_EMESSAGE, op_MESSAGE
 from aasm.parsing.op.prm import op_agent_PRM, op_message_PRM
 from aasm.parsing.op.rand import op_RAND
@@ -80,8 +81,11 @@ def parse_lines(lines: List[str], debug: bool) -> ParsedData:
             case [ 'IGT' | 'IGTEQ' | 'ILT' | 'ILTEQ' | 'WGT' | 'WGTEQ' | 'WLT' | 'WLTEQ' as op, arg1, arg2 ]:
                 handle_ordered_conditional_statement(state, op, arg1, arg2)
                 
-            case [ 'ADD' | 'SUBT' | 'MULT' | 'DIV' as op, arg1, arg2 ]:
+            case [ 'ADD' | 'SUBT' | 'MULT' | 'DIV' | 'SIN' | 'COS' as op, arg1, arg2 ]:
                 handle_math_statement(state, op, arg1, arg2)
+                
+            case [ 'LOG' | 'POW' as op, arg1, arg2, arg3 ]:
+                handle_math_exp_statement(state, op, arg1, arg2, arg3)
                 
             case [ 'ADDE' | 'REME' as op, list_, element ]:
                 handle_list_modification(state, op, list_, element)

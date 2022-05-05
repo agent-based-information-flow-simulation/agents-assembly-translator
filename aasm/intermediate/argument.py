@@ -235,11 +235,21 @@ class Argument:
         
         return False
 
-    # ADD, SUBT, MULT, DIV
+    # ADD, SUBT, MULT, DIV, SIN, COS
     def math_context(self, rhs: Argument) -> bool:
         if self.has_type(Float, Mutable) and rhs.has_type(Float):
             self.set_op_type(Float, Mutable)
             rhs.set_op_type(Float)
+            return True
+        
+        return False
+    
+    # POW, LOG
+    def math_exponentiation_context(self, base: Argument, arg: Argument) -> bool:
+        if self.has_type(Float, Mutable) and base.has_type(Float) and arg.has_type(Float):
+            self.set_op_type(Float, Mutable)
+            base.set_op_type(Float)
+            arg.set_op_type(Float)
             return True
         
         return False

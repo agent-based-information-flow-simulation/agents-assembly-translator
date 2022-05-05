@@ -346,3 +346,63 @@ class ListWrite(Instruction):
         self.list_ = list_
         self.idx = idx
         self.value = value
+
+
+class TrigonometryOperation(Instruction):
+    def __init__(self, dst: Argument, rad_angle: Argument):
+        self.dst = dst
+        self.rad_angle = rad_angle
+
+    def print(self) -> None:
+        print('TrigonometryOperation')
+        self.dst.print()
+        self.rad_angle.print()
+
+
+class Sin(TrigonometryOperation):
+    def __init__(self, dst: Argument, rad_angle: Argument):
+        super().__init__(dst=dst, rad_angle=rad_angle)
+
+    def print(self) -> None:
+        print('Sin')
+        super().print()
+
+
+class Cos(TrigonometryOperation):
+    def __init__(self, dst: Argument, rad_angle: Argument):
+        super().__init__(dst=dst, rad_angle=rad_angle)
+
+    def print(self) -> None:
+        print('Cos')
+        super().print()
+
+
+class ExponentiationOperation(Instruction):
+    def __init__(self, dst: Argument, base: Argument, num: Argument):
+        self.dst = dst
+        self.base = base
+        self.num = num
+
+    def print(self) -> None:
+        print('ExponentiationOperation')
+        self.dst.print()
+        self.base.print()
+        self.num.print()
+
+
+class Logarithm(ExponentiationOperation):
+    def __init__(self, dst: Argument, base: Argument, num: Argument):
+        super().__init__(dst=dst, base=base, num=num)
+
+    def print(self) -> None:
+        print('Logarithm')
+        super().print()
+
+
+class Power(ExponentiationOperation):
+    def __init__(self, dst: Argument, base: Argument, num: Argument):
+        super().__init__(dst=dst, base=base, num=num)
+
+    def print(self) -> None:
+        print('Power')
+        super().print()

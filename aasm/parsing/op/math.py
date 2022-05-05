@@ -3,7 +3,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from aasm.intermediate.argument import Argument
-from aasm.intermediate.instruction import Add, Divide, Multiply, Subtract
+from aasm.intermediate.instruction import (Add, Cos, Divide, Multiply, Sin,
+                                           Subtract)
 
 if TYPE_CHECKING:
     from aasm.parsing.state import State
@@ -31,6 +32,12 @@ def handle_math_statement(state: State, op: str, arg1: str, arg2: str) -> None:
 
         case 'DIV':
             state.last_action.add_instruction(Divide(lhs, rhs))
+            
+        case 'SIN':
+            state.last_action.add_instruction(Sin(lhs, rhs))
+            
+        case 'COS':
+            state.last_action.add_instruction(Cos(lhs, rhs))
 
         case _:
             state.panic(f'Unexpected error: {op} {arg1} {arg2}')
