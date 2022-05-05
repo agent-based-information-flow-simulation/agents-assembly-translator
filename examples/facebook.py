@@ -86,10 +86,20 @@ class average_user(spade.agent.Agent):
         async def post_photos(self):
             if self.agent.logger: self.agent.logger.debug(f'[{self.agent.jid}] Run action post_photos')
             send = { "type": "facebook_post", "performative": "query", "photos": 0.0, }
+            
+            # declaration
             num_photos = self.agent.limit_number(0)
+            
+            # uniform distribution
             num_photos = self.agent.limit_number(random.uniform(self.agent.limit_number(21), self.agent.limit_number(37)))
+            
+            # round
             num_photos = self.agent.limit_number(round(self.agent.limit_number(num_photos)))
+            
+            # set
             send["photos"] = self.agent.limit_number(num_photos)
+            
+            # send
             if self.agent.logger: self.agent.logger.debug(f'[{self.agent.jid}] Send message {send} to {self.agent.friends}')
             for receiver in self.agent.friends:
                 await self.send(self.agent.get_spade_message(receiver, send))
