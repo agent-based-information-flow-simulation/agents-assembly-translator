@@ -14,17 +14,20 @@ from aasm.intermediate.behaviour import MessageReceivedBehaviour
 from aasm.intermediate.block import Block
 from aasm.intermediate.declaration import Declaration
 from aasm.intermediate.instruction import (Add, AddElement, Clear, Comparaison,
-                                           Divide, ExpDist, IfEqual,
+                                           Cos, Divide, ExpDist,
+                                           ExponentiationOperation, IfEqual,
                                            IfGreaterThan, IfGreaterThanOrEqual,
                                            IfInList, IfLessThan,
                                            IfLessThanOrEqual, IfNotEqual,
                                            IfNotInList, Length,
                                            ListElementAccess, ListRead,
-                                           ListWrite, MathOperation, Multiply,
-                                           NormalDist, RemoveElement,
-                                           RemoveNElements, Round, Send, Set,
-                                           Subset, Subtract, UniformDist,
-                                           WhileEqual, WhileGreaterThan,
+                                           ListWrite, Logarithm, MathOperation,
+                                           Multiply, NormalDist, Power,
+                                           RemoveElement, RemoveNElements,
+                                           Round, Send, Set, Sin, Subset,
+                                           Subtract, TrigonometryOperation,
+                                           UniformDist, WhileEqual,
+                                           WhileGreaterThan,
                                            WhileGreaterThanOrEqual,
                                            WhileLessThan, WhileLessThanOrEqual,
                                            WhileNotEqual)
@@ -657,6 +660,42 @@ class PythonSpadeCode(PythonCode):
                     self.add_line('return')
                     self.indent_left()
                     self.add_line(f'{list_}[{idx}] = {value}')
+                    
+                case TrigonometryOperation():
+                    dst = self.parse_arg(statement.dst)
+                    angle_rad = f'self.agent.limit_number({self.parse_arg(statement.rad_angle)})'
+                    
+                    match statement:
+                        case Sin():
+                            self.add_line(f'{dst} = self.agent.limit_number(numpy.sin({angle_rad}))')
+                            
+                        case Cos():
+                            self.add_line(f'{dst} = self.agent.limit_number(numpy.cos({angle_rad}))')
+                            
+                        case _:
+                            raise Exception(f'Unknown trigonometry operation statement: {statement.print()}')
+                        
+                case ExponentiationOperation():
+                    dst = self.parse_arg(statement.dst)
+                    base = f'self.agent.limit_number({self.parse_arg(statement.base)})'
+                    num = f'self.agent.limit_number({self.parse_arg(statement.num)})'
+                    
+                    match statement:
+                        case Power():
+                            self.add_line(f'{dst} = self.agent.limit_number(numpy.power({base}, {num}))')
+                            
+                        case Logarithm():
+                            self.add_line(f'if {base} <= 0 or {num} <= 0 or {base} == 1:')
+                            self.indent_right()
+                            self.add_line(f'if self.agent.logger: self.agent.logger.warning(f\'[{{self.agent.jid}}] Incorrect logarithm arguments: log(\u007b{base}\u007d, \u007b{num}\u007d\')')
+                            self.add_line('return')
+                            self.indent_left()
+                            numerator = f'self.agent.limit_number(numpy.log({num}))'
+                            denominator = f'self.agent.limit_number(numpy.log({base}))'
+                            self.add_line(f'{dst} = self.agent.limit_number({numerator} / {denominator})')
+                            
+                        case _:
+                            raise Exception(f'Unknown exponentiation operation statement: {statement.print()}')
                 
                 case _:
                     raise Exception(f"Unknown statement: {statement.print()}")
