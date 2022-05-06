@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING, List, Tuple
 
 from aasm.generating.python_spade import get_spade_code
 from aasm.utils.exception import PanicException
+from aasm.utils.exception_handler import ExceptionHandler
+from aasm.preprocessor.preprocessor import Preprocessor
 
 if TYPE_CHECKING:
     from aasm.generating.code import Code
@@ -36,11 +38,15 @@ def save_output(output_path: str, code: Code) -> None:
 def main(input_path: str, output_path: str, debug: bool, enable_preprocessor: bool) -> None:
     lines = get_input(input_path)
     start_time = datetime.now()
+    preprocessor = None
     if enable_preprocessor:
-        pass
+        preprocessor = Preprocessor(lines)
+        lines = preprocessor.run()
     try:
         spade_code = get_spade_code(lines, indent_size=4, debug=debug)
     except PanicException as e:
+        eh = ExceptionHandler(preprocessor)
+        e = eh.translate_panic_exception(e)
         e.print()
         exit(1)
     time_delta = (datetime.now() - start_time).total_seconds()
