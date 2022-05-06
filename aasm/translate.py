@@ -41,7 +41,11 @@ def main(input_path: str, output_path: str, debug: bool, enable_preprocessor: bo
     preprocessor = None
     if enable_preprocessor:
         preprocessor = Preprocessor(lines)
-        lines = preprocessor.run()
+        try:
+            lines = preprocessor.run()
+        except PanicException as e:
+            e.print()
+            exit(1)
     try:
         spade_code = get_spade_code(lines, indent_size=4, debug=debug)
     except PanicException as e:

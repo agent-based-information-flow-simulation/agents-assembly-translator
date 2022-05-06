@@ -18,8 +18,6 @@ class Macro(PreprocessorItem):
 
     def expand(self, macro_args: List[str]) -> List[str]:
         expanded = []
-        if len(macro_args) != len(self.argument_regexes):
-            raise MacroException("Not enough arguments in macro call!")
         macro_args = [" " + arg + "," for arg in macro_args]
         substitutions = list(zip(macro_args, self.argument_regexes))
         for line in self.lines:
@@ -42,7 +40,3 @@ class Macro(PreprocessorItem):
     def add_line(self, line: str):
         self.lines.append(line)
         self.expand_len += 1
-
-
-class MacroException(Exception):
-    pass

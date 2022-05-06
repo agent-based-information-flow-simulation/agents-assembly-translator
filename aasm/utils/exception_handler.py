@@ -5,7 +5,7 @@ from aasm.utils.exception import PanicException
 
 
 class ExceptionHandler:
-    def __init__(self, preprocessor: Preprocessor):
+    def __init__(self, preprocessor: Preprocessor | None):
         self.preprocessor = preprocessor
 
     def _get_line_number(self, place: str) -> int:

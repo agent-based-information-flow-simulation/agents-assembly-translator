@@ -66,6 +66,8 @@ class Preprocessor:
         for makro in to_expand:
             line_idx = makro[0] + offset
             macro_item = [x for x in self.macros if x.name == makro[1]][0]  # guaranteed to exist
+            if len(makro[2]) != len(macro_item.argument_regexes):
+                raise PanicException(f"Error in line: {line_idx}", "Wrong number of arguments", f"Expected {len(macro_item.argument_regexes)} arguments, got {len(makro[2])}")
             self.processed_lines[line_idx:line_idx] = macro_item.expand(makro[2])
             del self.processed_lines[line_idx+macro_item.expand_len]
             self.line_expansions.append((line_idx, macro_item))
