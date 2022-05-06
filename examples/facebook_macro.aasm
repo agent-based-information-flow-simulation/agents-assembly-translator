@@ -3,6 +3,8 @@ decl name, 0
 rand name, int, uniform, a, b
 %EMAKRO
 
+%CONST papiez, 21
+
 message facebook_post, query
 	prm photos, float
 emessage
@@ -11,7 +13,7 @@ agent average_user
 	prm friends, list, conn
 	behav facebook_activity, cyclic, 30
 		action post_photos, send_msg, facebook_post, query
-			randint num_photos, 21, 37
+			randint num_photos, papiez, 37
 			set send.photos, num_photos
 			send friends
 		eaction

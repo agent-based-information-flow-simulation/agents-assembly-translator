@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import List
 from aasm.preprocessor.macro import Macro
+from aasm.preprocessor.constant import Constant
 from aasm.utils.exception import PanicException
 
 
@@ -11,6 +12,7 @@ class Preprocessor:
         self.ignore = []
         self.processed_lines = lines.copy()
         self.macros = []
+        self.constants = []
         self.line_expansions = []
 
     def get_original_line_number(self, line_idx: int) -> int:
@@ -36,12 +38,20 @@ class Preprocessor:
     def run(self):
         self.parse_items()
         self.clean_ignored()
+        self.expand_constants()
         self.expand_macros()
         return self.processed_lines
 
     def clean_ignored(self):
         for idx in sorted(self.ignore, reverse=True):
             del self.processed_lines[idx]
+
+    def expand_constants(self):
+        line_idx = 0
+        for line in self.processed_lines:
+            for const in self.constants:
+                self.processed_lines[line_idx] = const.expand(line)
+            line_idx += 1
 
     def expand_macros(self):
         line_idx = 0
@@ -89,6 +99,14 @@ class Preprocessor:
                         else:
                             raise PanicException(f"Error in line: {line_idx}", "Closing a makro without opening one!", "Add a matching %MAKRO directive")
                         pass
+                    case ['CONST', const_name, const_value]:
+                        if currentItem is None:
+                            currentItem = Constant(signature)
+                            currentItem.add_definition(const_name, const_value)
+                            self.constants.append(currentItem)
+                            currentItem = None
+                        else:
+                            raise PanicException(f"Error in line: {line_idx}", "Nested preprocessor directive!", "Make sure that you don't use preprocessor directives inside each other")
                     case _:
                         raise PanicException(f"Error in line: {line_idx}", "Unknown preprocessor directive", "Remove '%' from beggining of the line")
             elif tmp[0] == '#':

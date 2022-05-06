@@ -87,16 +87,10 @@ class average_user(spade.agent.Agent):
             num_photos = self.agent.limit_number(random.uniform(self.agent.limit_number(21), self.agent.limit_number(37)))
             num_photos = self.agent.limit_number(round(self.agent.limit_number(num_photos)))
             send["photos"] = self.agent.limit_number(num_photos)
-            kappa = self.agent.limit_number(0)
-            kappa = self.agent.limit_number(random.uniform(self.agent.limit_number(21), self.agent.limit_number(37)))
-            kappa = self.agent.limit_number(round(self.agent.limit_number(kappa)))
             if self.agent.logger: self.agent.logger.debug(f'[{self.agent.jid}] Send message {send} to {self.agent.friends}')
             for receiver in self.agent.friends:
                 await self.send(self.agent.get_spade_message(receiver, send))
                 self.agent.msgSCount = self.agent.limit_number(self.agent.msgSCount + 1)
-            zonk = self.agent.limit_number(0)
-            zonk = self.agent.limit_number(random.uniform(self.agent.limit_number(21), self.agent.limit_number(37)))
-            zonk = self.agent.limit_number(round(self.agent.limit_number(zonk)))
         
         async def run(self):
             await self.post_photos()

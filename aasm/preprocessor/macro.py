@@ -35,7 +35,7 @@ class Macro(PreprocessorItem):
         return f"[\\s,]{name}\\s*,?"
 
     def add_definition(self, definition: List[str]):
-        definition = [token for token in definition if token != '']
+        # definition = [token for token in definition if token != '']
         self.name = definition[0]
         self.argument_regexes = [self._create_regex(arg) for arg in definition[1:]]
 
