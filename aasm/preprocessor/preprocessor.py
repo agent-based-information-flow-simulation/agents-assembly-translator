@@ -15,17 +15,16 @@ class Preprocessor:
         self.macros = []
         self.constants = []
         self.line_expansions = []
+        self.ignore_offsets = []
+        self.macro_offsets = []
 
     def get_original_line_number(self, line_idx: int) -> int:
-        idx_expand = line_idx
-        for expansion in self.line_expansions:
-            if line_idx >= expansion[0]:
-                idx_expand -= expansion[1].expand_len - 1
-        idx_ignore = idx_expand
-        for idx in self.ignore:
-            if line_idx >= idx:
-                idx_ignore += 1
-        return idx_ignore + 1
+        macro_line = line_idx
+        for offset in self.macro_offsets:
+            if line_idx >= offset:
+                macro_line -= 1
+        org_line = macro_line - self.ignore_offsets[macro_line]
+        return org_line
 
     def get_makro_name(self, line_idx: int) -> str:
         line = self.lines[line_idx-1]
@@ -45,7 +44,11 @@ class Preprocessor:
 
     def clean_ignored(self):
         for idx in sorted(self.ignore, reverse=True):
+            for offset_idx in range(len(self.ignore_offsets)):
+                if(offset_idx >= idx):
+                    self.ignore_offsets[offset_idx] -= 1
             del self.processed_lines[idx]
+        self.ignore_offsets = list(reversed(self.ignore_offsets))
 
     def expand_constants(self):
         line_idx = 0
@@ -72,6 +75,8 @@ class Preprocessor:
             if len(makro[2]) != len(macro_item.argument_regexes):
                 raise PanicException(f"Error in line: {line_idx}", "Wrong number of arguments", f"Expected {len(macro_item.argument_regexes)} arguments, got {len(makro[2])}")
             self.processed_lines[line_idx:line_idx] = macro_item.expand(makro[2])
+            for offset_idx in range(macro_item.expand_len - 1):
+                self.macro_offsets.append(line_idx + offset_idx + 2)
             del self.processed_lines[line_idx+macro_item.expand_len]
             self.line_expansions.append((line_idx, macro_item))
             offset += macro_item.expand_len - 1
@@ -80,6 +85,7 @@ class Preprocessor:
         line_idx = 0
         currentItem = None
         for line in self.lines:
+            self.ignore_offsets.append(0)
             line_idx += 1
             tmp = line.strip()
             # enter preprocessor directive
