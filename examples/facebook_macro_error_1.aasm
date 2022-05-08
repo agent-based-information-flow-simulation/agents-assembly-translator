@@ -1,7 +1,7 @@
-%MAKRO randint name, a, b
+%makro randint name, a, b
 decl name, 0
 rand name, int, uniform, a, b
-%EMAKRO
+%emakro
 
 message facebook_post, query
 	prm photos, float
