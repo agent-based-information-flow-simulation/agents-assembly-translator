@@ -20,7 +20,7 @@ class Code:
     def __next__(self) -> str:
         if self._iter_idx is None or self._iter_code_lines is None or self._iter_num_code_lines is None:
             raise Exception("Code iterator not initialized")
-        
+
         self._iter_idx += 1
         if self._iter_idx < self._iter_num_code_lines:
             return self._iter_code_lines[self._iter_idx]
