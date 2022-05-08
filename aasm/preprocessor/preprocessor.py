@@ -50,8 +50,10 @@ class Preprocessor:
     def expand_constants(self):
         line_idx = 0
         for line in self.processed_lines:
+            expanded = line
             for const in self.constants:
-                self.processed_lines[line_idx] = const.expand(line)
+                expanded = const.expand(expanded)
+            self.processed_lines[line_idx] = expanded
             line_idx += 1
 
     def expand_macros(self):

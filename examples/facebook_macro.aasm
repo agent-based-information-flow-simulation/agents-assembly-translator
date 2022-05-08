@@ -1,9 +1,11 @@
-%makro randint name, a, b
+%MAKRO randint name, a, b
 	decl name, 0
 	rand name, int, uniform, a, b
-%emakro
+%EMAKRO
 
 %const global_value, 21
+
+%const test_test, 37
 
 message facebook_post, query
 	prm photos, float
