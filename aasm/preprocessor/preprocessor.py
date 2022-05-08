@@ -17,6 +17,7 @@ class Preprocessor:
         self.line_expansions = []
         self.ignore_offsets = []
         self.macro_offsets = []
+        self.item_names = []
 
     def get_original_line_number(self, line_idx: int) -> int:
         macro_line = line_idx
@@ -103,6 +104,9 @@ class Preprocessor:
                         if currentItem is None:
                             currentItem = Macro(signature)
                             currentItem.add_definition(makro_def)
+                            if currentItem.name in self.item_names:
+                                raise PanicException(f"Error in line: {line_idx}", "Duplicate preprocessor item name", currentItem.name)
+                            self.item_names.append(currentItem.name)
                         else:
                             raise PanicException(f"Error in line: {line_idx}", "Nested preprocessor directives!", "Make sure that you don't use preprocessor directives inside each other.")
                     case ['EMAKRO']:
@@ -117,6 +121,9 @@ class Preprocessor:
                             currentItem = Constant(signature)
                             currentItem.add_definition(const_name, const_value)
                             self.constants.append(currentItem)
+                            if currentItem.name in self.item_names:
+                                raise PanicException(f"Error in line: {line_idx}", "Duplicate preprocessor item name", currentItem.name)
+                            self.item_names.append(currentItem.name)
                             currentItem = None
                         else:
                             raise PanicException(f"Error in line: {line_idx}", "Nested preprocessor directive!", "Make sure that you don't use preprocessor directives inside each other")
