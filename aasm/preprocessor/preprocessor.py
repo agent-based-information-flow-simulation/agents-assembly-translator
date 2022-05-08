@@ -87,6 +87,8 @@ class Preprocessor:
                 self.ignore.append(line_idx - 1)
                 signature = tmp.lstrip('%')
                 tokens = [token.strip() for token in signature.replace(',', ' ').split()]
+                if tokens:
+                    tokens[0] = tokens[0].upper()
                 match tokens:
                     case ['MAKRO', *makro_def]:
                         if currentItem is None:
