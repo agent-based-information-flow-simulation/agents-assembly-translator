@@ -3,15 +3,7 @@
 	rand name, int, uniform, a, b
 %emakro
 
-%makro test1 name, a, b
-	decl name, 0
-	rand name, int, uniform, a, b
-	randint num_photos, global_value, 37
-%emakro
-
 %const global_value, 21
-
-%const test1, 37
 
 message facebook_post, query
 	prm photos, float
@@ -21,7 +13,7 @@ agent average_user
 	prm friends, list, conn
 	behav facebook_activity, cyclic, 30
 		action post_photos, send_msg, facebook_post, query
-			test1 num_photos, global_value, 37
+			randint num_photos, global_value, 37
 			set send.photos, num_photos
 			send friends
 		eaction
