@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from typing import List
-from aasm.preprocessor.macro import Macro
+
 from aasm.preprocessor.constant import Constant
+from aasm.preprocessor.macro import Macro
 from aasm.utils.exception import PanicException
 
 

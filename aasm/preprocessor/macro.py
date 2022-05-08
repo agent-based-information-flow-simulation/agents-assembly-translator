@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from typing import List
-from aasm.preprocessor.preprocessor_item import PreprocessorItem
 import re
+from typing import List
+
+from aasm.preprocessor.preprocessor_item import PreprocessorItem
 
 
 class Macro(PreprocessorItem):
