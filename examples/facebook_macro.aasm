@@ -1,9 +1,9 @@
-%MAKRO randint name, a, b
+%makro randint name, a, b
 decl name, 0
 rand name, int, uniform, a, b
-%EMAKRO
+%emakro
 
-%CONST papiez, 21
+%const global_const, 21
 
 message facebook_post, query
 	prm photos, float
@@ -13,7 +13,7 @@ agent average_user
 	prm friends, list, conn
 	behav facebook_activity, cyclic, 30
 		action post_photos, send_msg, facebook_post, query
-			randint num_photos, papiez, 37
+			randint num_photos, global_const, 37
 			set send.photos, num_photos
 			send friends
 		eaction
