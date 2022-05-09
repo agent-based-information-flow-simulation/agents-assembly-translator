@@ -361,19 +361,19 @@ class ListWrite(Instruction):
         
 
 class TrigonometryOperation(Instruction):
-    def __init__(self, dst: Argument, rad_angle: Argument):
+    def __init__(self, dst: Argument, degree: Argument):
         self.dst = dst
-        self.rad_angle = rad_angle
+        self.degree = degree
 
     def print(self) -> None:
         print('TrigonometryOperation')
         self.dst.print()
-        self.rad_angle.print()
+        self.degree.print()
 
 
 class Sin(TrigonometryOperation):
-    def __init__(self, dst: Argument, rad_angle: Argument):
-        super().__init__(dst=dst, rad_angle=rad_angle)
+    def __init__(self, dst: Argument, degree: Argument):
+        super().__init__(dst=dst, degree=degree)
 
     def print(self) -> None:
         print('Sin')
@@ -381,8 +381,8 @@ class Sin(TrigonometryOperation):
 
 
 class Cos(TrigonometryOperation):
-    def __init__(self, dst: Argument, rad_angle: Argument):
-        super().__init__(dst=dst, rad_angle=rad_angle)
+    def __init__(self, dst: Argument, degree: Argument):
+        super().__init__(dst=dst, degree=degree)
 
     def print(self) -> None:
         print('Cos')
