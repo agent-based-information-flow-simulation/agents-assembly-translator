@@ -29,7 +29,7 @@ class Action:
         return self._block_stack[-1]
 
     def is_declaration_in_scope(self, name: str) -> bool:
-        return name in self.current_block.declarations_in_scope
+        return name in self.current_block.declared_names_in_scope
     
     def is_declared_float(self, name: str) -> bool:
         return self.current_block.is_declared_float(name)
@@ -47,7 +47,7 @@ class Action:
         self.current_block.add_statement(instruction)
 
     def start_block(self) -> None:
-        new_block = Block(self.current_block.declarations_in_scope)
+        new_block = Block(self.current_block.get_declarations)
         self.current_block.add_statement(new_block)
         self._block_stack.append(new_block)
         self._nested_blocks_count += 1
