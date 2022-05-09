@@ -6,7 +6,7 @@ from typing import Type
 
 from aasm.intermediate.action import SendMessageAction
 from aasm.intermediate.behaviour import MessageReceivedBehaviour
-from aasm.utils.validation import is_float, is_int
+from aasm.utils.validation import is_connection, is_float, is_int
 
 if TYPE_CHECKING:
     from parsing.state import State
@@ -107,6 +107,7 @@ class Argument:
         self.check_received_message_params(state)
         self.check_send_message_params(state)
         self.check_numerical_values()
+        self.check_connection_values()
     
     def check_agent_params(self, state: State) -> None:
         if self.expr in state.last_agent.RESERVED_FLOAT_PARAMS:
@@ -136,15 +137,22 @@ class Argument:
                     self.types.append(self.compose(EnumValue, Immutable, from_enum=enum_param.name))
         
     def check_action_variables(self, state: State) -> None:
-        if state.last_action.is_declaration_in_scope(self.expr):
+        if state.last_action.is_declared_float(self.expr):
             self.types.append(self.compose(Float, Declared, Mutable))
-    
+            
+        elif state.last_action.is_declared_connection(self.expr):
+            self.types.append(self.compose(Connection, Declared, Mutable))
+                
     def check_numerical_values(self) -> None:
         if is_float(self.expr):
             self.types.append(self.compose(Float, Immutable))
 
         if is_int(self.expr):
             self.types.append(self.compose(Integer, Immutable))
+            
+    def check_connection_values(self) -> None:
+        if is_connection(self.expr):
+            self.types.append(self.compose(Connection, Immutable))
         
     def check_received_message_params(self, state: State) -> None:
         if isinstance(state.last_behaviour, MessageReceivedBehaviour):
@@ -207,9 +215,15 @@ class Argument:
         if rhs.has_type(Float):
             self.type_in_op = self.compose(Float, Declared, Mutable)
             rhs.set_op_type(Float)
-            return True
+
+        elif rhs.has_type(Connection):
+            self.type_in_op = self.compose(Connection, Declared, Mutable)
+            rhs.set_op_type(Connection)
         
-        return False
+        else:
+            return False
+        
+        return True
     
     # IEQ, INEQ, WEQ, WNEQ
     def unordered_comparaison_context(self, rhs: Argument) -> bool:
@@ -300,6 +314,10 @@ class Argument:
             self.set_op_type(SendMessageParam, Mutable)
             rhs.set_op_type(Float)
             
+        elif self.has_type(Connection, Mutable) and rhs.has_type(Connection):
+            self.set_op_type(Connection, Mutable)
+            rhs.set_op_type(Connection)
+            
         else:
             return False
         
@@ -388,9 +406,16 @@ class Argument:
             self.set_op_type(Float, Mutable)
             src.set_op_type(FloatList)
             idx.set_op_type(Float)
-            return True
+            
+        elif self.has_type(Connection, Mutable) and src.has_type(ConnectionList) and idx.has_type(Float):
+            self.set_op_type(Connection, Mutable)
+            src.set_op_type(ConnectionList)
+            idx.set_op_type(Float)
+            
+        else:
+            return False
         
-        return False
+        return True
     
     # LW
     def list_write_context(self, idx: Argument, value: Argument) -> bool:
@@ -398,9 +423,16 @@ class Argument:
             self.set_op_type(FloatList, Mutable)
             idx.set_op_type(Float)
             value.set_op_type(Float)
-            return True
+            
+        elif self.has_type(ConnectionList, Mutable) and idx.has_type(Float) and value.has_type(Connection):
+            self.set_op_type(ConnectionList, Mutable)
+            idx.set_op_type(Float)
+            value.set_op_type(Connection)
         
-        return False
+        else:
+            return False
+        
+        return True
 
     def explain(self) -> str:
         types = f'{self.expr}: [ '
