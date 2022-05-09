@@ -1,0 +1,222 @@
+%const voter_count, 500
+%const candidates_max, 5
+%const dropout_chance, 0.4
+%const addin_chance, 0.2
+
+%const election_time, 120
+
+%makro randfloat name, min, max
+    DECL name, 0
+    RAND name, float, uniform, min, max
+%emakro
+
+%makro get_dist ret, tmp, x1, y1, x2, y2
+    DECL ret, y2
+    SUBT ret, y1
+    POW  ret, ret, 2
+    SET  tmp, x2
+    SUBT tmp, x1
+    POW  tmp, tmp, 2
+    ADD  ret, tmp
+    POW  ret, ret, 1/2
+%emakro
+
+%makro add_at_index tmp, inc, list, index
+    set tmp, 0
+    lr tmp, list, index
+    add tmp, inc
+    lw list, tmp, index
+%emakro
+
+message voting, Inform
+    PRM count, float
+    PRM c1x, float
+    PRM c2x, float
+    PRM c3x, float
+    PRM c4x, float
+    PRM c5x, float
+    PRM c1y, float
+    PRM c2y, float
+    PRM c3y, float
+    PRM c4y, float
+    PRM c5y, float
+emessage
+
+message winner, Inform
+    PRM winner, float
+    PRM dropout, float
+emessage
+
+message ballot, Inform
+    PRM candidate, float
+emessage
+
+agent commission
+    prm candidates_x, list, float
+    prm candidates_y, list, float
+    prm vote_counts, list, float
+    prm cur_winner, float, init, -1
+    prm looser, float, init, -1
+    prm candidates_num, float, init , 3
+    behav setup, setup
+        action modify_self
+             decl x, 0
+             decl y, 0
+             decl it, 0
+             wlt it, candidates_num
+                rand x, float, uniform, 0, 100
+                rand y, float, uniform, 0, 100
+                adde candidates_x, x
+                adde candidates_y, y
+                add it, 1
+             eblock
+             wlt it, candidates_max
+                set x, -200
+                set y, -200
+                adde candidates_x, x
+                adde candidates_y, y
+             eblock
+        eaction
+    ebehav
+    behav announce_vote, cyclic, election_time
+        action choose_winner, modify_self
+            set cur_winner, -1
+            set looser, -1
+            decl max, -1
+            decl max_idx, -1
+            decl min, 1000000
+            decl min_idx, -1
+            decl it, 0
+            decl val, 0
+            wlt it, candidates_num
+                lr val, vote_counts, it
+                igt val, max
+                    set max, val
+                    set max_idx, it
+                eblock
+                ilt val, min
+                    set min, val
+                    set min_idx, it
+                eblock
+            eblock
+            set cur_winner, max_idx
+            set looser, min_idx
+        eaction
+        action inform_voters, send_msg, winner, Inform
+            set send.winner, cur_winner
+            randfloat dropout, 0, 1
+            set send.dropout, -1
+            IGT dropout, dropout_chance
+                IGT candidates_num, 2
+                    set send.dropout, looser
+                    SUBT candidates_num, 1
+                EBLOCK
+            eblock
+            send connections
+        eaction
+        action add_new_candidates, modify_self
+            ILT candidates_num, candidates_max
+                randfloat addin, 0, 1
+                IGT addin, addin_chance
+                    ADD candidates_num, 1
+                EBLOCK
+            EBLOCK
+        eaction
+        action send_msg, voting, Inform
+            clr vote_counts
+            set send.count, candidates_num
+            lw send.c1x, candidates_x, 0
+            lw send.c2x, candidates_x, 1
+            lw send.c3x, candidates_x, 2
+            lw send.c4x, candidates_x, 3
+            lw send.c5x, candidates_x, 4
+            lw send.c1y, candidates_y, 0
+            lw send.c2y, candidates_y, 1
+            lw send.c3y, candidates_y, 2
+            lw send.c4x, candidates_y, 3
+            lw send.c5x, candidates_y, 4
+        eaction
+    ebehav
+    behav count_votes, msg_rcv, ballot, Inform
+        action count, modify_self
+            DECL value, 0
+            add_at_index value, 1, vote_counts, rcv.candidate
+        eaction
+    ebehav
+eagent
+
+agent voter
+    PRM alignment_x, float, dist, uniform, 0, 100
+    PRM alignment_y, float, dist, uniform, 0, 100
+    PRM attitudes, list, float
+    PRM biases, list, float
+    PRM candidate, float, init, -1
+
+    behav init_bias, setup
+        action modify_self
+            DECL it, 0
+            WLT it, candidates_max
+                ADDE biases, 0
+                ADD it, 1
+            EBLOCK
+        eaction
+    ebehav
+
+    behav vote, msg_rcv, voting, Inform
+        action choose, modify_self
+            CLR attitudes
+            DECL tmp, 0
+            get_dist d1, tmp, alignment_x, alignment_y, rcv.c1x, rcv.c1y
+            get_dist d2, tmp, alignment_x, alignment_y, rcv.c2x, rcv.c2y
+            get_dist d3, tmp, alignment_x, alignment_y, rcv.c3x, rcv.c3y
+            get_dist d4, tmp, alignment_x, alignment_y, rcv.c4x, rcv.c4y
+            get_dist d5, tmp, alignment_x, alignment_y, rcv.c5x, rcv.c5y
+            ADDE attitudes, d1
+            ADDE attitudes, d2
+            ADDE attitudes, d3
+            ADDE attitudes, d4
+            ADDE attitudes, d5
+            DECL it, 0
+            DECL value, 0
+            DECL tmp, 0
+            WLT it, candidates_max
+                lr value, biases, it
+                add_at_index tmp, value, attitudes, it
+            EBLOCK
+            decl min, 100000
+            decl min_idx, -1
+            decl it, 0
+            decl val, 0
+            wlt it, rcv.count
+                lr val, attitudes, it
+                ilt val, min
+                    set min, val
+                    set min_idx, it
+                eblock
+            eblock
+            set candidate, min_idx
+        eaction
+        action send_ballot, send_msg, ballot, Inform
+            set send.candidate, candidate
+            send connnections
+        eaction
+    ebehav
+    behav process_results, msg_rcv, winner, Inform
+        action upgrade_bias, modify_self
+            DECL tmp, 0
+            INEQ rcv.winner, candidate
+                add_at_index tmp, -1, biases, candidate
+            EBLOCK
+        eaction
+        action upgrade_dropout, modify_self
+            INEQ rcv.dropout, -1
+                LW biases, 0, rcv.dropout
+            EBLOCK
+        eaction
+    ebehav
+eagent
+
+GRAPH statistical
+    DEFG commission, 1, voter_count
+    DEFG voter, voter_count, voter_count
+EGRAPH
