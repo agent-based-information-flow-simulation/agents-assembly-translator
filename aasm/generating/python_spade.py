@@ -737,18 +737,18 @@ class PythonSpadeCode(PythonCode):
                     
                 case TrigonometryOperation():
                     dst = self.parse_arg(statement.dst)
-                    angle_rad = f'self.agent.limit_number({self.parse_arg(statement.rad_angle)})'
+                    degree = f'self.agent.limit_number({self.parse_arg(statement.degree)})'
                     
                     match statement:
                         case Sin():
                             self.add_line('')
                             self.add_line("# sin")
-                            self.add_line(f'{dst} = self.agent.limit_number(numpy.sin({angle_rad}))')
+                            self.add_line(f'{dst} = self.agent.limit_number(numpy.sin(numpy.deg2rad({degree})))')
                             
                         case Cos():
                             self.add_line('')
                             self.add_line("# cos")
-                            self.add_line(f'{dst} = self.agent.limit_number(numpy.cos({angle_rad}))')
+                            self.add_line(f'{dst} = self.agent.limit_number(numpy.cos(numpy.deg2rad({degree})))')
                             
                         case _:
                             raise Exception(f'Unknown trigonometry operation statement: {statement.print()}')
