@@ -6,19 +6,19 @@
 %const election_time, 120
 
 %makro randfloat name, min, max
-    DECL name, 0
+    DECL name, float, 0
     RAND name, float, uniform, min, max
 %emakro
 
 %makro get_dist ret, tmp, x1, y1, x2, y2
-    DECL ret, y2
+    DECL ret, float, y2
     SUBT ret, y1
     POW  ret, ret, 2
     SET  tmp, x2
     SUBT tmp, x1
     POW  tmp, tmp, 2
     ADD  ret, tmp
-    POW  ret, ret, 1/2
+    POW  ret, ret, 0.5
 %emakro
 
 %makro add_at_index tmp, inc, list, index
@@ -59,10 +59,10 @@ agent commission
     prm looser, float, init, -1
     prm candidates_num, float, init , 3
     behav setup, setup
-        action modify_self
-             decl x, 0
-             decl y, 0
-             decl it, 0
+        action setup_candidates, modify_self
+             decl x, float, 0
+             decl y, float, 0
+             decl it,float, 0
              wlt it, candidates_num
                 rand x, float, uniform, 0, 100
                 rand y, float, uniform, 0, 100
@@ -82,12 +82,12 @@ agent commission
         action choose_winner, modify_self
             set cur_winner, -1
             set looser, -1
-            decl max, -1
-            decl max_idx, -1
-            decl min, 1000000
-            decl min_idx, -1
-            decl it, 0
-            decl val, 0
+            decl max, float, -1
+            decl max_idx, float, -1
+            decl min, float, 1000000
+            decl min_idx, float, -1
+            decl it, float, 0
+            decl val, float, 0
             wlt it, candidates_num
                 lr val, vote_counts, it
                 igt val, max
@@ -122,24 +122,24 @@ agent commission
                 EBLOCK
             EBLOCK
         eaction
-        action send_msg, voting, Inform
+        action announce_vote, send_msg, voting, Inform
             clr vote_counts
             set send.count, candidates_num
-            lw send.c1x, candidates_x, 0
-            lw send.c2x, candidates_x, 1
-            lw send.c3x, candidates_x, 2
-            lw send.c4x, candidates_x, 3
-            lw send.c5x, candidates_x, 4
-            lw send.c1y, candidates_y, 0
-            lw send.c2y, candidates_y, 1
-            lw send.c3y, candidates_y, 2
-            lw send.c4x, candidates_y, 3
-            lw send.c5x, candidates_y, 4
+            lr send.c1x, candidates_x, 0
+            lr send.c2x, candidates_x, 1
+            lr send.c3x, candidates_x, 2
+            lr send.c4x, candidates_x, 3
+            lr send.c5x, candidates_x, 4
+            lr send.c1y, candidates_y, 0
+            lr send.c2y, candidates_y, 1
+            lr send.c3y, candidates_y, 2
+            lr send.c4x, candidates_y, 3
+            lr send.c5x, candidates_y, 4
         eaction
     ebehav
     behav count_votes, msg_rcv, ballot, Inform
         action count, modify_self
-            DECL value, 0
+            DECL value, float, 0
             add_at_index value, 1, vote_counts, rcv.candidate
         eaction
     ebehav
@@ -153,8 +153,8 @@ agent voter
     PRM candidate, float, init, -1
 
     behav init_bias, setup
-        action modify_self
-            DECL it, 0
+        action bias, modify_self
+            DECL it, float, 0
             WLT it, candidates_max
                 ADDE biases, 0
                 ADD it, 1
@@ -165,7 +165,7 @@ agent voter
     behav vote, msg_rcv, voting, Inform
         action choose, modify_self
             CLR attitudes
-            DECL tmp, 0
+            DECL tmp, float, 0
             get_dist d1, tmp, alignment_x, alignment_y, rcv.c1x, rcv.c1y
             get_dist d2, tmp, alignment_x, alignment_y, rcv.c2x, rcv.c2y
             get_dist d3, tmp, alignment_x, alignment_y, rcv.c3x, rcv.c3y
@@ -176,17 +176,17 @@ agent voter
             ADDE attitudes, d3
             ADDE attitudes, d4
             ADDE attitudes, d5
-            DECL it, 0
-            DECL value, 0
-            DECL tmp, 0
+            DECL it, float, 0
+            DECL value, float, 0
+            SET tmp, 0
             WLT it, candidates_max
                 lr value, biases, it
                 add_at_index tmp, value, attitudes, it
             EBLOCK
-            decl min, 100000
-            decl min_idx, -1
-            decl it, 0
-            decl val, 0
+            decl min, float, 100000
+            decl min_idx, float, -1
+            SET it, 0
+            decl val, float, 0
             wlt it, rcv.count
                 lr val, attitudes, it
                 ilt val, min
@@ -203,7 +203,7 @@ agent voter
     ebehav
     behav process_results, msg_rcv, winner, Inform
         action upgrade_bias, modify_self
-            DECL tmp, 0
+            DECL tmp, float, 0
             INEQ rcv.winner, candidate
                 add_at_index tmp, -1, biases, candidate
             EBLOCK
