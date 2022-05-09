@@ -123,12 +123,12 @@ MESSAGE eat, Inform
 EMESSAGE
 
 MESSAGE broadcast, Inform
-    PRM type, float # 0 - field, 1 - sheep, 2 - wolf
+    PRM typ, float # 0 - field, 1 - sheep, 2 - wolf
     PRM state, float
 EMESSAGE
 
 MESSAGE spawn, Inform
-    PRM type, float
+    PRM typ, float
 EMESSAGE
 
 MESSAGE kill, Inform
@@ -152,18 +152,18 @@ AGENT grass
             EBLOCK
         EACTION
         ACTION broadcast, send_msg, broadcast, Inform
-            SET SEND.type, field_id
+            SET SEND.typ, field_id
             SEND connections
         EACTION
     EBEHAV
     BEHAV recv_spawn, msg_rcv, spawn, Inform
         ACTION choose_spawn, modify_self
             CLR spawn_candidate
-            IEQ RCV.type, sheep_id
+            IEQ RCV.typ, sheep_id
                 SUBS spawn_candidate, dead_sheep, 1
                 move_to alive_sheep, dead_sheep, spawn_candidate
             EBLOCK
-            IEQ RCV.type, wolf_id
+            IEQ RCV.typ, wolf_id
                 SUBS spawn_candidate, dead_wolf, 1
                 move_to alive_wolf, dead_wolf, spawn_candidate
             EBLOCK
@@ -174,7 +174,7 @@ AGENT grass
     EBEHAV
     BEHAV recv_broadcast, msg_rcv, broadcast, Inform
         ACTION add_agent, modify_self
-            IEQ RCV.type, sheep_id
+            IEQ RCV.typ, sheep_id
                 IEQ RCV.state, 0
                     move_to dead_sheep, alive_sheep, RCV.jid
                 EBLOCK
@@ -182,7 +182,7 @@ AGENT grass
                     move_to alive_sheep, dead_sheep, RCV.jid
                 EBLOCK
             EBLOCK
-            IEQ RCV.type, 2
+            IEQ RCV.typ, 2
                 IEQ RCV.state, 0
                     move_to dead_wolf, alive_wolf, RCV.jid
                 EBLOCK
@@ -263,7 +263,7 @@ AGENT sheep
 
     BEHAV setup, setup
         ACTION broadcast, send_msg, broadcast, Inform
-            SET SEND.type, 1
+            SET SEND.typ, 1
             IEQ dead, YES
                 SET SEND.state, 0
             EBLOCK
@@ -298,7 +298,7 @@ AGENT sheep
         ACTION hatch, send_msg, spawn, Inform
             IEQ dead, NO
                 IEQ energy > 100
-                    SET SEND.type, 1
+                    SET SEND.typ, 1
                     SEND field
                 EBLOCK
             EBLOCK
@@ -310,7 +310,7 @@ AGENT sheep
         EACTION
     EBEHAV
     BEHAV recv_broadcast, broadcast, Inform
-        IEQ RCV.type, 0
+        IEQ RCV.typ, 0
             ADDE field, RCV.jid
         EBLOCK
     EBEHAV
@@ -362,7 +362,7 @@ AGENT wolf
 
     BEHAV setup, setup
         ACTION broadcast, send_msg, broadcast, Inform
-            SET SEND.type, 2
+            SET SEND.typ, 2
             IEQ dead, YES
                 SET SEND.state, 0
             EBLOCK
@@ -400,10 +400,10 @@ AGENT wolf
         EACTION
     EBEHAV
     BEHAV recv_broadcast, msg_rcv, broadcast, Inform
-        IEQ RCV.type, 0
+        IEQ RCV.typ, 0
             ADDE field, RCV.jid
         EBLOCK
-        IEQ RCV.type, 1
+        IEQ RCV.typ, 1
             ADDE sheep, RCV.jid
         EBLOCK
     EBEHAV
