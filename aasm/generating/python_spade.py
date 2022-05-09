@@ -12,7 +12,8 @@ from aasm.intermediate.argument import (AgentParam, Connection, ConnectionList,
                                         SendMessageParam)
 from aasm.intermediate.behaviour import MessageReceivedBehaviour
 from aasm.intermediate.block import Block
-from aasm.intermediate.declaration import Declaration
+from aasm.intermediate.declaration import (ConnectionDeclaration, Declaration,
+                                           FloatDeclaration)
 from aasm.intermediate.instruction import (Add, AddElement, Clear, Comparaison,
                                            Cos, Divide, ExpDist,
                                            ExponentiationOperation, IfEqual,
@@ -422,6 +423,9 @@ class PythonSpadeCode(PythonCode):
                 prop = arg.expr.split('.')[1]
                 return f'send[\"{prop}\"]'
             
+            case Connection():
+                return f'\"{arg.expr}\"'
+            
             case _:
                 return arg.expr
         
@@ -437,10 +441,16 @@ class PythonSpadeCode(PythonCode):
                     self.add_block(statement)
                     self.indent_left()
 
-                case Declaration():
+                case FloatDeclaration():
                     self.add_line('')
-                    self.add_line("# declaration")
+                    self.add_line("# float declaration")
                     value = f'self.agent.limit_number({self.parse_arg(statement.value)})'
+                    self.add_line(f'{statement.name} = {value}')
+                
+                case ConnectionDeclaration():
+                    self.add_line('')
+                    self.add_line("# connection declaration")
+                    value = f'{self.parse_arg(statement.value)}'
                     self.add_line(f'{statement.name} = {value}')
                 
                 case Subset():
@@ -658,15 +668,15 @@ class PythonSpadeCode(PythonCode):
                     list_ = self.parse_arg(statement.list_)
                     element = self.parse_arg(statement.element)
                     match statement:
-                        case AddElement() if isinstance(statement.list_.type_in_op, FloatList):
-                            self.add_line('')
-                            self.add_line("# add element")
-                            self.add_line(f'{list_}.append({element})')
-
-                        case AddElement():
+                        case AddElement() if isinstance(statement.element.type_in_op, MessageList):
                             self.add_line('')
                             self.add_line("# add element")
                             self.add_line(f'if {element} not in {list_}: {list_}.append({element})')
+                                                
+                        case AddElement():
+                            self.add_line('')
+                            self.add_line("# add element")
+                            self.add_line(f'{list_}.append({element})')
 
                         case RemoveElement():
                             self.add_line('')
