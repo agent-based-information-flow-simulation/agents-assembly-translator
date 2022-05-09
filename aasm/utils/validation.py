@@ -17,6 +17,10 @@ def is_int(value: str) -> bool:
     return value.isdigit() or (value[0] == '-' and value[1:].isdigit())
 
 
+def is_connection(value: str) -> bool:
+    return isinstance(value, str)
+
+
 def is_valid_enum_list(enums: List[str]) -> bool:
     if len(enums) == 0 or len(enums) % 2:
         return False

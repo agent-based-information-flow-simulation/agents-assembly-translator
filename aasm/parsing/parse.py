@@ -69,8 +69,8 @@ def parse_lines(lines: List[str], debug: bool) -> ParsedData:
             case [ 'EACTION' ]:
                 op_EACTION(state)
                 
-            case [ 'DECL', name, value ]:
-                op_DECL(state, name, value)
+            case [ 'DECL', name, category, value ]:
+                op_DECL(state, name, category, value)
                 
             case [ 'EBLOCK' ]:
                 op_EBLOCK(state)
