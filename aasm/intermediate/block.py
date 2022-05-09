@@ -44,8 +44,12 @@ class Block:
         self._declarations: Declarations = parent_declarations.get_copy()
         
     @property
-    def declarations_in_scope(self) -> List[str]:
+    def declared_names_in_scope(self) -> List[str]:
         return self._declarations.get_declared_names()
+
+    @property
+    def get_declarations(self) -> Declarations:
+        return self._declarations
     
     def is_declared_float(self, name: str) -> bool:
         return self._declarations.is_float_name(name)
