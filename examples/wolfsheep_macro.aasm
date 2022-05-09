@@ -56,7 +56,7 @@ IEQ dead, NO
 EBLOCK
 %emakro
 
-%makro move heading, dead, invert, energy, x, y
+%makro move heading, dead, invert, energy, x, y, field_width, field_height
 IEQ dead, NO
     DECL a, float, 0
     DECL b, float, 0
@@ -198,7 +198,7 @@ AGENT grass
             MULT index, field_width
             ADD index, RCV.y
             DECL grass_val, float, 0
-            LR grass_val, field, it
+            LR grass_val, field, index
             DECL send_flag, float, 0
             IGT grass_val, 1
                 SET send_flag, 1
@@ -279,7 +279,7 @@ AGENT sheep
             wiggle dead, invert, heading
         EACTION # wiggle
         ACTION move, modify_self
-            move heading, dead, invert, energy, x, y
+            move heading, dead, invert, energy, x, y, field_width, field_height
         EACTION
         ACTION check_if_dead, modify_self
             ILTEQ energy, 0
@@ -297,7 +297,7 @@ AGENT sheep
     BEHAV reproduce, cyclic, 20
         ACTION hatch, send_msg, spawn, Inform
             IEQ dead, NO
-                IEQ energy > 100
+                IEQ energy, 100
                     SET SEND.typ, 1
                     SEND field
                 EBLOCK
@@ -306,17 +306,19 @@ AGENT sheep
     EBEHAV
     BEHAV grass_eat, msg_rcv, eat, Inform
         ACTION change_energy, modify_self
-            ADD energy, SEND.energy
+            ADD energy, RCV.energy
         EACTION
     EBEHAV
-    BEHAV recv_broadcast, broadcast, Inform
+    BEHAV recv_broadcast, msg_rcv, broadcast, Inform
+        ACTION xd, modify_self
         IEQ RCV.typ, 0
             ADDE field, RCV.jid
         EBLOCK
+        EACTION
     EBEHAV
 
-    BEHAV get_eaten_request, eat, Request
-        ACTION send_msg, eat, Inform
+    BEHAV get_eaten_request, msg_rcv, eat, Request
+        ACTION kappa, send_msg, eat, Inform
             IEQ dead, NO
                 DECL lowx, float, x
                 DECL lowy, float, y
@@ -377,7 +379,7 @@ AGENT wolf
             wiggle dead, invert, heading
         EACTION # wiggle
         ACTION move, modify_self
-            move heading, dead, invert, energy, x, y
+            move heading, dead, invert, energy, x, y, field_width, field_height
         EACTION
         ACTION check_if_dead, modify_self
             ILTEQ energy, 0
@@ -400,18 +402,20 @@ AGENT wolf
         EACTION
     EBEHAV
     BEHAV recv_broadcast, msg_rcv, broadcast, Inform
+        ACTION save_data, modify_self
         IEQ RCV.typ, 0
             ADDE field, RCV.jid
         EBLOCK
         IEQ RCV.typ, 1
             ADDE sheep, RCV.jid
         EBLOCK
+        EACTION
     EBEHAV
 EAGENT
 
 GRAPH statistical
     SIZE graph_size
-    DEFG field, 1, field_conns
+    DEFG grass, 1, field_conns
     DEFG sheep, sheep_amt, field_conns
     DEFG wolf, wolf_amt, field_conns
 EGRAPH
