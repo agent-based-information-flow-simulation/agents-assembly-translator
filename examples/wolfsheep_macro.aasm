@@ -21,11 +21,11 @@
 
 %makro wiggle dead, invert, heading
 IEQ dead, NO
-    DECL wiglR, 0
-    DECL wiglL, 0
+    DECL wiglR, float, 0
+    DECL wiglL, float, 0
     RAND wiglR, float, uniform, 0, 90
     RAND wiglL, float, uniform, 0, 90
-    DECL change_flag, 0
+    DECL change_flag, float, 0
     IEQ invert, YES
         SET change_flag, 1
         ADD heading, wiglL
@@ -58,12 +58,12 @@ EBLOCK
 
 %makro move heading, dead, invert, energy, x, y
 IEQ dead, NO
-    DECL a, 0
-    DECL b, 0
+    DECL a, float, 0
+    DECL b, float, 0
     SIN a, heading
     SIN b, heading
-    DECL newx, x
-    DECL newy, y
+    DECL newx, float, x
+    DECL newy, float, y
     IGT heading, 90
         SUBT newx, a
     EBLOCK
@@ -76,7 +76,7 @@ IEQ dead, NO
     IEQ invert, NO
         ADD newy, b
     EBLOCK
-    DECL bump, 0
+    DECL bump, float, 0
     ILT newx, 0
         SET bump, 1
     EBLOCK
@@ -98,7 +98,7 @@ IEQ dead, NO
         ADD heading, 90
         IGT heading, 180
             SUBT heading, 180
-            DECL flag, 0
+            DECL flag, float, 0
             IEQ invert, YES
                 SET flag, 1
                 SET invert, NO
@@ -143,8 +143,8 @@ AGENT grass
     PRM spawn_candidate, list, conn
     BEHAV setup, setup
         ACTION setup_field, modify_self
-            DECL it, 0
-            DECL amt, 0
+            DECL it, float, 0
+            DECL amt, float, 0
             WLT it, field_size
                 RAND amt, float, uniform, 0, 10
                 ADDE field, amt
@@ -194,12 +194,12 @@ AGENT grass
     EBEHAV
     BEHAV eat_grass, msg_rcv, eat, Request
         ACTION parse_eat, send_msg, eat, Inform
-            DECL index, RCV.x
+            DECL index, float, RCV.x
             MULT index, field_width
             ADD index, RCV.y
-            DECL grass_val, 0
+            DECL grass_val, float, 0
             LR grass_val, field, it
-            DECL send_flag, 0
+            DECL send_flag, float, 0
             IGT grass_val, 1
                 SET send_flag, 1
                 SET SEND.energy, grass_energy
@@ -214,8 +214,8 @@ AGENT grass
     EBEHAV
     BEHAV regrow_grass, cyclic, 10
         ACTION regrow, modify_self
-            DECL it, 0
-            DECL amt, 0
+            DECL it, float, 0
+            DECL amt, float, 0
             WLT it, field_size
                 LR amt, field, it
                 ADD amt, grass_regrow
@@ -318,10 +318,10 @@ AGENT sheep
     BEHAV get_eaten_request, eat, Request
         ACTION send_msg, eat, Inform
             IEQ dead, NO
-                DECL lowx, x
-                DECL lowy, y
-                DECL highx, x
-                DECL highy, y
+                DECL lowx, float, x
+                DECL lowy, float, y
+                DECL highx, float, x
+                DECL highy, float, y
 
                 SUBT lowx, 1
                 SUBT lowy, 1
