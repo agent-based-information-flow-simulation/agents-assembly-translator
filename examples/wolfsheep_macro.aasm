@@ -135,7 +135,7 @@ MESSAGE kill, Inform
 EMESSAGE
 
 AGENT grass
-    PRM field, list, float, field_size, 0
+    PRM field, list, float
     PRM dead_sheep, list, conn
     PRM alive_sheep, list, conn
     PRM dead_wolf, list, conn
@@ -147,7 +147,7 @@ AGENT grass
             DECL amt, 0
             WLT it, field_size
                 RAND amt, float, uniform, 0, 10
-                LW field, it, amt
+                ADDE field, amt
                 ADD it, 1
             EBLOCK
         EACTION
