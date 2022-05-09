@@ -7,17 +7,62 @@ if TYPE_CHECKING:
     from aasm.intermediate.instruction import Instruction
 
 
+class Declarations:
+    def __init__(self, float_names: List[str] = None, connection_names: List[str] = None):
+        if float_names:
+            self.float_names: List[str] = float_names
+        else:
+            self.float_names: List[str] = []
+        
+        if connection_names:
+            self.connection_names: List[str] = connection_names
+        else:
+            self.connection_names: List[str] = []
+        
+    def add_float_name(self, name: str) -> None:
+        self.float_names.append(name)
+        
+    def is_float_name(self, name: str) -> bool:
+        return name in self.float_names
+    
+    def add_connection_name(self, name: str) -> None:
+        self.connection_names.append(name)
+        
+    def is_connection_name(self, name: str) -> bool:
+        return name in self.connection_names
+        
+    def get_declared_names(self) -> List[str]:
+        return [ *self.float_names, *self.connection_names ]
+        
+    def get_copy(self) -> Declarations:
+        return Declarations(list(self.float_names), list(self.connection_names))
+
+
 class Block:    
-    def __init__(self, names_declared_in_parent: List[str]):
+    def __init__(self, parent_declarations: Declarations):
         self.statements: List[Declaration | Instruction | Block] = []
-        self._declared_names: List[str] = list(names_declared_in_parent)
+        self._declarations: Declarations = parent_declarations.get_copy()
         
     @property
-    def declarations_in_scope(self) -> List[str]:
-        return self._declared_names
+    def declared_names_in_scope(self) -> List[str]:
+        return self._declarations.get_declared_names()
+
+    @property
+    def get_declarations(self) -> Declarations:
+        return self._declarations
+    
+    def is_declared_float(self, name: str) -> bool:
+        return self._declarations.is_float_name(name)
+    
+    def is_declared_connection(self, name: str) -> bool:
+        return self._declarations.is_connection_name(name)
         
-    def add_declaration(self, declaration: Declaration) -> None:
-        self._declared_names.append(declaration.name)
+    def add_float_declaration(self, declaration: Declaration) -> None:
+        self._declarations.add_float_name(declaration.name)
+        self.statements.append(declaration)
+        
+    def add_connection_declaration(self, declaration: Declaration) -> None:
+        self._declarations.add_connection_name(declaration.name)
         self.statements.append(declaration)
     
     def add_statement(self, statement: Instruction | Block) -> None:

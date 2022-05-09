@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List
 
-from aasm.intermediate.block import Block
+from aasm.intermediate.block import Block, Declarations
 
 if TYPE_CHECKING:
     from aasm.intermediate.declaration import Declaration
@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 class Action:
     def __init__(self, name: str):
         self.name: str = name
-        self._block_stack: List[Block] = [Block([])]
+        self._block_stack: List[Block] = [Block(Declarations())]
         self._nested_blocks_count: int = 0
 
     @property
@@ -29,16 +29,25 @@ class Action:
         return self._block_stack[-1]
 
     def is_declaration_in_scope(self, name: str) -> bool:
-        return name in self.current_block.declarations_in_scope
+        return name in self.current_block.declared_names_in_scope
+    
+    def is_declared_float(self, name: str) -> bool:
+        return self.current_block.is_declared_float(name)
+    
+    def is_declared_connection(self, name: str) -> bool:
+        return self.current_block.is_declared_connection(name)
 
-    def add_declaration(self, declaration: Declaration) -> None:
-        self.current_block.add_declaration(declaration)
+    def add_float_declaration(self, declaration: Declaration) -> None:
+        self.current_block.add_float_declaration(declaration)
+
+    def add_connection_declaration(self, declaration: Declaration) -> None:
+        self.current_block.add_connection_declaration(declaration)
 
     def add_instruction(self, instruction: Instruction) -> None:
         self.current_block.add_statement(instruction)
 
     def start_block(self) -> None:
-        new_block = Block(self.current_block.declarations_in_scope)
+        new_block = Block(self.current_block.get_declarations)
         self.current_block.add_statement(new_block)
         self._block_stack.append(new_block)
         self._nested_blocks_count += 1

@@ -87,7 +87,7 @@ class average_user(spade.agent.Agent):
             if self.agent.logger: self.agent.logger.debug(f'[{self.agent.jid}] Run action post_photos')
             send = { "type": "facebook_post", "performative": "query", "photos": 0.0, }
             
-            # declaration
+            # float declaration
             num_photos = self.agent.limit_number(0)
             
             # uniform distribution
