@@ -11,16 +11,16 @@ class PythonCode:
 
     def indent_left(self) -> None:
         self.indent -= self.indent_size
-        
+
     def indent_right(self) -> None:
         self.indent += self.indent_size
-        
+
     def add_line(self, line: str) -> None:
-        self.code_lines.append(self.indent * ' ' + line + '\n')
-        
+        self.code_lines.append(self.indent * " " + line + "\n")
+
     def add_newline(self) -> None:
-        self.add_line('')
-        
+        self.add_line("")
+
     def add_newlines(self, count: int) -> None:
         for _ in range(count):
             self.add_newline()

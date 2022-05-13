@@ -14,7 +14,7 @@ def is_float(value: str) -> bool:
 
 
 def is_int(value: str) -> bool:
-    return value.isdigit() or (value[0] == '-' and value[1:].isdigit())
+    return value.isdigit() or (value[0] == "-" and value[1:].isdigit())
 
 
 def is_connection(value: str) -> bool:
@@ -35,18 +35,44 @@ def is_valid_enum_list(enums: List[str]) -> bool:
 
 
 def is_valid_name(name: str) -> bool:
-    return (len(name) != 0 
-            and not name[0].isdigit() 
-            and (name.isalnum() or "_" in name) 
-            and name.lower() not in get_invalid_names())
+    return (
+        len(name) != 0
+        and not name[0].isdigit()
+        and (name.isalnum() or "_" in name)
+        and name.lower() not in get_invalid_names()
+    )
 
 
 def get_invalid_names() -> List[str]:
-    invalid_names = [ 'send', 'rcv', 'len', 'round', 'list', 'filter', 'self', 'jid',
-                      'datetime', 'random', 'numpy', 'json', 'spade', 'copy', 'uuid',
-                      'get_json_from_spade_message', 'get_spade_message', 'logger',
-                      'any', 'sys', 'limit_number', 'int', 'BackupBehaviour', 
-                      'backup_url', 'backup_period', 'backup_delay', 'setup' ]
+    invalid_names = [
+        "send",
+        "rcv",
+        "len",
+        "round",
+        "list",
+        "filter",
+        "self",
+        "jid",
+        "datetime",
+        "random",
+        "numpy",
+        "json",
+        "spade",
+        "copy",
+        "uuid",
+        "get_json_from_spade_message",
+        "get_spade_message",
+        "logger",
+        "any",
+        "sys",
+        "limit_number",
+        "int",
+        "BackupBehaviour",
+        "backup_url",
+        "backup_period",
+        "backup_delay",
+        "setup",
+    ]
     invalid_names.extend(keyword.kwlist)
     return invalid_names
 

@@ -17,7 +17,7 @@ class Comparaison(Instruction):
         self.right = right
 
     def print(self) -> None:
-        print('Comparaison')
+        print("Comparaison")
         self.left.print()
         self.right.print()
 
@@ -25,18 +25,18 @@ class Comparaison(Instruction):
 class IfGreaterThan(Comparaison):
     def __init__(self, left: Argument, right: Argument):
         super().__init__(left=left, right=right)
- 
+
     def print(self) -> None:
-        print('IfGreaterThan')
+        print("IfGreaterThan")
         super().print()
 
 
 class IfGreaterThanOrEqual(Comparaison):
     def __init__(self, left: Argument, right: Argument):
         super().__init__(left=left, right=right)
- 
+
     def print(self) -> None:
-        print('IfGreaterThanOrEqual')
+        print("IfGreaterThanOrEqual")
         super().print()
 
 
@@ -45,7 +45,7 @@ class IfLessThan(Comparaison):
         super().__init__(left=left, right=right)
 
     def print(self) -> None:
-        print('IfLessThan')
+        print("IfLessThan")
         super().print()
 
 
@@ -54,7 +54,7 @@ class IfLessThanOrEqual(Comparaison):
         super().__init__(left=left, right=right)
 
     def print(self) -> None:
-        print('IfLessThanOrEqual')
+        print("IfLessThanOrEqual")
         super().print()
 
 
@@ -63,7 +63,7 @@ class IfEqual(Comparaison):
         super().__init__(left=left, right=right)
 
     def print(self) -> None:
-        print('IfEqual')
+        print("IfEqual")
         super().print()
 
 
@@ -72,7 +72,7 @@ class IfNotEqual(Comparaison):
         super().__init__(left=left, right=right)
 
     def print(self) -> None:
-        print('IfNotEqual')
+        print("IfNotEqual")
         super().print()
 
 
@@ -81,7 +81,7 @@ class WhileGreaterThan(Comparaison):
         super().__init__(left=left, right=right)
 
     def print(self) -> None:
-        print('WhileGreaterThan')
+        print("WhileGreaterThan")
         super().print()
 
 
@@ -90,7 +90,7 @@ class WhileGreaterThanOrEqual(Comparaison):
         super().__init__(left=left, right=right)
 
     def print(self) -> None:
-        print('WhileGreaterThanOrEqual')
+        print("WhileGreaterThanOrEqual")
         super().print()
 
 
@@ -99,7 +99,7 @@ class WhileLessThan(Comparaison):
         super().__init__(left=left, right=right)
 
     def print(self) -> None:
-        print('WhileLessThan')
+        print("WhileLessThan")
         super().print()
 
 
@@ -108,7 +108,7 @@ class WhileLessThanOrEqual(Comparaison):
         super().__init__(left=left, right=right)
 
     def print(self) -> None:
-        print('WhileLessThanOrEqual')
+        print("WhileLessThanOrEqual")
         super().print()
 
 
@@ -117,7 +117,7 @@ class WhileEqual(Comparaison):
         super().__init__(left=left, right=right)
 
     def print(self) -> None:
-        print('WhileEqual')
+        print("WhileEqual")
         super().print()
 
 
@@ -126,7 +126,7 @@ class WhileNotEqual(Comparaison):
         super().__init__(left=left, right=right)
 
     def print(self) -> None:
-        print('WhileNotEqual')
+        print("WhileNotEqual")
         super().print()
 
 
@@ -136,7 +136,7 @@ class MathOperation(Instruction):
         self.num = num
 
     def print(self) -> None:
-        print('MathOperation')
+        print("MathOperation")
         self.dst.print()
         self.num.print()
 
@@ -146,7 +146,7 @@ class Multiply(MathOperation):
         super().__init__(dst=dst, num=num)
 
     def print(self) -> None:
-        print('Multiply')
+        print("Multiply")
         super().print()
 
 
@@ -155,7 +155,7 @@ class Divide(MathOperation):
         super().__init__(dst=dst, num=num)
 
     def print(self) -> None:
-        print('Divide')
+        print("Divide")
         super().print()
 
 
@@ -164,7 +164,7 @@ class Add(MathOperation):
         super().__init__(dst=dst, num=num)
 
     def print(self) -> None:
-        print('Add')
+        print("Add")
         super().print()
 
 
@@ -173,7 +173,7 @@ class Subtract(MathOperation):
         super().__init__(dst=dst, num=num)
 
     def print(self) -> None:
-        print('Subtract')
+        print("Subtract")
         super().print()
 
 
@@ -183,7 +183,7 @@ class ListElementAccess(Instruction):
         self.element = element
 
     def print(self) -> None:
-        print('ListElementAccess')
+        print("ListElementAccess")
         self.list_.print()
         self.element.print()
 
@@ -193,7 +193,7 @@ class AddElement(ListElementAccess):
         super().__init__(list_=list_, element=element)
 
     def print(self) -> None:
-        print('AddElement')
+        print("AddElement")
         super().print()
 
 
@@ -202,7 +202,7 @@ class RemoveElement(ListElementAccess):
         super().__init__(list_=list_, element=element)
 
     def print(self) -> None:
-        print('RemoveElement')
+        print("RemoveElement")
         super().print()
 
 
@@ -211,7 +211,7 @@ class IfInList(ListElementAccess):
         super().__init__(list_=list_, element=element)
 
     def print(self) -> None:
-        print('IfInList')
+        print("IfInList")
         super().print()
 
 
@@ -220,7 +220,7 @@ class IfNotInList(ListElementAccess):
         super().__init__(list_=list_, element=element)
 
     def print(self) -> None:
-        print('IfNotInList')
+        print("IfNotInList")
         super().print()
 
 
@@ -230,7 +230,7 @@ class RemoveNElements(Instruction):
         self.num = num
 
     def print(self) -> None:
-        print('RemoveNElements')
+        print("RemoveNElements")
         self.list_.print()
         self.num.print()
 
@@ -242,7 +242,7 @@ class Subset(Instruction):
         self.num = num
 
     def print(self) -> None:
-        print('Subset')
+        print("Subset")
         self.dst_list.print()
         self.src_list.print()
         self.num.print()
@@ -254,7 +254,7 @@ class Set(Instruction):
         self.value = value
 
     def print(self) -> None:
-        print('Set')
+        print("Set")
         self.dst.print()
         self.value.print()
 
@@ -264,7 +264,7 @@ class Clear(Instruction):
         self.list_ = list_
 
     def print(self) -> None:
-        print('Clear')
+        print("Clear")
         self.list_.print()
 
 
@@ -274,7 +274,7 @@ class Length(Instruction):
         self.list_ = list_
 
     def print(self) -> None:
-        print('Length')
+        print("Length")
         self.dst.print()
         self.list_.print()
 
@@ -284,7 +284,7 @@ class Send(Instruction):
         self.receivers = receivers
 
     def print(self) -> None:
-        print('Send')
+        print("Send")
         self.receivers.print()
 
 
@@ -293,7 +293,7 @@ class Round(Instruction):
         self.dst = dst
 
     def print(self) -> None:
-        print('Round')
+        print("Round")
         self.dst.print()
 
 
@@ -304,7 +304,7 @@ class UniformDist(Instruction):
         self.b = b
 
     def print(self) -> None:
-        print('UniformDist')
+        print("UniformDist")
         self.dst.print()
         self.a.print()
         self.b.print()
@@ -317,7 +317,7 @@ class NormalDist(Instruction):
         self.std_dev = std_dev
 
     def print(self) -> None:
-        print('NormalDist')
+        print("NormalDist")
         self.dst.print()
         self.mean.print()
         self.std_dev.print()
@@ -329,7 +329,7 @@ class ExpDist(Instruction):
         self.lambda_ = lambda_
 
     def print(self) -> None:
-        print('ExpDist')
+        print("ExpDist")
         self.dst.print()
         self.lambda_.print()
 
@@ -339,9 +339,9 @@ class ListRead(Instruction):
         self.dst = dst
         self.list_ = list_
         self.idx = idx
-        
+
     def print(self) -> None:
-        print('ListRead')
+        print("ListRead")
         self.dst.print()
         self.list_.print()
         self.idx.print()
@@ -352,13 +352,13 @@ class ListWrite(Instruction):
         self.list_ = list_
         self.idx = idx
         self.value = value
-        
+
     def print(self) -> None:
-        print('ListWrite')
+        print("ListWrite")
         self.list_.print()
         self.idx.print()
         self.value.print()
-        
+
 
 class TrigonometryOperation(Instruction):
     def __init__(self, dst: Argument, degree: Argument):
@@ -366,7 +366,7 @@ class TrigonometryOperation(Instruction):
         self.degree = degree
 
     def print(self) -> None:
-        print('TrigonometryOperation')
+        print("TrigonometryOperation")
         self.dst.print()
         self.degree.print()
 
@@ -376,7 +376,7 @@ class Sin(TrigonometryOperation):
         super().__init__(dst=dst, degree=degree)
 
     def print(self) -> None:
-        print('Sin')
+        print("Sin")
         super().print()
 
 
@@ -385,7 +385,7 @@ class Cos(TrigonometryOperation):
         super().__init__(dst=dst, degree=degree)
 
     def print(self) -> None:
-        print('Cos')
+        print("Cos")
         super().print()
 
 
@@ -396,7 +396,7 @@ class ExponentiationOperation(Instruction):
         self.num = num
 
     def print(self) -> None:
-        print('ExponentiationOperation')
+        print("ExponentiationOperation")
         self.dst.print()
         self.base.print()
         self.num.print()
@@ -407,7 +407,7 @@ class Logarithm(ExponentiationOperation):
         super().__init__(dst=dst, base=base, num=num)
 
     def print(self) -> None:
-        print('Logarithm')
+        print("Logarithm")
         super().print()
 
 
@@ -416,5 +416,5 @@ class Power(ExponentiationOperation):
         super().__init__(dst=dst, base=base, num=num)
 
     def print(self) -> None:
-        print('Power')
+        print("Power")
         super().print()
