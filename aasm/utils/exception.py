@@ -6,7 +6,7 @@ class PanicException(Exception):
         self.suggestion: str = suggestion
 
     def print(self) -> None:
-        print('🔥 ' + self.place)
+        print("🔥 " + self.place)
         print(self.reason)
         if self.suggestion:
             print(self.suggestion)

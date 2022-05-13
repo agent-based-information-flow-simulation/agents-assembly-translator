@@ -30,10 +30,10 @@ class Action:
 
     def is_declaration_in_scope(self, name: str) -> bool:
         return name in self.current_block.declared_names_in_scope
-    
+
     def is_declared_float(self, name: str) -> bool:
         return self.current_block.is_declared_float(name)
-    
+
     def is_declared_connection(self, name: str) -> bool:
         return self.current_block.is_declared_connection(name)
 
@@ -57,7 +57,7 @@ class Action:
         self._nested_blocks_count -= 1
 
     def print(self) -> None:
-        print(f'Action {self.name}')
+        print(f"Action {self.name}")
         self.main_block.print()
 
 
@@ -66,7 +66,7 @@ class ModifySelfAction(Action):
         super().__init__(name)
 
     def print(self) -> None:
-        print('ModifySelfAction')
+        print("ModifySelfAction")
         super().print()
 
 
@@ -76,6 +76,6 @@ class SendMessageAction(Action):
         self.send_message: Message = message
 
     def print(self) -> None:
-        print('SendMessageAction')
+        print("SendMessageAction")
         super().print()
         self.send_message.print()

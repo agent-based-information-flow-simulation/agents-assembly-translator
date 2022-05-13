@@ -10,14 +10,16 @@ if TYPE_CHECKING:
 
 
 def op_LR(state: State, arg1: str, arg2: str, arg3: str) -> None:
-    state.require(state.in_action, 'Not inside any action.', 'LR can be used inside actions.')
+    state.require(
+        state.in_action, "Not inside any action.", "LR can be used inside actions."
+    )
     dst = Argument(state, arg1)
     list_ = Argument(state, arg2)
     idx = Argument(state, arg3)
     state.require(
-        dst.list_read_context(list_, idx), 
-        'Mismatched types in the list read context.', 
-        f'ARG1 {dst.explain()}, ARG2 {list_.explain()}, ARG3 {idx.explain()}'
+        dst.list_read_context(list_, idx),
+        "Mismatched types in the list read context.",
+        f"ARG1 {dst.explain()}, ARG2 {list_.explain()}, ARG3 {idx.explain()}",
     )
-    
+
     state.last_action.add_instruction(ListRead(dst, list_, idx))

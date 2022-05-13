@@ -10,13 +10,17 @@ if TYPE_CHECKING:
 
 
 def op_REMEN(state: State, arg1: str, arg2: str) -> None:
-    state.require(state.in_action, 'Not inside any action.', 'List modifications can be used inside actions.')
+    state.require(
+        state.in_action,
+        "Not inside any action.",
+        "List modifications can be used inside actions.",
+    )
     lhs = Argument(state, arg1)
     rhs = Argument(state, arg2)
     state.require(
-        lhs.list_n_removal_context(rhs), 
-        'Mismatched types in the list n removal context.', 
-        f'ARG1 {lhs.explain()}, ARG2 {rhs.explain()}'
+        lhs.list_n_removal_context(rhs),
+        "Mismatched types in the list n removal context.",
+        f"ARG1 {lhs.explain()}, ARG2 {rhs.explain()}",
     )
-    
+
     state.last_action.add_instruction(RemoveNElements(lhs, rhs))

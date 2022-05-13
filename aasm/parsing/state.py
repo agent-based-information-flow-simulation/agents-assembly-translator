@@ -16,7 +16,9 @@ if TYPE_CHECKING:
 
 
 class ParsedData:
-    def __init__(self, agents: List[Agent], messages: List[Message], graph: Graph | None):
+    def __init__(
+        self, agents: List[Agent], messages: List[Message], graph: Graph | None
+    ):
         self.agents: List[Agent] = agents
         self.messages: List[Message] = messages
         self.graph: Graph | None = graph
@@ -56,7 +58,7 @@ class State:
     @property
     def last_graph(self) -> Graph:
         if self.graph is None:
-            raise Exception('Graph is not defined')
+            raise Exception("Graph is not defined")
         return self.graph
 
     def add_agent(self, agent: Agent) -> None:
@@ -83,50 +85,54 @@ class State:
     def tokens_from_lines(self) -> Generator[list[str], None, None]:
         for line in self.lines:
             self.line_num += 1
-            uncommented = line.split('#')[0]
-            tokens = [token.strip() for token in uncommented.replace(',', ' ').split()]
+            uncommented = line.split("#")[0]
+            tokens = [token.strip() for token in uncommented.replace(",", " ").split()]
             if tokens:
                 tokens[0] = tokens[0].upper()
                 yield tokens
 
     def print(self) -> None:
         if self.messages:
-            print('- Messages:')
+            print("- Messages:")
             for message in self.messages.values():
                 message.print()
-                print('')
+                print("")
         if self.agents:
-            print('- Agents:')
+            print("- Agents:")
             for agent in self.agents.values():
                 agent.print()
-                print('')
+                print("")
         if self.graph:
-            print('- Graph:')
+            print("- Graph:")
             self.graph.print()
 
     def verify_end_state(self) -> None:
         if self.in_agent:
-            self.panic('Missing EAGENT')
+            self.panic("Missing EAGENT")
         elif self.in_message:
-            self.panic('Missing EMESSAGE')
+            self.panic("Missing EMESSAGE")
         elif self.in_graph:
-            self.panic('Missing EGRAPH')
+            self.panic("Missing EGRAPH")
 
     def get_parsed_data(self) -> ParsedData:
         self.verify_end_state()
         if self.debug:
             pprint(self.__dict__)
             self.print()
-        return ParsedData(list(self.agents.values()), list(self.messages.values()), self.graph)
+        return ParsedData(
+            list(self.agents.values()), list(self.messages.values()), self.graph
+        )
 
-    def panic(self, reason: str, suggestion: str = '') -> NoReturn:
+    def panic(self, reason: str, suggestion: str = "") -> NoReturn:
         if self.debug:
             pprint(self.__dict__)
             self.print()
         err_line = self.preprocessor.get_original_line_number(self.line_num)
-        place = f'Error in line {err_line}: {self.lines[self.line_num - 1].strip()}'
+        place = f"Error in line {err_line}: {self.lines[self.line_num - 1].strip()}"
         raise PanicException(place, reason, suggestion)
 
-    def require(self, expr: bool, msg_on_error: str, suggestion_on_error: str = '') -> None:
+    def require(
+        self, expr: bool, msg_on_error: str, suggestion_on_error: str = ""
+    ) -> None:
         if not expr:
             self.panic(msg_on_error, suggestion_on_error)

@@ -8,7 +8,8 @@ from aasm.parsing.op.behav import op_BEHAV, op_EBEHAV
 from aasm.parsing.op.clr import op_CLR
 from aasm.parsing.op.conditional import (
     handle_ordered_conditional_statement,
-    handle_unordered_conditional_statement)
+    handle_unordered_conditional_statement,
+)
 from aasm.parsing.op.decl import op_DECL
 from aasm.parsing.op.defg import op_DEFG
 from aasm.parsing.op.eblock import op_EBLOCK
@@ -39,106 +40,117 @@ def parse_lines(lines: List[str], debug: bool) -> ParsedData:
     state = State(lines, debug)
     for tokens in state.tokens_from_lines():
         match tokens:
-            case [ 'AGENT', name ]:
+            case ["AGENT", name]:
                 op_AGENT(state, name)
-            
-            case [ 'EAGENT' ]:
+
+            case ["EAGENT"]:
                 op_EAGENT(state)
-                
-            case [ 'MESSAGE', name, performative ]:
+
+            case ["MESSAGE", name, performative]:
                 op_MESSAGE(state, name, performative)
-            
-            case [ 'EMESSAGE' ]:
+
+            case ["EMESSAGE"]:
                 op_EMESSAGE(state)
-                
-            case [ 'PRM', name, category ]:
+
+            case ["PRM", name, category]:
                 op_message_PRM(state, name, category)
-                
-            case [ 'PRM', name, category, *args ]:
+
+            case ["PRM", name, category, *args]:
                 op_agent_PRM(state, name, category, args)
-                
-            case [ 'BEHAV', name, category, *args ]:
+
+            case ["BEHAV", name, category, *args]:
                 op_BEHAV(state, name, category, args)
-                
-            case [ 'EBEHAV' ]:
+
+            case ["EBEHAV"]:
                 op_EBEHAV(state)
-                
-            case [ 'ACTION', name, category, *args ]:
+
+            case ["ACTION", name, category, *args]:
                 op_ACTION(state, name, category, args)
-                
-            case [ 'EACTION' ]:
+
+            case ["EACTION"]:
                 op_EACTION(state)
-                
-            case [ 'DECL', name, category, value ]:
+
+            case ["DECL", name, category, value]:
                 op_DECL(state, name, category, value)
-                
-            case [ 'EBLOCK' ]:
+
+            case ["EBLOCK"]:
                 op_EBLOCK(state)
-                
-            case [ 'IEQ' | 'INEQ' | 'WEQ' | 'WNEQ' as op, arg1, arg2 ]:
+
+            case ["IEQ" | "INEQ" | "WEQ" | "WNEQ" as op, arg1, arg2]:
                 handle_unordered_conditional_statement(state, op, arg1, arg2)
-                
-            case [ 'IGT' | 'IGTEQ' | 'ILT' | 'ILTEQ' | 'WGT' | 'WGTEQ' | 'WLT' | 'WLTEQ' as op, arg1, arg2 ]:
+
+            case [
+                "IGT"
+                | "IGTEQ"
+                | "ILT"
+                | "ILTEQ"
+                | "WGT"
+                | "WGTEQ"
+                | "WLT"
+                | "WLTEQ" as op,
+                arg1,
+                arg2,
+            ]:
                 handle_ordered_conditional_statement(state, op, arg1, arg2)
-                
-            case [ 'ADD' | 'SUBT' | 'MULT' | 'DIV' | 'SIN' | 'COS' as op, arg1, arg2 ]:
+
+            case ["ADD" | "SUBT" | "MULT" | "DIV" | "SIN" | "COS" as op, arg1, arg2]:
                 handle_math_statement(state, op, arg1, arg2)
-                
-            case [ 'LOG' | 'POW' as op, arg1, arg2, arg3 ]:
+
+            case ["LOG" | "POW" as op, arg1, arg2, arg3]:
                 handle_math_exp_statement(state, op, arg1, arg2, arg3)
-                
-            case [ 'ADDE' | 'REME' as op, list_, element ]:
+
+            case ["ADDE" | "REME" as op, list_, element]:
                 handle_list_modification(state, op, list_, element)
-                
-            case [ 'LEN', result, list_ ]:
+
+            case ["LEN", result, list_]:
                 op_LEN(state, result, list_)
-                
-            case [ 'CLR', list_ ]:
+
+            case ["CLR", list_]:
                 op_CLR(state, list_)
-                
-            case [ 'IN' | 'NIN' as op, list_, element ]:
+
+            case ["IN" | "NIN" as op, list_, element]:
                 handle_list_inclusion(state, op, list_, element)
-                
-            case [ 'SEND', rcv_list ]:
+
+            case ["SEND", rcv_list]:
                 op_SEND(state, rcv_list)
-                
-            case [ 'SUBS', dst_list, src_list, num ]:
+
+            case ["SUBS", dst_list, src_list, num]:
                 op_SUBS(state, dst_list, src_list, num)
-                
-            case [ 'SET', arg1, arg2 ]:
+
+            case ["SET", arg1, arg2]:
                 op_SET(state, arg1, arg2)
-                
-            case [ 'REMEN', list_, num ]:
+
+            case ["REMEN", list_, num]:
                 op_REMEN(state, list_, num)
 
-            case [ 'RAND', result, cast_to, dist, *args ]:
+            case ["RAND", result, cast_to, dist, *args]:
                 op_RAND(state, result, cast_to, dist, args)
 
-            case [ 'ROUND', num ]:
+            case ["ROUND", num]:
                 op_ROUND(state, num)
-                
-            case [ 'SET', arg1, arg2 ]:
+
+            case ["SET", arg1, arg2]:
                 op_SET(state, arg1, arg2)
 
-            case [ 'GRAPH', category ]:
+            case ["GRAPH", category]:
                 op_GRAPH(state, category)
 
-            case [ 'EGRAPH' ]:
+            case ["EGRAPH"]:
                 op_EGRAPH(state)
 
-            case [ 'SIZE', size ]:
+            case ["SIZE", size]:
                 op_SIZE(state, size)
 
-            case [ 'DEFG',  agent_name, amount, *args ]:
+            case ["DEFG", agent_name, amount, *args]:
                 op_DEFG(state, agent_name, amount, args)
-                
-            case [ 'LR', dst, list_, idx ]:
+
+            case ["LR", dst, list_, idx]:
                 op_LR(state, dst, list_, idx)
-                
-            case [ 'LW', list_, idx, value ]:
+
+            case ["LW", list_, idx, value]:
                 op_LW(state, list_, idx, value)
-                
+
             case _:
-                state.panic(f'Unknown tokens: {tokens}')
+                state.panic(f"Unknown tokens: {tokens}")
 
     return state.get_parsed_data()

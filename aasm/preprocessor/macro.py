@@ -26,7 +26,7 @@ class Macro(PreprocessorItem):
             for sub in substitutions:
                 # expand_line = expand_line.replace(sub[1], sub[0])
                 expand_line = re.sub(sub[1], sub[0], expand_line)
-                expand_line = expand_line.rstrip(',')
+                expand_line = expand_line.rstrip(",")
             expanded.append(expand_line)
         return expanded
 

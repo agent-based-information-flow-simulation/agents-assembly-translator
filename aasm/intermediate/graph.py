@@ -8,7 +8,7 @@ class AgentAmount:
         self.value = value
 
     def print(self) -> None:
-        print(f'AgentAmount value = {self.value}')
+        print(f"AgentAmount value = {self.value}")
 
 
 class AgentConstantAmount(AgentAmount):
@@ -16,7 +16,7 @@ class AgentConstantAmount(AgentAmount):
         super().__init__(value)
 
     def print(self) -> None:
-        print('AgentConstantAmount')
+        print("AgentConstantAmount")
         super().print()
 
 
@@ -25,7 +25,7 @@ class AgentPercentAmount(AgentAmount):
         super().__init__(value)
 
     def print(self) -> None:
-        print('AgentPercentAmount')
+        print("AgentPercentAmount")
         super().print()
 
 
@@ -37,9 +37,9 @@ class ConnectionAmount:
 class ConnectionConstantAmount(ConnectionAmount):
     def __init__(self, value: str):
         self.value = value
-    
+
     def print(self) -> None:
-        print(f'ConnectionConstantAmount value = {self.value}')
+        print(f"ConnectionConstantAmount value = {self.value}")
 
 
 class ConnectionDistNormalAmount(ConnectionAmount):
@@ -48,7 +48,9 @@ class ConnectionDistNormalAmount(ConnectionAmount):
         self.std_dev = std_dev
 
     def print(self) -> None:
-        print(f'ConnectionDistNormalAmount mean = {self.mean}, std_dev = {self.std_dev}')
+        print(
+            f"ConnectionDistNormalAmount mean = {self.mean}, std_dev = {self.std_dev}"
+        )
 
 
 class ConnectionDistExpAmount(ConnectionAmount):
@@ -56,7 +58,7 @@ class ConnectionDistExpAmount(ConnectionAmount):
         self.lambda_ = lambda_
 
     def print(self) -> None:
-        print(f'ConnectionDistExpAmount lambda = {self.lambda_}')
+        print(f"ConnectionDistExpAmount lambda = {self.lambda_}")
 
 
 class ConnectionDistUniformAmount(ConnectionAmount):
@@ -65,7 +67,7 @@ class ConnectionDistUniformAmount(ConnectionAmount):
         self.b = b
 
     def print(self) -> None:
-        print(f'ConnectionDistUniformAmount a = {self.a}, b = {self.b}')
+        print(f"ConnectionDistUniformAmount a = {self.a}, b = {self.b}")
 
 
 class StatisticalAgent:
@@ -75,7 +77,7 @@ class StatisticalAgent:
         self.connections = connections
 
     def print(self) -> None:
-        print(f'StatisticalAgent name = {self.name}')
+        print(f"StatisticalAgent name = {self.name}")
         self.amount.print()
         self.connections.print()
 
@@ -89,12 +91,12 @@ class Graph:
 
     def is_size_defined(self) -> bool:
         return self.size is not None
-    
+
     def add_agent(self, graph_agent: Any) -> None:
         raise NotImplementedError()
 
     def print(self) -> None:
-        print(f'Graph size = {self.size}')
+        print(f"Graph size = {self.size}")
 
 
 class StatisticalGraph(Graph):
@@ -116,6 +118,6 @@ class StatisticalGraph(Graph):
 
     def print(self) -> None:
         super().print()
-        print('StatisticalGraph')
+        print("StatisticalGraph")
         for agent in self.agents.values():
             agent.print()
