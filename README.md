@@ -1,5 +1,9 @@
 # Agents Assembly Translator
 
+## Documentation
+
+Documentation of Agents Assembly can be read [here](DOCS.md)
+
 ## Table of Contents
 
 - [About](#about)

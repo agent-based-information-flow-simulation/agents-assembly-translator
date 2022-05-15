@@ -24,6 +24,43 @@
 
 `DistArgs` - Arguments for a specified distribution. Mathematical constraints apply.
 
+## Preprocessor
+Preprocessor directives begin with `%`
+
+### Makros
+Makros can be used to reduce repetative code, or improve readability. When called they expand the definition in place substituting makro arguments for call parameters.
+
+*Example usage*
+```aasm
+%MAKRO add_if_greater_else val1, val2, flag
+SET flag, 0
+IGT val1, val2
+ADD val1, 1
+SET flag, 1
+EBLOCK
+ILTEQ val1, val2
+IEQ flag, 1
+ADD val2, 1
+EBLOCK
+EBLOCK
+%EMAKRO
+# ...omitted
+ACTION hello, modify_self
+DECL flag, float 0
+add_if_greater_else param1, param2, 0
+EACTION
+```
+### Constants
+Used to define globally set numbers. Can be used in all scopes (including agent and message params, and network definition).
+
+*Example usage*
+```aasm
+%CONST sim_size, 10000
+#omitted
+AGENT manager
+PRM alive, float, init, sim_size
+EAGENT
+```
 
 ## Scope Modifiers
 
@@ -115,7 +152,7 @@ EAGENT
 
 ## Action Scope: modifiers
 
-`DECL` | **args:** `name: Name, value: Float` | Creates a float variable with name and value. The new variable can only be used in given action's scope.
+`DECL` | **args:** `name: Name, type: {float, conn} value: Float/Jid` | Creates a variable of specified `type` with `name` and `value`. The new variable can only be used in given action's scope.
 
 `SET` | **args:** `dst: MutFloat/Enum, value: Float/EnumVal` | Sets value of `dst` to `value`
 
@@ -123,13 +160,21 @@ EAGENT
 
 ## Action Scope: math expressions
 
-`ADD` | **args:** `dst: MutFlost, arg: Float` | Adds `arg` to `dst` and stores result in `dst`.
+`ADD` | **args:** `dst: MutFloat, arg: Float` | Adds `arg` to `dst` and stores result in `dst`.
 
-`MULT` | **args:** `dst: MutFlost, arg: Float` | Multiplies `arg` by `dst` and stores result in `dst`.
+`MULT` | **args:** `dst: MutFloat, arg: Float` | Multiplies `arg` by `dst` and stores result in `dst`.
 
-`SUBT` | **args:** `dst: MutFlost, arg: Float` | Subtracts `arg` from `dst` and stores result in `dst`.
+`SUBT` | **args:** `dst: MutFloat, arg: Float` | Subtracts `arg` from `dst` and stores result in `dst`.
 
-`DIV` | **args:** `dst: MutFlost, arg: Float` | Divides `arg` by `dst` and stores result in `dst`. If `arg` is `0` then the `ACTION` will finish early.
+`DIV` | **args:** `dst: MutFloat, arg: Float` | Divides `arg` by `dst` and stores result in `dst`. If `arg` is `0` then the `ACTION` will finish early.
+
+`SIN` | **args:** `dst: MutFloat, arg: Float` | Calculates the sine of `arg` radians and stores it in `dst`
+
+`COS` | **args:** `dst: MutFloat, arg: Float` | Calculates the cosine of `arg` radians and stores it in `dst`
+
+`POW` | **args:** `dst: MutFloat, base: Float, arg: Float` | Calculates `base` raised to `arg` power and stores result in `dst` 
+
+`LOG` | **ags:** `dst: MutFloat, base: Float, arg: Float` | Calculcates `base` log of `arg` and stores result in `dst`
 
 ## Action Scope: conditionals
 `IEQ` | **args** `a: Float/Enum, b: Float/EnumVal` | Begins conditional block if `a` is equal to `b`. Needs matching `EBLOCK`.
@@ -167,11 +212,17 @@ EAGENT
 
 `LEN` | **args:** `result: MutFlost, list: List` | Saves length of `list` in `result`.
 
-`CLR` | **args:** `list: List` | Clears contents of `list`
+`CLR` | **args:** `list: List` | Clears contents of `list`.
 
-`IN` | **args:** `list: List, value: Message/Jid` | Begins conditional block if `val` is in `list`. Needs matching `EBLOCK`
+`IN` | **args:** `list: List, value: Message/Jid` | Begins conditional block if `val` is in `list`. Needs matching `EBLOCK`.
 
-`NIN` | **args:** `list: List, value: Message/Jid` | Begins conditional block if `val` is not in `list`. Needs matching `EBLOCK`
+`NIN` | **args:** `list: List, value: Message/Jid` | Begins conditional block if `val` is not in `list`. Needs matching `EBLOCK`.
+
+`SUBS` | **args** `dst: List, src: List, num: Float` | Takes `num` randomly selected elements of `src` and stores them in `dst`.
+
+`LW` | **args** `dst: List, val: Float/Jid, idx: Float` | Writes `val` at index `idx` of `dst`.
+
+`LR` | **args** `dst: Float/Jid, src: List, idx: Float` | Reads value from list `src` at index `idx` and stores it in `dst`.
 
 ## Action scope: special
 
