@@ -4,9 +4,12 @@
 Translator can be tested live on [the official website](https://agents-assembly.com/)
 
 In order to run code in Agents Assembly the Runtime Environment is necessary:
-    - [Local Interface](https://github.com/agent-based-information-flow-simulation/local-interface) - gui for simulation definition, management and analysis
-    - [Simulation Run Environment](https://github.com/agent-based-information-flow-simulation/simulation-run-environment) - microservice architecture for running scalable simulations
-    - [Communication Server](https://github.com/agent-based-information-flow-simulation/communication-server) - preconfigured Tigase instance, for XMPP Spade communication
+
+- [Local Interface](https://github.com/agent-based-information-flow-simulation/local-interface) - gui for simulation definition, management and analysis
+
+- [Simulation Run Environment](https://github.com/agent-based-information-flow-simulation/simulation-run-environment) - microservice architecture for running scalable simulations
+
+- [Communication Server](https://github.com/agent-based-information-flow-simulation/communication-server) - preconfigured Tigase instance, for XMPP Spade communication
 
 ## Documentation
 
