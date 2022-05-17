@@ -141,7 +141,7 @@ Types:
  * `float`
    * `init` (`p_args` is `val: Float`) - Creates a float parameter. Value `name` is set to `val` during agent initiation.
    * `dist` (`p_args` is `dist: {normal, uniform, exp}, dist_args: DistArgs`) - Creates a float parameter. Value `name` is set to a value drawn from specified `dist` distribution.
- * `enum` (`p_args` is `val1, val1%, ..., valn, valn%`) - Creates an enum parameter. Value `name` is set to one of `[val1, ... ,valn]`. Corresponding `vali%` arguments specify the percentage of the total agent population to have a specific value set on startup.
+ * `enum` (`p_args` is `val1, val1%, ..., valn, valn%`) - Creates an enum parameter. Value `name` is set to one of `val1, ... ,valn`. Corresponding `vali%` arguments specify the percentage of the total agent population to have a specific value set on startup.
  * `list`
    * `conn` - Creates a connection list parameter. List is empty on startup.
    * `msg` - Creates a message list parameter. List is empty on startup.
