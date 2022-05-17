@@ -7,13 +7,11 @@
   - [Makros](#preprocessor-makros)
   - [Constants](#preprocessor-constants)
 - [Scope Modifiers](#scope-modifiers)
-  - [Graph](#scope-modifiers-graph)
-  - [Action](#scope-modifiers-action)
-  - [Behavior](#scope-modifiers-behavior)
-  - [Message](#scope-modifiers-message)
   - [Agent](#scope-modifiers-agent)
-- [Message Scope](#message-scope)
-  - [Parameters](#message-scope-parameters)
+  - [Behavior](#scope-modifiers-behavior)
+  - [Action](#scope-modifiers-action)
+  - [Message](#scope-modifiers-message)
+  - [Graph](#scope-modifiers-graph)
 - [Agent Scope](#agent-scope)
   - [Parameters](#agent-scope-parameters)
 - [Action Scope](#action-scope)
@@ -23,6 +21,9 @@
   - [Loops](#action-scope-loops)
   - [Lists](#action-scope-lists)
   - [Miscellaneous](#action-scope-miscellaneous)
+- [Message Scope](#message-scope)
+  - [Parameters](#message-scope-parameters)
+
 
 ## Type Annotation Definitions <a name = "type-annotation-definitions"></a>
 
@@ -94,28 +95,16 @@ EAGENT
 
 ## Scope Modifiers <a name = "scope-modifiers"></a>
 
-### Graph <a name = "scope-modifiers-graph"></a>
-`GRAPH type: {statistical}` - Enters the scope for creation of a graph of specified `type`.
+### Agent <a name = "scope-modifiers-agent"></a>
+`AGENT name: Name` - Enters the scope for describing an agent.
 
-`EGRAPH` - Exists graph scope. It has to correspond to `GRAPH`.
-
-*Example usage:*
-```aasm
-GRAPH statistical
-  # graph definition
-EGRAPH
-```
-
-### Action <a name = "scope-modifiers-action"></a>
-`ACTION name: Name, type: {modify_self, send_msg}` - Enters scope for describing an Action of the specified `type`. The name is required to be unique within the `BEHAV` scope. It can only be used within the `BEHAV` scope.
-
-`EACTION` - Exists action scope. It has to correspond to `ACTION`.
+`EAGENT` - Exists agent scope. It has to correspond to `AGENT`.
 
 *Example usage:*
 ```aasm
-ACTION add_friend, modify_self
-  # action definition
-EACTION
+AGENT
+  # agent definition here
+EAGENT
 ```
 
 ### Behavior <a name = "scope-modifiers-behavior"></a>
@@ -136,6 +125,18 @@ BEHAV read_message, msg_rcv, test_message, inform
 EBEHAV
 ```
 
+### Action <a name = "scope-modifiers-action"></a>
+`ACTION name: Name, type: {modify_self, send_msg}` - Enters scope for describing an Action of the specified `type`. The name is required to be unique within the `BEHAV` scope. It can only be used within the `BEHAV` scope.
+
+`EACTION` - Exists action scope. It has to correspond to `ACTION`.
+
+*Example usage:*
+```aasm
+ACTION add_friend, modify_self
+  # action definition
+EACTION
+```
+
 ### Message <a name = "scope-modifiers-message"></a>
 `MESSAGE name: Name, performative: ACLPerformative` - Enters the scope for describing a Message of the specified name and performative.
 
@@ -148,22 +149,17 @@ MESSAGE test_message, inform
 EMESSAGE
 ```
 
-### Agent <a name = "scope-modifiers-agent"></a>
-`AGENT name: Name` - Enters the scope for describing an agent.
+### Graph <a name = "scope-modifiers-graph"></a>
+`GRAPH type: {statistical}` - Enters the scope for creation of a graph of specified `type`.
 
-`EAGENT` - Exists agent scope. It has to correspond to `AGENT`.
+`EGRAPH` - Exists graph scope. It has to correspond to `GRAPH`.
 
 *Example usage:*
 ```aasm
-AGENT
-  # agent definition here
-EAGENT
+GRAPH statistical
+  # graph definition
+EGRAPH
 ```
-
-## Message Scope <a name = "message-scope"></a>
-
-### Parameters <a name = "message-scope-parameters"></a>
-`PRM name: Name, type: {float}` - Creates a new message parameter of specified type. `name` cannot be `sender`, `type`, `performative`.
 
 ## Agent Scope <a name = "agent-scope"></a>
 
@@ -264,3 +260,8 @@ Types:
 `RAND result: MutFloat, cast: {float, int}, dist: {uniform, normal, exp}, dist_args: DistArgs` - Stores a value drawn from specified `dist` distribution, casts it to `cast` type and stores it in `result`.
 
 `.` (`msg.prm`) - Allows to access the value of `prm` from `msg`.
+
+## Message Scope <a name = "message-scope"></a>
+
+### Parameters <a name = "message-scope-parameters"></a>
+`PRM name: Name, type: {float}` - Creates a new message parameter of specified type. `name` cannot be `sender`, `type`, `performative`.
