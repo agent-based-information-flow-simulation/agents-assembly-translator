@@ -23,6 +23,7 @@
   - [Loops](#action-scope-loops)
   - [Lists](#action-scope-lists)
   - [Miscellaneous](#action-scope-miscellaneous)
+
 ## Type Annotation Definitions <a name = "type-annotation-definitions"></a>
 
 `{...}` - One of the options from the brackets needs to be chosen, written as specified within the brackets.
