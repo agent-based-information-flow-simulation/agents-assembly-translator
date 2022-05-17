@@ -23,6 +23,8 @@
   - [Miscellaneous](#action-scope-miscellaneous)
 - [Message Scope](#message-scope)
   - [Parameters](#message-scope-parameters)
+- [Graph Scope](#graph-scope)
+  - [Parameters](#graph-scope-parameters)
 
 
 ## Type Annotation Definitions <a name = "type-annotation-definitions"></a>
@@ -252,7 +254,6 @@ Types:
 `LR dst: Float/Jid, src: List, idx: Float` - Reads value from list `src` at index `idx` and stores it in `dst`.
 
 ### Miscellaneous <a name = "action-scope-miscellaneous"></a>
-
 `EBLOCK` - Ends current conditional or loop block.
 
 `SEND rcv: ConnList/Jid` - Sends message to `rcv`. Can only be used inside `send_msg` actions.
@@ -265,3 +266,11 @@ Types:
 
 ### Parameters <a name = "message-scope-parameters"></a>
 `PRM name: Name, type: {float}` - Creates a new message parameter of specified type. `name` cannot be `sender`, `type`, `performative`.
+
+
+## Graph Scope <a name = "graph-scope"></a>
+
+### Parameters <a name = "graph-scope-parameters"></a>
+`SIZE value: Integer` - Sets the size of the graph.
+
+`DEFG agent_type: Name, amount: Float[%], connections: {Float, dist_normal, dist_uniform, dist_exp} [, DistArgs]` - Creates a new agent type with specified `amount` of agents and number `connections`. If the `amount` ends with `%`, then the percent refers to the size of the graph; else, it does not respect the size of the graph. The number of connections can be specified as a number or distribution. In the case of a fixed number, each agent will have the same number of connections. In the case of a distribution, each agent will have the number of connections drawn from the distribution.
