@@ -70,6 +70,7 @@ EAGENT
 
 ## Scope Modifiers
 
+### Graph
 `GRAPH type: {statistical}` - Enters the scope for creation of a graph of specified `type`.
 
 `EGRAPH` - Exists graph scope. It has to correspond to `GRAPH`.
@@ -81,6 +82,7 @@ GRAPH statistical
 EGRAPH
 ```
 
+### Action
 `ACTION name: Name, type: {modify_self, send_msg}` - Enters scope for describing an Action of the specified `type`. The name is required to be unique within the `BEHAV` scope. It can only be used within the `BEHAV` scope.
 
 `EACTION` - Exists action scope. It has to correspond to `ACTION`.
@@ -92,6 +94,7 @@ ACTION add_friend, modify_self
 EACTION
 ```
 
+### Behavior
 `BEHAV name: Name, type: {setup, one_time, cyclic, msg_rcv} [, b_args]` - Enters scope for describing a Behaviour of specified `type`. `b_args` depend on the specified `type`. The name is required to be unique within `AGENT` scope. It can only be used within `AGENT` scope.
 
 Behavior types:
@@ -109,6 +112,7 @@ BEHAV read_message, msg_rcv, test_message, inform
 EBEHAV
 ```
 
+### Message
 `MESSAGE name: Name, performative: ACLPerformative` - Enters the scope for describing a Message of the specified name and performative.
 
 `EMESSAGE` - Exists message scope. It has to correspond to `MESSAGE`.
@@ -120,6 +124,7 @@ MESSAGE test_message, inform
 EMESSAGE
 ```
 
+### Agent
 `AGENT name: Name` - Enters the scope for describing an agent.
 
 `EAGENT` - Exists agent scope. It has to correspond to `AGENT`.
@@ -146,7 +151,9 @@ Types:
    * `conn` - Creates a connection list parameter. List is empty on startup.
    * `msg` - Creates a message list parameter. List is empty on startup.
 
-## Action Scope: modifiers
+## Action Scope
+
+### Modifiers
 
 `DECL name: Name, type: {float, conn} value: Float/Jid` - Creates a variable of specified `type` with `name` and `value`. The new variable can only be used in given action's scope.
 
@@ -154,7 +161,7 @@ Types:
 
 `SUBS dst: List, src: List, num: Integer` - Chooses `num` elements from `src` and sets `dst` to them.
 
-## Action Scope: math expressions
+### Math expressions
 
 `ADD dst: MutFloat, arg: Float` - Adds `arg` to `dst` and stores result in `dst`.
 
@@ -172,7 +179,7 @@ Types:
 
 `LOG dst: MutFloat, base: Float, arg: Float` - Calculcates `base` logarithm of `arg` and stores result in `dst`.
 
-## Action Scope: conditionals
+### Conditional statements
 `IEQ a: Float/Enum, b: Float/EnumVal` - Begins conditional block if `a` is equal to `b`. Needs matching `EBLOCK`.
 
 `INEQ a: Float/Enum, b: Float/EnumVal` - Begins conditional block if `a` is not equal to `b`. Needs matching `EBLOCK`.
@@ -185,7 +192,7 @@ Types:
 
 `IGTEQ a: Float, b: Float` - Begins conditional block if `a` is greater or equal `b`. Needs matching `EBLOCK`.
 
-## Action Scope: loops
+### Loops
 `WEQ a: Float/Enum, b: Float/EnumVal` - Begins loop block if `a` is equal to `b`. Needs matching `EBLOCK`.
 
 `WNEQ a: Float/Enum, b: Float/EnumVal` - Begins loop block if `a` is not equal to `b`. Needs matching `EBLOCK`.
@@ -198,7 +205,7 @@ Types:
 
 `WGTEQ a: Float, b: Float` - Begins loop block if `a` is greater or equal `b`. Needs matching `EBLOCK`.
 
-## Action scope: lists
+### Lists
 
 `ADDE list: List, value: Message/Jid` - Adds `value` to `list`.
 
@@ -220,7 +227,7 @@ Types:
 
 `LR dst: Float/Jid, src: List, idx: Float` - Reads value from list `src` at index `idx` and stores it in `dst`.
 
-## Action scope: special
+### Miscellaneous
 
 `EBLOCK` - Ends current conditional or loop block.
 
