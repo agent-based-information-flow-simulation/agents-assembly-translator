@@ -141,7 +141,7 @@ AGENT grass
     PRM dead_wolf, list, conn
     PRM alive_wolf, list, conn
     PRM spawn_candidate, list, conn
-    BEHAV setup, setup
+    BEHAV initilise, setup
         ACTION setup_field, modify_self
             DECL it, float, 0
             DECL amt, float, 0
@@ -261,7 +261,7 @@ AGENT sheep
         EACTION
     EBEHAV
 
-    BEHAV setup, setup
+    BEHAV initilise, setup
         ACTION broadcast, send_msg, broadcast, Inform
             SET SEND.typ, 1
             IEQ dead, YES
@@ -362,7 +362,7 @@ AGENT wolf
         EACTION
     EBEHAV
 
-    BEHAV setup, setup
+    BEHAV initilise, setup
         ACTION broadcast, send_msg, broadcast, Inform
             SET SEND.typ, 2
             IEQ dead, YES
@@ -413,7 +413,7 @@ AGENT wolf
     EBEHAV
 EAGENT
 
-GRAPH statistical
+GRPH statistical
     SIZE graph_size
     DEFG grass, 1, field_conns
     DEFG sheep, sheep_amt, field_conns
