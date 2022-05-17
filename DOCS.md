@@ -137,9 +137,13 @@ EAGENT
 ```
 
 ## Message Scope
+
+### Parameters
 `PRM name: Name, type: {float}` - Creates a new message parameter of specified type. `name` cannot be `sender`, `type`, `performative`.
 
 ## Agent Scope
+
+### Parameters
 `PRM name: Name, type: {float, enum, list}, subtype: {init, dist, conn, msg} [, p_args]` - Creates an agent parameter of specified type and subtype. Describes the initial state of an agent by passing arguments `p_args`.
 
 Types:
