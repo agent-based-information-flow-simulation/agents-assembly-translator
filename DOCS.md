@@ -1,6 +1,12 @@
 # Agents Assembly
 
-## Type annotation definitions
+## Table of Contents
+
+- [Type annotation definitions](#type-annotation-definitions)
+- [Preprocessor](#preprocessor)
+  - [Makros](#makros)
+
+## Type annotation definitions <a name = "type-annotation-definitions"></a>
 
 `{...}` - One of the options from the brackets needs to be chosen, written as specified within the brackets.
 
@@ -26,10 +32,10 @@
 
 `DistArgs` - Arguments for a specified distribution. Mathematical constraints apply.
 
-## Preprocessor
+## Preprocessor <a name = "preprocessor"></a>
 Preprocessor directives begin with `%`.
 
-### Makros
+### Makros <a name = "makros"></a>
 Makros can be used to reduce repetitive code or improve readability. When called, they expand in-place the definition by substituting makro arguments for call parameters.
 
 *Example usage:*
