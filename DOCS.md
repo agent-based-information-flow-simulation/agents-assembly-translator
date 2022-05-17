@@ -2,11 +2,28 @@
 
 ## Table of Contents
 
-- [Type annotation definitions](#type-annotation-definitions)
+- [Type Annotation Definitions](#type-annotation-definitions)
 - [Preprocessor](#preprocessor)
-  - [Makros](#makros)
-
-## Type annotation definitions <a name = "type-annotation-definitions"></a>
+  - [Makros](#preprocessor-makros)
+  - [Constants](#preprocessor-constants)
+- [Scope Modifiers](#scope-modifiers)
+  - [Graph](#scope-modifiers-graph)
+  - [Action](#scope-modifiers-action)
+  - [Behavior](#scope-modifiers-behavior)
+  - [Message](#scope-modifiers-message)
+  - [Agent](#scope-modifiers-agent)
+- [Message Scope](#message-scope)
+  - [Parameters](#message-scope-parameters)
+- [Agent Scope](#agent-scope)
+  - [Parameters](#agent-scope-parameters)
+- [Action Scope](#action-scope)
+  - [Modifiers](#agent-scope-modifiers)
+  - [Math Expressions](#action-scope-math-expressions)
+  - [Conditional Statements](#action-scope-conditional-statements)
+  - [Loops](#action-scope-loops)
+  - [Lists](#action-scope-lists)
+  - [Miscellaneous](#action-scope-miscellaneous)
+## Type Annotation Definitions <a name = "type-annotation-definitions"></a>
 
 `{...}` - One of the options from the brackets needs to be chosen, written as specified within the brackets.
 
@@ -35,7 +52,7 @@
 ## Preprocessor <a name = "preprocessor"></a>
 Preprocessor directives begin with `%`.
 
-### Makros <a name = "makros"></a>
+### Makros <a name = "preprocessor-makros"></a>
 Makros can be used to reduce repetitive code or improve readability. When called, they expand in-place the definition by substituting makro arguments for call parameters.
 
 *Example usage:*
@@ -60,7 +77,7 @@ ACTION hello, modify_self
   add_if_greater_else param1, param2, flag
 EACTION
 ```
-### Constants
+### Constants <a name = "preprocessor-constants"></a>
 They are used to define globally set numbers. They can be used in all scopes (including agent and message params and network definition).
 
 *Example usage:*
@@ -74,9 +91,9 @@ AGENT manager
 EAGENT
 ```
 
-## Scope Modifiers
+## Scope Modifiers <a name = "scope-modifiers"></a>
 
-### Graph
+### Graph <a name = "scope-modifiers-graph"></a>
 `GRAPH type: {statistical}` - Enters the scope for creation of a graph of specified `type`.
 
 `EGRAPH` - Exists graph scope. It has to correspond to `GRAPH`.
@@ -88,7 +105,7 @@ GRAPH statistical
 EGRAPH
 ```
 
-### Action
+### Action <a name = "scope-modifiers-action"></a>
 `ACTION name: Name, type: {modify_self, send_msg}` - Enters scope for describing an Action of the specified `type`. The name is required to be unique within the `BEHAV` scope. It can only be used within the `BEHAV` scope.
 
 `EACTION` - Exists action scope. It has to correspond to `ACTION`.
@@ -100,7 +117,7 @@ ACTION add_friend, modify_self
 EACTION
 ```
 
-### Behavior
+### Behavior <a name = "scope-modifiers-behavior"></a>
 `BEHAV name: Name, type: {setup, one_time, cyclic, msg_rcv} [, b_args]` - Enters scope for describing a Behaviour of specified `type`. `b_args` depend on the specified `type`. The name is required to be unique within `AGENT` scope. It can only be used within `AGENT` scope.
 
 Behavior types:
@@ -118,7 +135,7 @@ BEHAV read_message, msg_rcv, test_message, inform
 EBEHAV
 ```
 
-### Message
+### Message <a name = "scope-modifiers-message"></a>
 `MESSAGE name: Name, performative: ACLPerformative` - Enters the scope for describing a Message of the specified name and performative.
 
 `EMESSAGE` - Exists message scope. It has to correspond to `MESSAGE`.
@@ -130,7 +147,7 @@ MESSAGE test_message, inform
 EMESSAGE
 ```
 
-### Agent
+### Agent <a name = "scope-modifiers-agent"></a>
 `AGENT name: Name` - Enters the scope for describing an agent.
 
 `EAGENT` - Exists agent scope. It has to correspond to `AGENT`.
@@ -142,14 +159,14 @@ AGENT
 EAGENT
 ```
 
-## Message Scope
+## Message Scope <a name = "message-scope"></a>
 
-### Parameters
+### Parameters <a name = "message-scope-parameters"></a>
 `PRM name: Name, type: {float}` - Creates a new message parameter of specified type. `name` cannot be `sender`, `type`, `performative`.
 
-## Agent Scope
+## Agent Scope <a name = "agent-scope"></a>
 
-### Parameters
+### Parameters <a name = "agent-scope-parameters"></a>
 `PRM name: Name, type: {float, enum, list}, subtype: {init, dist, conn, msg} [, p_args]` - Creates an agent parameter of specified type and subtype. Describes the initial state of an agent by passing arguments `p_args`.
 
 Types:
@@ -161,9 +178,9 @@ Types:
    * `conn` - Creates a connection list parameter. List is empty on startup.
    * `msg` - Creates a message list parameter. List is empty on startup.
 
-## Action Scope
+## Action Scope <a name = "action-scope"></a>
 
-### Modifiers
+### Modifiers <a name = "action-scope-modifiers"></a>
 
 `DECL name: Name, type: {float, conn} value: Float/Jid` - Creates a variable of specified `type` with `name` and `value`. The new variable can only be used in given action's scope.
 
@@ -171,7 +188,7 @@ Types:
 
 `SUBS dst: List, src: List, num: Integer` - Chooses `num` elements from `src` and sets `dst` to them.
 
-### Math expressions
+### Math Expressions <a name = "action-scope-math-expressions"></a>
 
 `ADD dst: MutFloat, arg: Float` - Adds `arg` to `dst` and stores result in `dst`.
 
@@ -189,7 +206,7 @@ Types:
 
 `LOG dst: MutFloat, base: Float, arg: Float` - Calculcates `base` logarithm of `arg` and stores result in `dst`.
 
-### Conditional statements
+### Conditional Statements <a name = "action-scope-conditional-statements"></a>
 `IEQ a: Float/Enum, b: Float/EnumVal` - Begins conditional block if `a` is equal to `b`. Needs matching `EBLOCK`.
 
 `INEQ a: Float/Enum, b: Float/EnumVal` - Begins conditional block if `a` is not equal to `b`. Needs matching `EBLOCK`.
@@ -202,7 +219,7 @@ Types:
 
 `IGTEQ a: Float, b: Float` - Begins conditional block if `a` is greater or equal `b`. Needs matching `EBLOCK`.
 
-### Loops
+### Loops <a name = "action-scope-loops"></a>
 `WEQ a: Float/Enum, b: Float/EnumVal` - Begins loop block if `a` is equal to `b`. Needs matching `EBLOCK`.
 
 `WNEQ a: Float/Enum, b: Float/EnumVal` - Begins loop block if `a` is not equal to `b`. Needs matching `EBLOCK`.
@@ -215,7 +232,7 @@ Types:
 
 `WGTEQ a: Float, b: Float` - Begins loop block if `a` is greater or equal `b`. Needs matching `EBLOCK`.
 
-### Lists
+### Lists <a name = "action-scope-lists"></a>
 
 `ADDE list: List, value: Message/Jid` - Adds `value` to `list`.
 
@@ -237,7 +254,7 @@ Types:
 
 `LR dst: Float/Jid, src: List, idx: Float` - Reads value from list `src` at index `idx` and stores it in `dst`.
 
-### Miscellaneous
+### Miscellaneous <a name = "action-scope-miscellaneous"></a>
 
 `EBLOCK` - Ends current conditional or loop block.
 
