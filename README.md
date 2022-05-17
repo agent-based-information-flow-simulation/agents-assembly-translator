@@ -1,32 +1,25 @@
 # Agents Assembly Translator
 
-## Agents Assembly:
-Translator can be tested live on [the official website](https://agents-assembly.com/)
-
-In order to run code in Agents Assembly the Runtime Environment is necessary:
-
-- [Local Interface](https://github.com/agent-based-information-flow-simulation/local-interface) - gui for simulation definition, management and analysis
-
-- [Simulation Run Environment](https://github.com/agent-based-information-flow-simulation/simulation-run-environment) - microservice architecture for running scalable simulations
-
-- [Communication Server](https://github.com/agent-based-information-flow-simulation/communication-server) - preconfigured Tigase instance, for XMPP Spade communication
-
-## Documentation
-
-Documentation of Agents Assembly can be read [here](DOCS.md)
-
 ## Table of Contents
 
 - [About](#about)
-- [Getting Started](#getting_started)
+- [Agents Assembly](#agents-assembly)
+- [Getting Started](#getting-started)
 - [Structure](#structure)
-- [Design](#Design)
+- [Contributing](#contributing)
 
 ## About <a name = "about"></a>
+A target agnostic translator for Agents Assembly. The translator can be tested live on [Agents Assembly website](https://agents-assembly.com/translator).
+It is a part of the [Agents Assembly](https://agents-assembly.com) ecosystem.
+Other applications are:
+- [Local Interface](https://github.com/agent-based-information-flow-simulation/local-interface) - GUI for simulation definition, management, and analysis.
+- [Simulation Run Environment](https://github.com/agent-based-information-flow-simulation/simulation-run-environment) - environment for running scalable agent-based simulations.
+- [Communication Server](https://github.com/agent-based-information-flow-simulation/communication-server) - cluster of servers used for XMPP communication.
 
-A target agnostic translator for Agents Assembly.
+## Agents Assembly <a name = "agents-assembly"></a>
+Documentation of Agents Assembly can be read [here](DOCS.md).
 
-## Getting Started <a name = "getting_started"></a>
+## Getting Started <a name = "getting-started"></a>
 
 ### Prerequisites
 
@@ -47,7 +40,7 @@ You can run the translator as a package. To translate *agent.aasm* to SPADE, run
 python -m aasm.translate agent.aasm
 ```
 
-For more information about usage run:
+For more usage information, run:
 ```
 python -m aasm.translate --help
 ```
@@ -73,34 +66,16 @@ python -m aasm.translate --help
     * `parse.py` - parsing environment from Agents Assembly file
     * `op/` - Agents Assembly operations
     * `state.py` - state definition used for the parsing process
+* `preprocessor`
+    * `constants.py` - constants used in the preprocessor
+    * `macro.py` - macro definitions used in the preprocessor
+    * `preprocessor_item.py` - preprocessor base item
+    * `preprocessor.py`
 * `utils`
     * `exception.py`
     * `validation.py`
     * `iteration.py`
 * `translate.py` - entrypoint
 
-## Design <a name = "design"></a>
-* `Message`
-    * `Parameter`
-        * `Type`
-* `Agent`
-    * `Parameter`
-        * `Type`
-        * `Value`
-    * `Behaviour`
-        * `Type`
-        * `Parameter`
-        * `Received message`
-        * `Actions`
-            * `Message to be sent`
-            * `Block`
-                * `Declaration`
-                    * `Name`
-                    * `Argument`
-                        * `Types`
-                * `Instruction`
-                    * `Argument`
-                        * `Types`
-                * `Block`
-* `Graph`
-    * `Parameter`
+## Contributing <a name = "contributing"></a>
+Please follow the [contributing guide](CONTRIBUTING.md) if you wish to contribute to the project.
