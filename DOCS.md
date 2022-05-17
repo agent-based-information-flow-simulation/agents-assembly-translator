@@ -15,7 +15,7 @@
 - [Agent Scope](#agent-scope)
   - [Parameters](#agent-scope-parameters)
 - [Action Scope](#action-scope)
-  - [Modifiers](#agent-scope-modifiers)
+  - [Modifiers](#action-scope-modifiers)
   - [Math Expressions](#action-scope-math-expressions)
   - [Conditional Statements](#action-scope-conditional-statements)
   - [Loops](#action-scope-loops)
