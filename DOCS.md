@@ -39,7 +39,7 @@
 
 `MutFloat` - A floating-point variable with the possibility of being modified.
 
-`Integer` - An integer. If a `Float` is passed as an argument of this type, it will be rounded down.
+`Integer` - An integer. If a `Float` is passed as an argument of this type, it will be rounded.
 
 `Enum` - An enumerable that stores a state in the form of `EnumVal`.
 
@@ -47,7 +47,7 @@
 
 `Message` - A message defined using the `MESSAGE` instruction.
 
-`Jid` - Agent identifier.
+`Jid` - Agent identifier. Literals start with `^`. For example, `^text@example.com`.
 
 `ACLPerformative` - One of the FIPA-defined ACL performative types.
 
