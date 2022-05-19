@@ -9,7 +9,9 @@ if TYPE_CHECKING:
 
 class Declarations:
     def __init__(
-        self, float_names: List[str] = None, connection_names: List[str] = None
+        self,
+        float_names: List[str] | None = None,
+        connection_names: List[str] | None = None,
     ):
         if float_names:
             self.float_names: List[str] = float_names
@@ -38,6 +40,11 @@ class Declarations:
 
     def get_copy(self) -> Declarations:
         return Declarations(list(self.float_names), list(self.connection_names))
+
+    def print(self) -> None:
+        print("Declarations")
+        print(f"float_names = {self.float_names}")
+        print(f"connection_names = {self.connection_names}")
 
 
 class Block:
@@ -73,7 +80,7 @@ class Block:
     def print(self) -> None:
         print(f"Block")
         print(f"Names in scope")
-        print(self._declared_names)
+        self._declarations.print()
         for instruction in self.statements:
             instruction.print()
         print("(EndBlock)")

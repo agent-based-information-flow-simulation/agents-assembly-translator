@@ -487,6 +487,8 @@ class Argument:
 
     def print(self) -> None:
         print(f"Argument {self.expr}")
-        print(f"Type in op: {type(self.type_in_op).__name__}")
+        print(
+            f"Type in op: {type(self.type_in_op).__name__ if self.type_in_op else 'UNKNOWN'}"
+        )
         for argument_type in self.types:
             type(argument_type).__name__
