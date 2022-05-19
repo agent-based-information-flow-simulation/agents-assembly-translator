@@ -12,6 +12,7 @@ from aasm.intermediate.argument import (
     ConnectionList,
     EnumValue,
     Float,
+    Immutable,
     MessageList,
     ReceivedMessageParam,
     SendMessageParam,
@@ -525,8 +526,8 @@ class PythonSpadeCode(PythonCode):
                 prop = arg.expr.split(".")[1]
                 return f'send["{prop}"]'
 
-            case Connection():
-                return f'"{arg.expr}"'
+            case Connection() if isinstance(arg.type_in_op, Immutable):
+                return f'"{arg.expr[1:]}"'
 
             case _:
                 return arg.expr
