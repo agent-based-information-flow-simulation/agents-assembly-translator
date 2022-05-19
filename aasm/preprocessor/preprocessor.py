@@ -22,9 +22,6 @@ class Preprocessor:
         self.post_macros = {}
 
     def get_original_line_number(self, line_idx: int) -> Tuple[int, str]:
-        print(f"Recline: {line_idx}")
-        print(self.post_macros)
-        print(self.post_ignore)
         for exp in self.line_expansions:
             if line_idx == exp[0]:
                 return (exp[1].declare_line, f"MAKRO call: {exp[1].name}")
@@ -97,7 +94,6 @@ class Preprocessor:
 
         line_idx = 0
         post_idx = 0
-        print(makro_lines)
         for line in self.processed_lines:
             post_idx += 1
             if post_idx not in makro_lines:
