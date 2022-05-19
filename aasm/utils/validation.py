@@ -18,7 +18,7 @@ def is_int(value: str) -> bool:
 
 
 def is_connection(value: str) -> bool:
-    return isinstance(value, str)
+    return isinstance(value, str) and value.startswith("^")
 
 
 def is_valid_enum_list(enums: List[str]) -> bool:
