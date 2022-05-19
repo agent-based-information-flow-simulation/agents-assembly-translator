@@ -92,6 +92,10 @@ class Connection(ArgumentType):
     ...
 
 
+class Literal(ArgumentType):
+    ...
+
+
 class Argument:
     """Doesn't panic. Use in the action context."""
 
@@ -147,14 +151,14 @@ class Argument:
 
     def check_numerical_values(self) -> None:
         if is_float(self.expr):
-            self.types.append(self.compose(Float, Immutable))
+            self.types.append(self.compose(Float, Immutable, Literal))
 
         if is_int(self.expr):
-            self.types.append(self.compose(Integer, Immutable))
+            self.types.append(self.compose(Integer, Immutable, Literal))
 
     def check_connection_values(self) -> None:
         if is_connection(self.expr):
-            self.types.append(self.compose(Connection, Immutable))
+            self.types.append(self.compose(Connection, Immutable, Literal))
 
     def check_received_message_params(self, state: State) -> None:
         if isinstance(state.last_behaviour, MessageReceivedBehaviour):
