@@ -28,7 +28,7 @@ Python 3.10
 ```
 
 ### Installation
-The translator can be installed by running:
+The translator [package](https://pypi.org/project/aasm) can be installed by running:
 ```
 pip install aasm
 ```
