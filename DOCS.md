@@ -47,7 +47,7 @@
 
 `Message` - A message defined using the `MESSAGE` instruction.
 
-`Jid` - Agent identifier. Literals start with `^`. For example, `^text@example.com`.
+`Jid` - Agent identifier. Literals start and end with `"`. For example, `"text@example.com"`.
 
 `ACLPerformative` - One of the FIPA-defined ACL performative types.
 
