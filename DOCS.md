@@ -267,8 +267,7 @@ Types:
 ## Message Scope <a name = "message-scope"></a>
 
 ### Parameters <a name = "message-scope-parameters"></a>
-`PRM name: Name, type: {float}` - Creates a new message parameter of specified type. `name` cannot be `sender`, `type`, `performative`.
-
+`PRM name: Name, type: {float, conn}` - Creates a new message parameter of specified type. `name` cannot be `sender`, `type`, `performative`.
 
 ## Graph Scope <a name = "graph-scope"></a>
 
