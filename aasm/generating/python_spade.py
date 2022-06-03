@@ -507,6 +507,8 @@ class PythonSpadeCode(PythonCode):
         send_msg = f'send = {{ "type": "{message.type}", "performative": "{message.performative}", '
         for float_param_name in message.float_params:
             send_msg += f'"{float_param_name}": 0.0, '
+        for connection_param_name in message.connection_params:
+            send_msg += f'"{connection_param_name}": "", '
         send_msg += "}"
         self.add_line(send_msg)
 
