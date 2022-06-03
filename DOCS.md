@@ -201,9 +201,11 @@ Types:
 
 `COS dst: MutFloat, arg: Float` - Calculates the cosine of `arg` radians and stores it in `dst`.
 
-`POW dst: MutFloat, base: Float, arg: Float` - Calculates `base` raised to `arg` power and stores result in `dst`.
+`POW dst: MutFloat, base: Float, arg: Float` - Calculates `base` raised to `arg` power and stores the result in `dst`.
 
-`LOG dst: MutFloat, base: Float, arg: Float` - Calculcates `base` logarithm of `arg` and stores result in `dst`.
+`LOG dst: MutFloat, base: Float, arg: Float` - Calculcates `base` logarithm of `arg` and stores the result in `dst`.
+
+`MOD dst: MutFloat, dividend: Float, divisor: Float` - Calculcates `dividend` mod `divisor` and stores the result in `dst`.
 
 ### Conditional Statements <a name = "action-scope-conditional-statements"></a>
 `IEQ a: Float/Enum, b: Float/EnumVal` - Begins conditional block if `a` is equal to `b`. Needs matching `EBLOCK`.
