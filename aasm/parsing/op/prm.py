@@ -10,6 +10,7 @@ from aasm.intermediate.agent import EnumParam as AgentEnumParam
 from aasm.intermediate.agent import FloatListParam as AgentFloatListParam
 from aasm.intermediate.agent import InitFloatParam as AgentInitFloatParam
 from aasm.intermediate.agent import MessageListParam as AgentMessageListParam
+from aasm.intermediate.message import ConnectionParam as MessageConnectionParam
 from aasm.intermediate.message import FloatParam as MessageFloatParam
 from aasm.utils.validation import (
     is_float,
@@ -121,6 +122,9 @@ def op_message_PRM(state: State, name: str, category: str) -> None:
     match category:
         case "float":
             state.last_message.add_float(MessageFloatParam(name))
+
+        case "conn":
+            state.last_message.add_connection(MessageConnectionParam(name))
 
         case _:
             state.panic(f"Incorrect operation: (message) PRM {name} {category}")

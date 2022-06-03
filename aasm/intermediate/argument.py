@@ -1,14 +1,15 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import List as typingList
-from typing import Type
 
 from aasm.intermediate.action import SendMessageAction
 from aasm.intermediate.behaviour import MessageReceivedBehaviour
 from aasm.utils.validation import is_connection, is_float, is_int
 
 if TYPE_CHECKING:
+    from typing import List as TypingList
+    from typing import Type
+
     from parsing.state import State
 
 
@@ -101,7 +102,7 @@ class Argument:
 
     def __init__(self, state: State, expr: str):
         self.expr: str = expr
-        self.types: typingList[ArgumentType] = []
+        self.types: TypingList[ArgumentType] = []
         self.type_in_op: ArgumentType | None = None
         self.set_types(state)
 
@@ -183,6 +184,11 @@ class Argument:
                         self.compose(Float, ReceivedMessageParam, Immutable)
                     )
 
+                elif prop in state.last_behaviour.received_message.connection_params:
+                    self.types.append(
+                        self.compose(Connection, ReceivedMessageParam, Immutable)
+                    )
+
             elif self.expr.lower() == "rcv":
                 self.types.append(self.compose(Message, ReceivedMessage, Immutable))
 
@@ -198,6 +204,11 @@ class Argument:
 
                 elif prop in state.last_action.send_message.float_params:
                     self.types.append(self.compose(Float, SendMessageParam, Mutable))
+
+                elif prop in state.last_action.send_message.connection_params:
+                    self.types.append(
+                        self.compose(Connection, SendMessageParam, Mutable)
+                    )
 
             elif self.expr.lower() == "send":
                 self.types.append(self.compose(Message, SendMessage, Mutable))
