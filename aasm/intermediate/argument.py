@@ -293,6 +293,20 @@ class Argument:
 
         return False
 
+    # MOD
+    def math_modulo_context(self, dividend: Argument, divisor: Argument) -> bool:
+        if (
+            self.has_type(Float, Mutable)
+            and dividend.has_type(Float)
+            and divisor.has_type(Float)
+        ):
+            self.set_op_type(Float, Mutable)
+            dividend.set_op_type(Float)
+            divisor.set_op_type(Float)
+            return True
+
+        return False
+
     # ADDE, REME
     def list_modification_context(self, rhs: Argument) -> bool:
         if self.has_type(ConnectionList, Mutable) and rhs.has_type(Connection):

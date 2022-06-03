@@ -418,3 +418,16 @@ class Power(ExponentiationOperation):
     def print(self) -> None:
         print("Power")
         super().print()
+
+
+class Modulo(Instruction):
+    def __init__(self, dst: Argument, dividend: Argument, divisor: Argument):
+        self.dst = dst
+        self.dividend = dividend
+        self.divisor = divisor
+
+    def print(self) -> None:
+        print("Modulo")
+        self.dst.print()
+        self.dividend.print()
+        self.divisor.print()
