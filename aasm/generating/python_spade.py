@@ -42,6 +42,7 @@ from aasm.intermediate.instruction import (
     ListWrite,
     Logarithm,
     MathOperation,
+    Modulo,
     Multiply,
     NormalDist,
     Power,
@@ -820,6 +821,27 @@ class PythonSpadeCode(PythonCode):
                             raise Exception(
                                 f"Unknown math operation statement: {statement.print()}"
                             )
+
+                case Modulo():
+                    dst = self.parse_arg(statement.dst)
+                    dividend = (
+                        f"self.agent.limit_number({self.parse_arg(statement.dividend)})"
+                    )
+                    divisor = (
+                        f"self.agent.limit_number({self.parse_arg(statement.divisor)})"
+                    )
+                    self.add_line("")
+                    self.add_line("# modulo")
+                    self.add_line(f"if {divisor} == 0:")
+                    self.indent_right()
+                    self.add_line(
+                        f"if self.agent.logger: self.agent.logger.warning(f'[{{self.agent.jid}}] Modulo division by zero: \u007b{divisor}\u007d')"
+                    )
+                    self.add_line("return")
+                    self.indent_left()
+                    self.add_line(
+                        f"{dst} = self.agent.limit_number({dividend} % {divisor})"
+                    )
 
                 case ListElementAccess():
                     list_ = self.parse_arg(statement.list_)
