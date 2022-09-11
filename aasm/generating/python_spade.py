@@ -12,6 +12,7 @@ from aasm.intermediate.argument import (
     ConnectionList,
     EnumValue,
     Float,
+    FloatList,
     MessageList,
     ReceivedMessageParam,
     SendMessageParam,
@@ -916,6 +917,11 @@ class PythonSpadeCode(PythonCode):
                     dst = self.parse_arg(statement.dst)
                     list_ = self.parse_arg(statement.list_)
                     idx = f"int(self.agent.limit_number(round(self.agent.limit_number({self.parse_arg(statement.idx)}))))"
+                    match statement.list_.type_in_op:
+                        case FloatList():
+                            value = f"self.agent.limit_number({list_}[{idx}])"
+                        case _:
+                            value = f"{list_}[{idx}]"
                     list_len = f"int(self.agent.limit_number(len({list_})))"
                     self.add_line(f"if {idx} < 0 or {idx} >= {list_len}:")
                     self.indent_right()
@@ -924,16 +930,19 @@ class PythonSpadeCode(PythonCode):
                     )
                     self.add_line("return")
                     self.indent_left()
-                    self.add_line(f"{dst} = self.agent.limit_number({list_}[{idx}])")
+                    self.add_line(f"{dst} = {value}")
 
                 case ListWrite():
                     self.add_line("")
                     self.add_line("# list write")
                     list_ = self.parse_arg(statement.list_)
                     idx = f"int(self.agent.limit_number(round(self.agent.limit_number({self.parse_arg(statement.idx)}))))"
-                    value = (
-                        f"self.agent.limit_number({self.parse_arg(statement.value)})"
-                    )
+                    match statement.value.type_in_op:
+                        case Float():
+                            value = f"self.agent.limit_number({self.parse_arg(statement.value)})"
+                        case _:
+                            value = self.parse_arg(statement.value)
+                    dst = f"{list_}[{idx}]"
                     list_len = f"int(self.agent.limit_number(len({list_})))"
                     self.add_line(f"if {idx} < 0 or {idx} >= {list_len}:")
                     self.indent_right()
@@ -942,7 +951,7 @@ class PythonSpadeCode(PythonCode):
                     )
                     self.add_line("return")
                     self.indent_left()
-                    self.add_line(f"{list_}[{idx}] = {value}")
+                    self.add_line(f"{dst} = {value}")
 
                 case TrigonometryOperation():
                     dst = self.parse_arg(statement.dst)
