@@ -172,15 +172,17 @@ class PythonSpadeCode(PythonCode):
 
     def add_agent_constructor(self, agent: Agent) -> None:
         self.add_line(
-            "def __init__(self, jid, password, backup_url = None, backup_period = 60, backup_delay = 0, logger = None, **kwargs):"
+            "def __init__(self, jid, password, backup_method = None, backup_queue = None, backup_url = None, backup_period = 60, backup_delay = 0, logger = None, **kwargs):"
         )
         self.indent_right()
 
         self.add_line("super().__init__(jid, password, verify_security=False)")
         self.add_line(
-            "if logger: logger.debug(f'[{jid}] Received parameters: jid: {jid}, password: {password}, backup_url: {backup_url}, backup_period: {backup_period}, backup_delay: {backup_delay}, kwargs: {kwargs}')"
+            "if logger: logger.debug(f'[{jid}] Received parameters: jid: {jid}, password: {password}, backup_method: {backup_method}, backup_queue: {backup_queue}, backup_url: {backup_url}, backup_period: {backup_period}, backup_delay: {backup_delay}, kwargs: {kwargs}')"
         )
         self.add_line("self.logger = logger")
+        self.add_line("self.backup_method = backup_method")
+        self.add_line("self.backup_queue = backup_queue")
         self.add_line("self.backup_url = backup_url")
         self.add_line("self.backup_period = backup_period")
         self.add_line("self.backup_delay = backup_delay")
@@ -287,7 +289,7 @@ class PythonSpadeCode(PythonCode):
         self.add_line("def setup(self):")
         self.indent_right()
 
-        self.add_line("if self.backup_url:")
+        self.add_line("if self.backup_method is not None:")
         self.indent_right()
         self.add_no_match_template("BackupBehaviour")
         self.add_line(
@@ -403,11 +405,13 @@ class PythonSpadeCode(PythonCode):
             )
         self.indent_left()
         self.add_line("},")
-
         self.indent_left()
         self.add_line("}")
+
+        self.add_line("if self.agent.backup_method == 'http':")
+        self.indent_right()
         self.add_line(
-            "if self.agent.logger: self.agent.logger.debug(f'[{self.agent.jid}] Sending backup data: {data}')"
+            "if self.agent.logger: self.agent.logger.debug(f'[{self.agent.jid}] Sending backup data with http: {data}')"
         )
         self.add_line("try:")
         self.indent_right()
@@ -419,6 +423,29 @@ class PythonSpadeCode(PythonCode):
         self.indent_right()
         self.add_line(
             "if self.agent.logger: self.agent.logger.error(f'[{self.agent.jid}] Backup error type: {e.__class__}, additional info: {e}')"
+        )
+        self.indent_left()
+        self.indent_left()
+        self.add_line("elif self.agent.backup_method == 'queue':")
+        self.indent_right()
+        self.add_line(
+            "if self.agent.logger: self.agent.logger.debug(f'[{self.agent.jid}] Sending backup data with queue: {data}')"
+        )
+        self.add_line("try:")
+        self.indent_right()
+        self.add_line("await self.agent.backup_queue.coro_put(data)")
+        self.indent_left()
+        self.add_line("except Exception as e:")
+        self.indent_right()
+        self.add_line(
+            "if self.agent.logger: self.agent.logger.error(f'[{self.agent.jid}] Backup error type: {e.__class__}, additional info: {e}')"
+        )
+        self.indent_left()
+        self.indent_left()
+        self.add_line("else:")
+        self.indent_right()
+        self.add_line(
+            "if self.agent.logger: self.agent.logger.warning(f'[{self.agent.jid}] Unknown backup method: {self.agent.backup_method}')"
         )
         self.indent_left()
         self.indent_left()
