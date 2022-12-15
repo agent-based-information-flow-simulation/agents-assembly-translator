@@ -9,10 +9,12 @@ import sys
 
 
 class average_user(spade.agent.Agent):
-    def __init__(self, jid, password, backup_url = None, backup_period = 60, backup_delay = 0, logger = None, **kwargs):
+    def __init__(self, jid, password, backup_method = None, backup_queue = None, backup_url = None, backup_period = 60, backup_delay = 0, logger = None, **kwargs):
         super().__init__(jid, password, verify_security=False)
-        if logger: logger.debug(f'[{jid}] Received parameters: jid: {jid}, password: {password}, backup_url: {backup_url}, backup_period: {backup_period}, backup_delay: {backup_delay}, kwargs: {kwargs}')
+        if logger: logger.debug(f'[{jid}] Received parameters: jid: {jid}, password: {password}, backup_method: {backup_method}, backup_queue: {backup_queue}, backup_url: {backup_url}, backup_period: {backup_period}, backup_delay: {backup_delay}, kwargs: {kwargs}')
         self.logger = logger
+        self.backup_method = backup_method
+        self.backup_queue = backup_queue
         self.backup_url = backup_url
         self.backup_period = backup_period
         self.backup_delay = backup_delay
@@ -41,7 +43,7 @@ class average_user(spade.agent.Agent):
         return msg
     
     def setup(self):
-        if self.backup_url:
+        if self.backup_method is not None:
             BackupBehaviour_template = spade.template.Template()
             BackupBehaviour_template.set_metadata("reserved", "no_message_match")
             self.add_behaviour(self.BackupBehaviour(start_at=datetime.datetime.now() + datetime.timedelta(seconds=self.backup_delay), period=self.backup_period), BackupBehaviour_template)
@@ -76,11 +78,20 @@ class average_user(spade.agent.Agent):
                 "float_lists": {
                 },
             }
-            if self.agent.logger: self.agent.logger.debug(f'[{self.agent.jid}] Sending backup data: {data}')
-            try:
-                await self.http_client.post(self.agent.backup_url, headers={"Content-Type": "application/json"}, data=orjson.dumps(data))
-            except Exception as e:
-                if self.agent.logger: self.agent.logger.error(f'[{self.agent.jid}] Backup error type: {e.__class__}, additional info: {e}')
+            if self.agent.backup_method == 'http':
+                if self.agent.logger: self.agent.logger.debug(f'[{self.agent.jid}] Sending backup data with http: {data}')
+                try:
+                    await self.http_client.post(self.agent.backup_url, headers={"Content-Type": "application/json"}, data=orjson.dumps(data))
+                except Exception as e:
+                    if self.agent.logger: self.agent.logger.error(f'[{self.agent.jid}] Backup error type: {e.__class__}, additional info: {e}')
+            elif self.agent.backup_method == 'queue':
+                if self.agent.logger: self.agent.logger.debug(f'[{self.agent.jid}] Sending backup data with queue: {data}')
+                try:
+                    await self.agent.backup_queue.coro_put(data)
+                except Exception as e:
+                    if self.agent.logger: self.agent.logger.error(f'[{self.agent.jid}] Backup error type: {e.__class__}, additional info: {e}')
+            else:
+                if self.agent.logger: self.agent.logger.warning(f'[{self.agent.jid}] Unknown backup method: {self.agent.backup_method}')
     
     class facebook_activity(spade.behaviour.PeriodicBehaviour):
         async def post_photos(self):
