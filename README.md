@@ -15,6 +15,7 @@ Other applications are:
 - [Local Interface](https://github.com/agent-based-information-flow-simulation/local-interface) - GUI for simulation definition, management, and analysis.
 - [Simulation Run Environment](https://github.com/agent-based-information-flow-simulation/simulation-run-environment) - environment for running scalable agent-based simulations.
 - [Communication Server](https://github.com/agent-based-information-flow-simulation/communication-server) - cluster of servers used for XMPP communication.
+- [Local Development Environment](https://github.com/agent-based-information-flow-simulation/local-development-environment) - simple environment for running agent-based simulations.
 
 ## Agents Assembly <a name = "agents-assembly"></a>
 Documentation of Agents Assembly can be read [here](DOCS.md).
