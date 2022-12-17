@@ -24,3 +24,19 @@ class PythonCode:
     def add_newlines(self, count: int) -> None:
         for _ in range(count):
             self.add_newline()
+
+    def add_template(self, template: str, **kwargs: Any) -> None:
+        lines = template.render(kwargs).splitlines()
+        current_indent = 0
+        for line in lines:
+            space_count = len(line) - len(
+                line.lstrip(" ")
+            )  # templates should have 4 space indents per pep8
+            indent_count = space_count // 4
+            if indent_count < current_indent:
+                for _ in range(current_indent - indent_count):
+                    self.indent_left()
+            elif indent_count > current_indent:
+                for _ in range(indent_count - current_indent):
+                    self.indent_right()
+            self.add_line(line.strip())

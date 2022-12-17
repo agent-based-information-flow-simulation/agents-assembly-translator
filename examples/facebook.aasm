@@ -14,7 +14,10 @@ agent average_user
 	ebehav
 eagent
 
-graph statistical
-    size 150
-    defg average_user, 100%, dist_exp, 0.1
+graph matrix
+	SCALE 3
+	DEFNODE average_user, R0110
+	DEFNODE average_user, R1011
+	DEFNODE average_user, R1100
+	DEFNODE average_user, R1000
 egraph
