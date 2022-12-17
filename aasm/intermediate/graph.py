@@ -70,6 +70,26 @@ class ConnectionDistUniformAmount(ConnectionAmount):
         print(f"ConnectionDistUniformAmount a = {self.a}, b = {self.b}")
 
 
+class AdjRow:
+    def __init__(self, row: List[int]):
+        self.row = row
+
+    def print(self) -> None:
+        print("AdjRow")
+        for key, value in self.row.items():
+            print(f"{key} = {value}")
+
+
+class MatrixAgent:
+    def __init__(self, name: str, adj_row: AdjRow):
+        self.name = name
+        self.adj_row = adj_row
+
+    def print(self) -> None:
+        print(f"MatrixAgent name = {self.name}")
+        self.adj_row.print()
+
+
 class StatisticalAgent:
     def __init__(self, name: str, amount: AgentAmount, connections: ConnectionAmount):
         self.name = name
@@ -85,12 +105,19 @@ class StatisticalAgent:
 class Graph:
     def __init__(self):
         self.size = None
+        self.scale = None
 
     def set_size(self, size: int) -> None:
         self.size = size
 
     def is_size_defined(self) -> bool:
         return self.size is not None
+
+    def set_scale(self, scale: int) -> None:
+        self.scale = scale
+
+    def is_scale_defined(self) -> bool:
+        return self.scale is not None
 
     def add_agent(self, graph_agent: Any) -> None:
         raise NotImplementedError()
@@ -119,5 +146,29 @@ class StatisticalGraph(Graph):
     def print(self) -> None:
         super().print()
         print("StatisticalGraph")
+        for agent in self.agents.values():
+            agent.print()
+
+
+class MatrixGraph(Graph):
+    def __init__(self):
+        super().__init__()
+        self.agents = []
+
+    def add_agent(self, graph_agent: MatrixAgent) -> None:
+        self.agents.append(graph_agent)
+
+    def is_agent_defined(self, agent_type: str) -> bool:
+        return any(self.agents, lambda agent: agent.name == agent_type)
+
+    def set_scale(self, scale: int) -> None:
+        self.scale = scale
+
+    def is_scale_defined(self) -> bool:
+        return self.scale is not None
+
+    def print(self) -> None:
+        super().print()
+        print("MatrixGraph")
         for agent in self.agents.values():
             agent.print()

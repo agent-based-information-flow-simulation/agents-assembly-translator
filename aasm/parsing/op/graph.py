@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from aasm.intermediate.graph import StatisticalGraph
+from aasm.intermediate.graph import MatrixGraph, StatisticalGraph
 
 if TYPE_CHECKING:
     from aasm.parsing.state import State
@@ -31,7 +31,8 @@ def op_GRAPH(state: State, category: str) -> None:
     match category:
         case "statistical":
             state.add_graph(StatisticalGraph())
-
+        case "matrix":
+            state.add_graph(MatrixGraph())
         case _:
             state.panic(f"Incorrect operation: GRAPH {category}")
 
