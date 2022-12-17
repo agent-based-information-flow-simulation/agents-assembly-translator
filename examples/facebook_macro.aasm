@@ -1,5 +1,5 @@
 %makro randint name, a, b
-	decl name, 0
+	decl name, float, 0
 	rand name, int, uniform, a, b
 %emakro
 
@@ -13,8 +13,9 @@ agent average_user
 	prm friends, list, conn
 	behav facebook_activity, cyclic, 30
 		action post_photos, send_msg, facebook_post, query
-			randint num_photos, global_value, 37
+			randint, num_photos, 1, 5
 			set send.photos, num_photos
+			randint, numa_photos, 1, 5
 			send friends
 		eaction
 	ebehav

@@ -11,6 +11,7 @@ class Macro(PreprocessorItem):
         super().__init__(signature)
         self.lines = []
         self.argument_regexes = []
+        self.declare_line = -1
         self.name = ""
         self.expand_len = 0
 
@@ -33,9 +34,10 @@ class Macro(PreprocessorItem):
     def _create_regex(self, name: str) -> str:
         return f"[\\s,]{name}\\s*,?"
 
-    def add_definition(self, definition: List[str]):
+    def add_definition(self, definition: List[str], line_idx: int):
         # definition = [token for token in definition if token != '']
         self.name = definition[0]
+        self.declare_line = line_idx
         self.argument_regexes = [self._create_regex(arg) for arg in definition[1:]]
 
     def add_line(self, line: str):

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List
+from typing import List, Tuple
 
 from aasm.preprocessor.constant import Constant
 from aasm.preprocessor.macro import Macro
@@ -18,14 +18,15 @@ class Preprocessor:
         self.ignore_offsets = []
         self.macro_offsets = []
         self.item_names = []
+        self.post_ignore = {}
+        self.post_macros = {}
 
-    def get_original_line_number(self, line_idx: int) -> int:
-        macro_line = line_idx
-        for offset in self.macro_offsets:
-            if line_idx >= offset:
-                macro_line -= 1
-        org_line = macro_line - self.ignore_offsets[macro_line]
-        return org_line
+    def get_original_line_number(self, line_idx: int) -> Tuple[int, str]:
+        for exp in self.line_expansions:
+            if line_idx == exp[0]:
+                return (exp[1].declare_line, f"MAKRO call: {exp[1].name}")
+        post_macro_idx = self.post_macros[line_idx]
+        return (self.post_ignore[post_macro_idx], "")
 
     def get_makro_name(self, line_idx: int) -> str:
         line = self.lines[line_idx - 1]
@@ -69,37 +70,50 @@ class Preprocessor:
             if len(tokens) != 0 and tokens[0] in names:
                 to_expand.append((line_idx, tokens[0], tokens[1:]))
             line_idx += 1
+
         offset = 0
+        makro_lines = []
         for makro in to_expand:
-            line_idx = makro[0] + offset
-            macro_item = [x for x in self.macros if x.name == makro[1]][
-                0
-            ]  # guaranteed to exist
+            line_idx, name, args = makro
+            line_idx += offset
+            macro_item = self.macros[names.index(name)]
             if len(makro[2]) != len(macro_item.argument_regexes):
                 raise PanicException(
                     f"Error in line: {line_idx}",
                     "Wrong number of arguments",
-                    f"Expected {len(macro_item.argument_regexes)} arguments, got {len(makro[2])}",
+                    f"Expected {len(macro_item.argument_regexes)} arguments, got {len(args)}",
                 )
-            self.processed_lines[line_idx:line_idx] = macro_item.expand(makro[2])
+            self.processed_lines[line_idx:line_idx] = macro_item.expand(args)
             for offset_idx in range(macro_item.expand_len - 1):
                 self.macro_offsets.append(line_idx + offset_idx + 2)
             del self.processed_lines[line_idx + macro_item.expand_len]
-            self.line_expansions.append((line_idx, macro_item))
+            for line_offset in range(macro_item.expand_len - 1):
+                makro_lines.append(line_idx + line_offset + 2)
+            self.line_expansions.append((line_idx+1, macro_item))
             offset += macro_item.expand_len - 1
+
+        line_idx = 0
+        post_idx = 0
+        for line in self.processed_lines:
+            post_idx += 1
+            if post_idx not in makro_lines:
+                line_idx += 1
+            self.post_macros[post_idx] = line_idx
 
     def parse_items(self):
         line_idx = 0
         currentItem = None
+        post_ignore_idx = 1
         for line in self.lines:
             self.ignore_offsets.append(0)
+            self.post_ignore[post_ignore_idx] = line_idx + 1
             line_idx += 1
             tmp = line.strip()
             # enter preprocessor directive
             if len(tmp) == 0:
                 self.ignore.append(line_idx - 1)
                 continue
-            if tmp[0] == "%":
+            elif tmp[0] == "%":
                 self.ignore.append(line_idx - 1)
                 signature = tmp.lstrip("%")
                 tokens = [
@@ -111,7 +125,7 @@ class Preprocessor:
                     case ["MAKRO", *makro_def]:
                         if currentItem is None:
                             currentItem = Macro(signature)
-                            currentItem.add_definition(makro_def)
+                            currentItem.add_definition(makro_def, line_idx)
                             if currentItem.name in self.item_names:
                                 raise PanicException(
                                     f"Error in line: {line_idx}",
@@ -167,3 +181,6 @@ class Preprocessor:
                 self.ignore.append(line_idx - 1)
                 if isinstance(currentItem, Macro):
                     currentItem.add_line(line)
+            else:
+                # The case where the line is not ignored
+                post_ignore_idx += 1

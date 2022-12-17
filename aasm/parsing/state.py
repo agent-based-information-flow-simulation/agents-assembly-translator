@@ -127,8 +127,11 @@ class State:
         if self.debug:
             pprint(self.__dict__)
             self.print()
-        err_line = self.preprocessor.get_original_line_number(self.line_num)
-        place = f"Error in line {err_line}: {self.lines[self.line_num - 1].strip()}"
+        (err_line, err_data) = self.preprocessor.get_original_line_number(self.line_num)
+        if err_data != "":
+            place = f"Error in preprocessor directive: {err_data}, declared at line {err_line}"
+        else:
+            place = f"Error in line {err_line}: {self.lines[self.line_num - 1].strip()}"
         raise PanicException(place, reason, suggestion)
 
     def require(
