@@ -1,5 +1,5 @@
 .vscode
-.vim
+**/.vim
 __pycache__
 dist
 out

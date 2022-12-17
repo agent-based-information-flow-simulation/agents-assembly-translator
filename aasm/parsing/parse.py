@@ -12,6 +12,7 @@ from aasm.parsing.op.conditional import (
 )
 from aasm.parsing.op.decl import op_DECL
 from aasm.parsing.op.defg import op_DEFG
+from aasm.parsing.op.defnode import op_DEFNODE
 from aasm.parsing.op.eblock import op_EBLOCK
 from aasm.parsing.op.graph import op_EGRAPH, op_GRAPH
 from aasm.parsing.op.len import op_LEN
@@ -27,6 +28,7 @@ from aasm.parsing.op.prm import op_agent_PRM, op_message_PRM
 from aasm.parsing.op.rand import op_RAND
 from aasm.parsing.op.remen import op_REMEN
 from aasm.parsing.op.round import op_ROUND
+from aasm.parsing.op.scale import op_SCALE
 from aasm.parsing.op.send import op_SEND
 from aasm.parsing.op.set import op_SET
 from aasm.parsing.op.size import op_SIZE
@@ -145,8 +147,14 @@ def parse_lines(lines: List[str], debug: bool) -> ParsedData:
             case ["SIZE", size]:
                 op_SIZE(state, size)
 
+            case ["SCALE", scale]:
+                op_SCALE(state, scale)
+
             case ["DEFG", agent_name, amount, *args]:
                 op_DEFG(state, agent_name, amount, args)
+
+            case ["DEFNODE", agent_name, row]:
+                op_DEFNODE(state, agent_name, row)
 
             case ["LR", dst, list_, idx]:
                 op_LR(state, dst, list_, idx)

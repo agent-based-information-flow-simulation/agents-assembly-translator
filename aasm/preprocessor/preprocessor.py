@@ -89,7 +89,7 @@ class Preprocessor:
             del self.processed_lines[line_idx + macro_item.expand_len]
             for line_offset in range(macro_item.expand_len - 1):
                 makro_lines.append(line_idx + line_offset + 2)
-            self.line_expansions.append((line_idx+1, macro_item))
+            self.line_expansions.append((line_idx + 1, macro_item))
             offset += macro_item.expand_len - 1
 
         line_idx = 0
