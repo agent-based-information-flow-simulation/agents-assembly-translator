@@ -13,6 +13,7 @@ from aasm.intermediate.graph import (
     ConnectionDistUniformAmount,
     MatrixGraph,
     StatisticalGraph,
+    BarabasiGraph,
 )
 
 if TYPE_CHECKING:
@@ -40,6 +41,9 @@ class PythonGraph(PythonCode):
             case MatrixGraph():
                 self.add_matrix_graph(graph)
 
+            case BarabasiGraph():
+                self.add_barabasi_graph(graph)
+
             case _:
                 raise Exception(f"Unknown graph type: {graph.print()}")
 
@@ -51,7 +55,7 @@ class PythonGraph(PythonCode):
             self.add_line("return []")
             self.indent_left()
             return
-
+        # move to a function
         num_agents_expr: List[str] = []
         for agent in graph.agents.values():
             match agent.amount:
@@ -175,3 +179,42 @@ class PythonGraph(PythonCode):
         self.indent_left()
         self.add_line("return agents")
         self.indent_left()
+
+    def add_barabasi_graph(self, graph: BarabasiGraph):
+        # generate jid list using draw by draw Barabasi-Albert algorithm for the provided graph with its m0 and m
+        self.add_line("def generate_graph_structure(domain):")
+        self.indent_right()
+        if not graph.agents:
+            self.add_line("return []")
+            self.indent_left()
+            return
+
+        # move to a function
+        num_agents_expr: List[str] = []
+        for agent in graph.agents.values():
+            match agent.amount:
+                case AgentConstantAmount():
+                    self.add_line(f"_num_{agent.name} = {agent.amount.value}")
+
+                case AgentPercentAmount():
+                    self.add_line(
+                        f"_num_{agent.name} = round({agent.amount.value} / 100 * {graph.size})"
+                    )
+
+                case _:
+                    raise Exception(
+                        f"Unknown agent amount type: {agent.amount.print()}"
+                    )
+
+            num_agents_expr.append(f"_num_{agent.name}")
+
+        self.add_line(f'num_agents = {" + ".join(num_agents_expr)}')
+
+        self.add_line("random_id = str(uuid.uuid4())[:5]")
+        self.add_line(f"m0 = {graph.m0}")
+        self.add_line(f"m = {graph.m}")
+        self.add_line('jids = [f"{i}_{random_id}@{domain}" for i in range(num_agents)]')
+        self.add_line("agents = []")
+        self.add_line("next_agent_idx = 0")
+        # begin by creating the initial complete graph
+

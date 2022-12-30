@@ -14,10 +14,7 @@ agent average_user
 	ebehav
 eagent
 
-graph matrix
-	SCALE 3
-	DEFNODE average_user, R0110
-	DEFNODE average_user, R1011
-	DEFNODE average_user, R1100
-	DEFNODE average_user, R1000
+graph barabasi
+	MPARAMS 5, 3
+	defg average_user, 150
 egraph

@@ -1,6 +1,15 @@
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any, Dict, List, Tuple
+
+
+class MParameters:
+    def __init__(self, a: int, b: int):
+        self.m0 = a
+        self.m_inc = b
+
+    def print(self) -> None:
+        print(f"MParameters values = {self.m0}, {self.m_inc}")
 
 
 class AgentAmount:
@@ -102,10 +111,21 @@ class StatisticalAgent:
         self.connections.print()
 
 
+class BarabasiAgent:
+    def __init__(self, name: str, amount: AgentAmount):
+        self.name = name
+        self.amount = amount
+
+    def print(self) -> None:
+        print(f"BarabasiAgent name = {self.name}")
+        self.amount.print()
+
+
 class Graph:
     def __init__(self):
         self.size = None
         self.scale = None
+        self.m_params = None
 
     def set_size(self, size: int) -> None:
         self.size = size
@@ -118,6 +138,12 @@ class Graph:
 
     def is_scale_defined(self) -> bool:
         return self.scale is not None
+
+    def set_m(self, m: Tuple(int, int)) -> None:
+        self.m_params = MParameters(*m)
+
+    def is_m_defined(self) -> bool:
+        return self.m_params is not None
 
     def add_agent(self, graph_agent: Any) -> None:
         raise NotImplementedError()
@@ -146,6 +172,30 @@ class StatisticalGraph(Graph):
     def print(self) -> None:
         super().print()
         print("StatisticalGraph")
+        for agent in self.agents.values():
+            agent.print()
+
+
+class BarabasiGraph(Graph):
+    def __init__(self):
+        super().__init__()
+        self.agents: Dict[str, BarabasiAgent] = {}
+
+    def add_agent(self, graph_agent: BarabasiAgent) -> None:
+        self.agents[graph_agent.name] = graph_agent
+
+    def is_agent_defined(self, agent_type: str) -> bool:
+        return agent_type in self.agents
+
+    def is_agent_percent_amount_used(self) -> bool:
+        for agent in self.agents.values():
+            if isinstance(agent.amount, AgentPercentAmount):
+                return True
+        return False
+
+    def print(self) -> None:
+        super().print()
+        print("BarabasiGraph")
         for agent in self.agents.values():
             agent.print()
 
