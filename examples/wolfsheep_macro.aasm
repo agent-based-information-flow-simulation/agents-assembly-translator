@@ -140,7 +140,7 @@ AGENT grass
     PRM alive_sheep, list, conn
     PRM dead_wolf, list, conn
     PRM alive_wolf, list, conn
-    PRM spawn_candidate, list, conn
+    PRM spawn_target, list, conn
     BEHAV initilise, setup
         ACTION setup_field, modify_self
             DECL it, float, 0
@@ -158,36 +158,39 @@ AGENT grass
     EBEHAV
     BEHAV recv_spawn, msg_rcv, spawn, Inform
         ACTION choose_spawn, modify_self
-            CLR spawn_candidate
+            CLR spawn_target
+            DECL spawn_candidate, conn, "0"
             IEQ RCV.typ, sheep_id
-                SUBS spawn_candidate, dead_sheep, 1
+                LR spawn_candidate, dead_sheep, 0
                 move_to alive_sheep, dead_sheep, spawn_candidate
+                ADDE spawn_target, spawn_candidate
             EBLOCK
             IEQ RCV.typ, wolf_id
-                SUBS spawn_candidate, dead_wolf, 1
+                LR spawn_candidate, dead_wolf, 0
                 move_to alive_wolf, dead_wolf, spawn_candidate
+                ADDE spawn_target, spawn_candidate
             EBLOCK
         EACTION
         ACTION spawn, send_msg, spawn, Inform
-            SEND spawn_candidate
+            SEND spawn_target
         EACTION
     EBEHAV
     BEHAV recv_broadcast, msg_rcv, broadcast, Inform
         ACTION add_agent, modify_self
             IEQ RCV.typ, sheep_id
                 IEQ RCV.state, 0
-                    move_to dead_sheep, alive_sheep, RCV.jid
+                    move_to dead_sheep, alive_sheep, RCV.sender
                 EBLOCK
                 IEQ RCV.state, 1
-                    move_to alive_sheep, dead_sheep, RCV.jid
+                    move_to alive_sheep, dead_sheep, RCV.sender
                 EBLOCK
             EBLOCK
             IEQ RCV.typ, 2
                 IEQ RCV.state, 0
-                    move_to dead_wolf, alive_wolf, RCV.jid
+                    move_to dead_wolf, alive_wolf, RCV.sender
                 EBLOCK
                 IEQ RCV.state, 1
-                    move_to alive_wolf, dead_wolf, RCV.jid
+                    move_to alive_wolf, dead_wolf, RCV.sender
                 EBLOCK
             EBLOCK
         EACTION
@@ -209,7 +212,7 @@ AGENT grass
             IEQ send_flag, 0
                 SET SEND.energy, 0
             EBLOCK
-            SEND RCV.jid
+            SEND RCV.sender
         EACTION
     EBEHAV
     BEHAV regrow_grass, cyclic, 10
@@ -229,11 +232,11 @@ AGENT grass
     EBEHAV
     BEHAV recv_kill, msg_rcv, kill, Inform
         ACTION kill_creature, modify_self
-            IN alive_sheep, RCV.jid
-                move_to dead_sheep, alive_sheep, RCV.jid
+            IN alive_sheep, RCV.sender
+                move_to dead_sheep, alive_sheep, RCV.sender
             EBLOCK
-            IN alive_wolf, RCV.jid
-                move_to dead_wolf, alive_wolf, RCV.jid
+            IN alive_wolf, RCV.sender
+                move_to dead_wolf, alive_wolf, RCV.sender
             EBLOCK
         EACTION
     EBEHAV
@@ -312,7 +315,7 @@ AGENT sheep
     BEHAV recv_broadcast, msg_rcv, broadcast, Inform
         ACTION xd, modify_self
         IEQ RCV.typ, 0
-            ADDE field, RCV.jid
+            ADDE field, RCV.sender
         EBLOCK
         EACTION
     EBEHAV
@@ -335,7 +338,7 @@ AGENT sheep
                         IGT lowx, RCV.x
                             IGT lowy, RCV.y
                                 SET SEND.energy, 1
-                                SEND RCV.jid
+                                SEND RCV.sender
                             EBLOCK
                         EBLOCK
                     EBLOCK
@@ -397,23 +400,23 @@ AGENT wolf
         ACTION eat_sheep, send_msg, kill, Inform
             IEQ is_eating, YES
                 SET is_eating, NO
-                SEND RCV.jid
+                SEND RCV.sender
             EBLOCK
         EACTION
     EBEHAV
     BEHAV recv_broadcast, msg_rcv, broadcast, Inform
         ACTION save_data, modify_self
         IEQ RCV.typ, 0
-            ADDE field, RCV.jid
+            ADDE field, RCV.sender
         EBLOCK
         IEQ RCV.typ, 1
-            ADDE sheep, RCV.jid
+            ADDE sheep, RCV.sender
         EBLOCK
         EACTION
     EBEHAV
 EAGENT
 
-GRPH statistical
+GRAPH statistical
     SIZE graph_size
     DEFG grass, 1, field_conns
     DEFG sheep, sheep_amt, field_conns
