@@ -413,7 +413,7 @@ AGENT wolf
     EBEHAV
 EAGENT
 
-GRPH statistical
+GRAPH statistical
     SIZE graph_size
     DEFG grass, 1, field_conns
     DEFG sheep, sheep_amt, field_conns
