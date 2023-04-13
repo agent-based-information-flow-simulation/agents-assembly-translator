@@ -2,8 +2,20 @@ message facebook_post, query
 	prm photos, float
 emessage
 
-agent average_user
+agent user
 	prm friends, list, conn
+	prm num_seen_photos, float, init, 0
+
+	behav initialize, setup
+		action initialize_friends, modify_self
+			decl max_friends, float, 0
+			len max_friends, connections
+			decl num_friends, float, 0
+			rand num_friends, int, uniform, 0, max_friends
+			subs friends, connections, num_friends
+		eaction
+	ebehav
+
 	behav facebook_activity, cyclic, 30
 		action post_photos, send_msg, facebook_post, query
 			decl num_photos, float, 0
@@ -12,12 +24,14 @@ agent average_user
 			send friends
 		eaction
 	ebehav
+
+	behav read_posts, msg_rcv, facebook_post, query
+		action update_seen_photos, modify_self
+			add num_seen_photos, rcv.photos
+		eaction
+	ebehav
 eagent
 
-graph matrix
-	SCALE 3
-	DEFNODE average_user, R0110
-	DEFNODE average_user, R1011
-	DEFNODE average_user, R1100
-	DEFNODE average_user, R1000
+graph statistical
+	defg user, 15, dist_exp, 0.1
 egraph
