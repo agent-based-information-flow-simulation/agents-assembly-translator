@@ -33,7 +33,7 @@ def op_GRAPH(state: State, category: str) -> None:
             state.add_graph(StatisticalGraph())
         case "matrix":
             state.add_graph(MatrixGraph())
-        case "barasi-albert":
+        case "barabasi-albert":
             state.add_graph(BarabasiGraph())
         case _:
             state.panic(f"Incorrect operation: GRAPH {category}")

@@ -209,11 +209,11 @@ class PythonGraph(PythonCode):
                     )
 
             num_agents_expr.append(f"_num_{agent.name}")
-            self.add_line(f"tmp = [{agent.name}] * _num_{agent.name}")
+            self.add_line(f"tmp = ['{agent.name}'] * _num_{agent.name}")
             self.add_line("agent_types.extend(tmp)")
 
         self.add_line(f'num_agents = {" + ".join(num_agents_expr)}')
-        self.add_line("agent_types = random.shuffle(agent_types)")
+        self.add_line("random.shuffle(agent_types)")
 
         self.add_line("random_id = str(uuid.uuid4())[:5]")
         self.add_line(f"m0 = {graph.m_params.m0}")
@@ -226,7 +226,9 @@ class PythonGraph(PythonCode):
         self.add_line("init_jids = random.choices(jids, k=m0)")
         self.add_line("for jid in init_jids:")
         self.indent_right()
-        self.add_line("connection_lists.append(init_jids.remove(jid))")
+        self.add_line("copy = init_jids.copy()")
+        self.add_line("copy.remove(jid)")
+        self.add_line("connection_lists.append(copy)")
         self.indent_left()
         self.add_line("next_agent_idx += m0")
         self.add_line("for i in range(m0, num_agents):")
@@ -239,7 +241,8 @@ class PythonGraph(PythonCode):
         self.add_line("to_connect.append(random.choices(ids, weights=weights)[0])")
         self.add_line("ids.remove(to_connect[-1])")
         self.indent_left()
-        self.add_line("connection_lists.append(to_connect)")
+        self.add_line("to_connect_jids = [jids[i] for i in to_connect]")
+        self.add_line("connection_lists.append(to_connect_jids)")
         self.add_line("for id in to_connect:")
         self.indent_right()
         # two sided connections
@@ -257,8 +260,6 @@ class PythonGraph(PythonCode):
         self.add_line('"connections": connection_lists[i],')
         self.indent_left()
         self.add_line("})")
-        self.indent_left()
-
         self.indent_left()
         self.add_line("return agents")
         self.indent_left()

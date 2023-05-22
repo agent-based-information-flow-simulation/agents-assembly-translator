@@ -32,7 +32,7 @@ agent user
 	ebehav
 eagent
 
-graph barabasi
+graph barabasi-albert
 	MPARAMS 5, 3
-	defg average_user, 150
+	defg user, 150
 egraph
