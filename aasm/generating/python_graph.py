@@ -189,6 +189,8 @@ class PythonGraph(PythonCode):
             self.indent_left()
             return
 
+        self.add_line(f"agent_types = []")
+
         # move to a function
         num_agents_expr: List[str] = []
         for agent in graph.agents.values():
@@ -207,14 +209,56 @@ class PythonGraph(PythonCode):
                     )
 
             num_agents_expr.append(f"_num_{agent.name}")
+            self.add_line(f"tmp = [{agent.name}] * _num_{agent.name}")
+            self.add_line("agent_types.extend(tmp)")
 
         self.add_line(f'num_agents = {" + ".join(num_agents_expr)}')
+        self.add_line("agent_types = random.shuffle(agent_types)")
 
         self.add_line("random_id = str(uuid.uuid4())[:5]")
-        self.add_line(f"m0 = {graph.m0}")
-        self.add_line(f"m = {graph.m}")
+        self.add_line(f"m0 = {graph.m_params.m0}")
+        self.add_line(f"m = {graph.m_params.m_inc}")
         self.add_line('jids = [f"{i}_{random_id}@{domain}" for i in range(num_agents)]')
-        self.add_line("agents = []")
+        # self.add_line("agents = []")
+        self.add_line("connection_lists = []")
         self.add_line("next_agent_idx = 0")
         # begin by creating the initial complete graph
+        self.add_line("init_jids = random.choices(jids, k=m0)")
+        self.add_line("for jid in init_jids:")
+        self.indent_right()
+        self.add_line("connection_lists.append(init_jids.remove(jid))")
+        self.indent_left()
+        self.add_line("next_agent_idx += m0")
+        self.add_line("for i in range(m0, num_agents):")
+        self.indent_right()
+        self.add_line("to_connect = []")
+        self.add_line("ids = list(range(next_agent_idx))")
+        self.add_line("while len(to_connect) < m:")
+        self.indent_right()
+        self.add_line("weights = [len(connection_lists[i]) for i in ids]")
+        self.add_line("to_connect.append(random.choices(ids, weights=weights)[0])")
+        self.add_line("ids.remove(to_connect[-1])")
+        self.indent_left()
+        self.add_line("connection_lists.append(to_connect)")
+        self.add_line("for id in to_connect:")
+        self.indent_right()
+        # two sided connections
+        self.add_line("connection_lists[id].append(jids[next_agent_idx])")
+        self.indent_left()
+        self.add_line("next_agent_idx += 1")
+        self.indent_left()
+        self.add_line("agents = []")
+        self.add_line("for i in range(num_agents):")
+        self.indent_right()
+        self.add_line("agents.append({")
+        self.indent_right()
+        self.add_line('"jid": jids[i],')
+        self.add_line(f'"type": agent_types[i],')
+        self.add_line('"connections": connection_lists[i],')
+        self.indent_left()
+        self.add_line("})")
+        self.indent_left()
 
+        self.indent_left()
+        self.add_line("return agents")
+        self.indent_left()
