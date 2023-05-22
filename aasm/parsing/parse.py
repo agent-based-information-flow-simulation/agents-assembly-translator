@@ -32,6 +32,7 @@ from aasm.parsing.op.scale import op_SCALE
 from aasm.parsing.op.send import op_SEND
 from aasm.parsing.op.set import op_SET
 from aasm.parsing.op.size import op_SIZE
+from aasm.parsing.op.mparams import op_MPARAMS
 from aasm.parsing.op.subs import op_SUBS
 from aasm.parsing.state import State
 
@@ -149,6 +150,9 @@ def parse_lines(lines: List[str], debug: bool) -> ParsedData:
 
             case ["SCALE", scale]:
                 op_SCALE(state, scale)
+
+            case ["MPARAMS", m0, m_inc]:
+                op_MPARAMS(state, m0, m_inc)
 
             case ["DEFG", agent_name, amount, *args]:
                 op_DEFG(state, agent_name, amount, args)

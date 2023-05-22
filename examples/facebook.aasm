@@ -32,6 +32,7 @@ agent user
 	ebehav
 eagent
 
-graph statistical
-	defg user, 15, dist_exp, 0.1
+graph barabasi
+	MPARAMS 5, 3
+	defg average_user, 150
 egraph
