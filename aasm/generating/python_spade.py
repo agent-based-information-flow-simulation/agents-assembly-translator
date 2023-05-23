@@ -42,6 +42,12 @@ from aasm.intermediate.instruction import (
     ListRead,
     ListWrite,
     Logarithm,
+    Logs,
+    LogsCritical,
+    LogsDebug,
+    LogsError,
+    LogsInfo,
+    LogsWarning,
     MathOperation,
     Modulo,
     Multiply,
@@ -120,6 +126,7 @@ class PythonSpadeCode(PythonCode):
         self.add_line("import datetime")
         self.add_line("import random")
         self.add_line("import httpx")
+        self.add_line("import inspect")
         self.add_line("import numpy")
         self.add_line("import orjson")
         self.add_line("import spade")
@@ -1043,6 +1050,55 @@ class PythonSpadeCode(PythonCode):
                         case _:
                             raise Exception(
                                 f"Unknown exponentiation operation statement: {statement.print()}"
+                            )
+
+                case Logs():
+                    logger_msg = '{ "jid": self.agent.jid, "agent": type(self.agent).__name__, "behaviour": type(self).__name__, "action": inspect.stack()[0].function'
+                    for arg in statement.args:
+                        name = arg.expr + "__" + arg.explain_type_in_op()
+                        value = self.parse_arg(arg)
+                        logger_msg += f', "{name}": {value}'
+                    logger_msg += " }"
+
+                    match statement:
+                        case LogsDebug():
+                            self.add_line("")
+                            self.add_line("# logs (debug)")
+                            self.add_line(
+                                f"if self.agent.logger: self.agent.logger.debug({logger_msg})"
+                            )
+
+                        case LogsInfo():
+                            self.add_line("")
+                            self.add_line("# logs (info)")
+                            self.add_line(
+                                f"if self.agent.logger: self.agent.logger.info({logger_msg})"
+                            )
+
+                        case LogsWarning():
+                            self.add_line("")
+                            self.add_line("# logs (warning)")
+                            self.add_line(
+                                f"if self.agent.logger: self.agent.logger.warning({logger_msg})"
+                            )
+
+                        case LogsError():
+                            self.add_line("")
+                            self.add_line("# logs (error)")
+                            self.add_line(
+                                f"if self.agent.logger: self.agent.logger.error({logger_msg})"
+                            )
+
+                        case LogsCritical():
+                            self.add_line("")
+                            self.add_line("# logs (critical)")
+                            self.add_line(
+                                f"if self.agent.logger: self.agent.logger.critical({logger_msg})"
+                            )
+
+                        case _:
+                            raise Exception(
+                                f"Unknown logs statement: {statement.print()}"
                             )
 
                 case _:

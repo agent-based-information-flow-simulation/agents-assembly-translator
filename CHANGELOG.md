@@ -4,7 +4,7 @@
 - [ ] Add generalized random graph generation
 - [x] Add a reference to self agent jid
 - [ ] Add uuid module (+ModuleVar)
-- [ ] Add log instruction
+- [x] Add log instruction
 - [x] Optimize spade instance backup mechanism
 - [ ] Add tests
 
