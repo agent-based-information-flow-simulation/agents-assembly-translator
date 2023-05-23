@@ -65,10 +65,6 @@ class AgentParam(ArgumentType):
     ...
 
 
-class SelfConnection(ArgumentType):
-    ...
-
-
 class Message(ArgumentType):
     ...
 
