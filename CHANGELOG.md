@@ -13,6 +13,11 @@
 - [ ] TODO 0d78038d -- aasm/intermediate/graph.py
 - [ ] TODO dfa11b53 -- aasm/intermediate/graph.py
 - [ ] TODO b9750a60 -- aasm/intermediate/graph.py
+- [ ] Add remaining assignment operators
 
 ## BACKLOG
 - [ ] Change graph generation to types + adjacency row format?
+- [ ] Change connection type to string?
+- [ ] Support all types as agent parameters
+- [ ] Support all types as message parameters
+- [ ] Support all types in decl instruction
