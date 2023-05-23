@@ -15,6 +15,7 @@
 - [ ] TODO b9750a60 -- aasm/intermediate/graph.py
 - [ ] Add remaining assignment operators
 - [ ] Standardize logging format
+- [ ] Add optional initialization of httpx client in backup behaviour
 
 ## BACKLOG
 - [ ] Change graph generation to types + adjacency row format?
