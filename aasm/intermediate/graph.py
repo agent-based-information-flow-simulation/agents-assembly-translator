@@ -71,6 +71,7 @@ class ConnectionDistUniformAmount(ConnectionAmount):
 
 
 class AdjRow:
+    # TODO 0d78038d: import List from typing
     def __init__(self, row: List[int]):
         self.row = row
 
@@ -159,6 +160,7 @@ class MatrixGraph(Graph):
         self.agents.append(graph_agent)
 
     def is_agent_defined(self, agent_type: str) -> bool:
+        # TODO dfa11b53: fix this ("any" takes only one argument)
         return any(self.agents, lambda agent: agent.name == agent_type)
 
     def set_scale(self, scale: int) -> None:
@@ -170,5 +172,6 @@ class MatrixGraph(Graph):
     def print(self) -> None:
         super().print()
         print("MatrixGraph")
+        # TODO b9750a60: fix this (cannot access member "values" for type "list[Unknown]")
         for agent in self.agents.values():
             agent.print()
