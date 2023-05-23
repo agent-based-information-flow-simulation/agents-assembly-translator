@@ -543,7 +543,10 @@ class PythonSpadeCode(PythonCode):
     def parse_arg(self, arg: Argument) -> str:
         match arg.type_in_op:
             case AgentParam():
-                return f"self.agent.{arg.expr}"
+                if arg.expr == "self":
+                    return "self.agent.jid"
+                else:
+                    return f"self.agent.{arg.expr}"
 
             case EnumValue():
                 return f'"{arg.expr}"'
