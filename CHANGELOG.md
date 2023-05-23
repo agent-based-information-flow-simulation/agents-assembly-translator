@@ -8,6 +8,11 @@
 - [x] Optimize spade instance backup mechanism
 - [ ] Add tests
 - [x] Import only required Python modules
+- [ ] TODO 7a4a78ed -- aasm/generating/python_code.py
+- [ ] TODO fa3d7007 -- aasm/generating/python_graph.py
+- [ ] TODO 0d78038d -- aasm/intermediate/graph.py
+- [ ] TODO dfa11b53 -- aasm/intermediate/graph.py
+- [ ] TODO b9750a60 -- aasm/intermediate/graph.py
 
 ## BACKLOG
 - [ ] Change graph generation to types + adjacency row format?

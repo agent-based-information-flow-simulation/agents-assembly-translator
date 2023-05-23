@@ -35,6 +35,7 @@ class PythonCode:
         lines.sort()
         self.code_lines = lines + self.code_lines
 
+    # TODO 7a4a78ed: remove this if not needed
     def add_template(self, template: str, **kwargs: Any) -> None:
         lines = template.render(kwargs).splitlines()
         current_indent = 0
