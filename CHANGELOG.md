@@ -7,6 +7,7 @@
 - [x] Add log instruction
 - [x] Optimize spade instance backup mechanism
 - [ ] Add tests
+- [x] Import only required Python modules
 
 ## BACKLOG
 - [ ] Change graph generation to types + adjacency row format?

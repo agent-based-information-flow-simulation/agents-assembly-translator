@@ -65,7 +65,6 @@ def get_invalid_names() -> List[str]:
         "get_spade_message",
         "logger",
         "any",
-        "sys",
         "limit_number",
         "int",
         "BackupBehaviour",
