@@ -2,7 +2,7 @@
 
 - [ ] Add Barabasi-Albert graph generation
 - [ ] Add generalized random graph generation
-- [ ] Add a reference to self agent jid
+- [x] Add a reference to self agent jid
 - [ ] Add uuid module (+ModuleVar)
 - [ ] Add log instruction
 - [x] Optimize spade instance backup mechanism
