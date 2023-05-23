@@ -14,6 +14,7 @@
 - [ ] TODO dfa11b53 -- aasm/intermediate/graph.py
 - [ ] TODO b9750a60 -- aasm/intermediate/graph.py
 - [ ] Add remaining assignment operators
+- [ ] Add simulation id to agent
 - [ ] Standardize logging format
 - [ ] Add optional initialization of httpx client in backup behaviour
 
