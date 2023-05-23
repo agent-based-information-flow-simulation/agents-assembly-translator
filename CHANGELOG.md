@@ -14,6 +14,7 @@
 - [ ] TODO dfa11b53 -- aasm/intermediate/graph.py
 - [ ] TODO b9750a60 -- aasm/intermediate/graph.py
 - [ ] Add remaining assignment operators
+- [ ] Standardize logging format
 
 ## BACKLOG
 - [ ] Change graph generation to types + adjacency row format?
