@@ -32,6 +32,7 @@ class PythonCode:
         lines: List[str] = []
         for required_import in self.required_imports:
             lines.append(f"import {required_import}\n")
+        lines.sort()
         self.code_lines = lines + self.code_lines
 
     def add_template(self, template: str, **kwargs: Any) -> None:
