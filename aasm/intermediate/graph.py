@@ -85,7 +85,7 @@ class AdjRow:
 
     def print(self) -> None:
         print("AdjRow")
-        for key, value in self.row.items():
+        for key, value in enumerate(self.row):
             print(f"{key} = {value}")
 
 
@@ -121,11 +121,23 @@ class BarabasiAgent:
         self.amount.print()
 
 
+class InhomogeneousAgent:
+    def __init__(self, name: str, amounts: List[AgentAmount]):
+        self.name = name
+        self.amounts = amounts
+
+    def print(self) -> None:
+        print(f"InhomogeneousAgent name = {self.name}")
+        for amount in self.amounts:
+            amount.print()
+
+
 class Graph:
     def __init__(self):
         self.size = None
         self.scale = None
         self.m_params = None
+        self.order = None
 
     def set_size(self, size: int) -> None:
         self.size = size
@@ -133,13 +145,19 @@ class Graph:
     def is_size_defined(self) -> bool:
         return self.size is not None
 
+    def set_order(self, order: List[str]) -> None:
+        self.order = order
+
+    def is_order_defined(self) -> bool:
+        return self.order is not None
+
     def set_scale(self, scale: int) -> None:
         self.scale = scale
 
     def is_scale_defined(self) -> bool:
         return self.scale is not None
 
-    def set_m(self, m: Tuple(int, int)) -> None:
+    def set_m(self, m: Tuple[int, int]) -> None:
         self.m_params = MParameters(*m)
 
     def is_m_defined(self) -> bool:
@@ -203,7 +221,7 @@ class BarabasiGraph(Graph):
 class MatrixGraph(Graph):
     def __init__(self):
         super().__init__()
-        self.agents = []
+        self.agents: List[MatrixAgent] = []
 
     def add_agent(self, graph_agent: MatrixAgent) -> None:
         self.agents.append(graph_agent)
@@ -220,5 +238,35 @@ class MatrixGraph(Graph):
     def print(self) -> None:
         super().print()
         print("MatrixGraph")
+        for agent in self.agents:
+            agent.print()
+
+
+class InhomogenousRandomGraph(Graph):
+    def __init__(self):
+        super().__init__()
+        self.agents: Dict[str, InhomogeneousAgent] = {}
+        self.order: List[str] = []
+
+    def add_agent(self, graph_agent: InhomogeneousAgent) -> None:
+        self.agents[graph_agent.name] = graph_agent
+
+    def is_agent_defined(self, agent_type: str) -> bool:
+        return agent_type in self.agents
+
+    def is_agent_percent_amount_used(self) -> bool:
+        for agent in self.agents.values():
+            if any(
+                agent.amounts, lambda amount: isinstance(amount, AgentPercentAmount)
+            ):
+                return True
+        return False
+
+    def is_order_defined(self) -> bool:
+        return len(self.order) > 0
+
+    def print(self) -> None:
+        super().print()
+        print("InhomogenousRandomGraph")
         for agent in self.agents.values():
             agent.print()
