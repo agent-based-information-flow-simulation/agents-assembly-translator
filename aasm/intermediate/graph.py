@@ -122,9 +122,15 @@ class BarabasiAgent:
 
 
 class InhomogeneousAgent:
-    def __init__(self, name: str, amounts: List[AgentAmount]):
+    def __init__(
+        self,
+        name: str,
+        amount: AgentConstantAmount,
+        conn_amounts: List[ConnectionConstantAmount],
+    ):
         self.name = name
-        self.amounts = amounts
+        self.amount = amount
+        self.amounts = conn_amounts
 
     def print(self) -> None:
         print(f"InhomogeneousAgent name = {self.name}")

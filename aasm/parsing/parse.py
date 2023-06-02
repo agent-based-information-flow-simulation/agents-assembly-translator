@@ -34,8 +34,8 @@ from aasm.parsing.op.set import op_SET
 from aasm.parsing.op.size import op_SIZE
 from aasm.parsing.op.mparams import op_MPARAMS
 from aasm.parsing.op.subs import op_SUBS
+from aasm.parsing.op.deftype import op_DEFTYPE
 from aasm.parsing.state import State
-from aasm.parsing.op.order import op_ORDER
 
 if TYPE_CHECKING:
     from aasm.parsing.state import ParsedData
@@ -152,9 +152,6 @@ def parse_lines(lines: List[str], debug: bool) -> ParsedData:
             case ["SCALE", scale]:
                 op_SCALE(state, scale)
 
-            case ["ORDER", *order]:
-                op_ORDER(state, order)
-
             case ["MPARAMS", m0, m_inc]:
                 op_MPARAMS(state, m0, m_inc)
 
@@ -163,6 +160,9 @@ def parse_lines(lines: List[str], debug: bool) -> ParsedData:
 
             case ["DEFNODE", agent_name, row]:
                 op_DEFNODE(state, agent_name, row)
+
+            case ["DEFTYPE", agent_type, amount, *args]:
+                op_DEFTYPE(state, agent_type, amount, args)
 
             case ["LR", dst, list_, idx]:
                 op_LR(state, dst, list_, idx)
