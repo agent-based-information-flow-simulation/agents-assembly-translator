@@ -35,6 +35,7 @@ from aasm.parsing.op.size import op_SIZE
 from aasm.parsing.op.mparams import op_MPARAMS
 from aasm.parsing.op.subs import op_SUBS
 from aasm.parsing.op.deftype import op_DEFTYPE
+from aasm.parsing.op.types import op_TYPES
 from aasm.parsing.state import State
 
 if TYPE_CHECKING:
@@ -163,6 +164,9 @@ def parse_lines(lines: List[str], debug: bool) -> ParsedData:
 
             case ["DEFTYPE", agent_type, amount, *args]:
                 op_DEFTYPE(state, agent_type, amount, args)
+
+            case ["TYPES", amount]:
+                op_TYPES(state, amount)
 
             case ["LR", dst, list_, idx]:
                 op_LR(state, dst, list_, idx)

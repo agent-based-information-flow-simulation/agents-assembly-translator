@@ -54,8 +54,8 @@ def op_EGRAPH(state: State) -> None:
     )
     if (
         isinstance(state.last_graph, StatisticalGraph)
-        and state.last_graph.is_agent_percent_amount_used()
-    ) or (isinstance(state.last_graph, InhomogenousRandomGraph)):
+        or isinstance(state.last_graph, InhomogenousRandomGraph)
+    ) and state.last_graph.is_agent_percent_amount_used():
         state.require(
             state.last_graph.is_size_defined(),
             "Graph size is not defined.",

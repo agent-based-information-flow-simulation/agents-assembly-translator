@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Callable
 
 
 class MParameters:
@@ -141,9 +141,6 @@ class InhomogeneousAgent:
 class Graph:
     def __init__(self):
         self.size = None
-        self.scale = None
-        self.m_params = None
-        self.order = None
 
     def set_size(self, size: int) -> None:
         self.size = size
@@ -151,23 +148,29 @@ class Graph:
     def is_size_defined(self) -> bool:
         return self.size is not None
 
-    def set_order(self, order: List[str]) -> None:
-        self.order = order
+    def is_types_amount_defined(self) -> bool:
+        return False
 
-    def is_order_defined(self) -> bool:
-        return self.order is not None
+    def is_agent_defined(self, agent_type: str) -> bool:
+        return False
+
+    def set_types_amount(self, types_no: int) -> None:
+        raise NotImplementedError()
+
+    def get_types_amount(self) -> int:
+        raise NotImplementedError()
 
     def set_scale(self, scale: int) -> None:
-        self.scale = scale
+        raise NotImplementedError()
 
     def is_scale_defined(self) -> bool:
-        return self.scale is not None
+        return False
 
     def set_m(self, m: Tuple[int, int]) -> None:
-        self.m_params = MParameters(*m)
+        raise NotImplementedError()
 
     def is_m_defined(self) -> bool:
-        return self.m_params is not None
+        return False
 
     def add_agent(self, graph_agent: Any) -> None:
         raise NotImplementedError()
@@ -204,6 +207,7 @@ class BarabasiGraph(Graph):
     def __init__(self):
         super().__init__()
         self.agents: Dict[str, BarabasiAgent] = {}
+        self.m_params = None
 
     def add_agent(self, graph_agent: BarabasiAgent) -> None:
         self.agents[graph_agent.name] = graph_agent
@@ -217,6 +221,12 @@ class BarabasiGraph(Graph):
                 return True
         return False
 
+    def set_m(self, m: Tuple[int, int]) -> None:
+        self.m_params = MParameters(*m)
+
+    def is_m_defined(self) -> bool:
+        return self.m_params is not None
+
     def print(self) -> None:
         super().print()
         print("BarabasiGraph")
@@ -228,12 +238,16 @@ class MatrixGraph(Graph):
     def __init__(self):
         super().__init__()
         self.agents: List[MatrixAgent] = []
+        self.scale = None
 
     def add_agent(self, graph_agent: MatrixAgent) -> None:
         self.agents.append(graph_agent)
 
     def is_agent_defined(self, agent_type: str) -> bool:
-        return any(self.agents, lambda agent: agent.name == agent_type)
+        check_agent: Callable[[MatrixAgent], bool] = (
+            lambda agent: agent.name == agent_type
+        )
+        return all(check_agent(agent) for agent in self.agents)
 
     def set_scale(self, scale: int) -> None:
         self.scale = scale
@@ -253,6 +267,7 @@ class InhomogenousRandomGraph(Graph):
         super().__init__()
         self.agents: Dict[str, InhomogeneousAgent] = {}
         self.order: List[str] = []
+        self.types_no = None
 
     def add_agent(self, graph_agent: InhomogeneousAgent) -> None:
         self.agents[graph_agent.name] = graph_agent
@@ -261,12 +276,23 @@ class InhomogenousRandomGraph(Graph):
         return agent_type in self.agents
 
     def is_agent_percent_amount_used(self) -> bool:
-        for agent in self.agents.values():
-            if any(
-                agent.amounts, lambda amount: isinstance(amount, AgentPercentAmount)
-            ):
-                return True
+        check_agent: Callable[[InhomogeneousAgent], bool] = lambda amount: isinstance(
+            amount, AgentPercentAmount
+        )
+        if any(check_agent(agent) for agent in self.agents.values()):
+            return True
         return False
+
+    def is_types_amount_defined(self) -> bool:
+        return self.types_no is not None
+
+    def set_types_amount(self, types_no: int) -> None:
+        self.types_no = types_no
+
+    def get_types_amount(self) -> int:
+        if self.types_no is None:
+            raise ValueError("Types amount is not defined")
+        return self.types_no
 
     def is_order_defined(self) -> bool:
         return len(self.order) > 0

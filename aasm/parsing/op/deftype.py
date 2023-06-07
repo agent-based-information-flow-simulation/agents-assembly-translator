@@ -30,10 +30,19 @@ def op_DEFTYPE(
         "DEFTYPE can be used only in irg graphs.",
         "Define irg graphs with GRAPH irg.",
     )
+    state.require(
+        state.last_graph.is_types_amount_defined(),
+        "The amount of types is not defined.",
+        "Define the amount of types using TYPES.",
+    )
     agent_amount: AgentConstantAmount | None = None
     state.require(is_int(amount), f"{amount} is not a valid integer.")
     agent_amount = AgentConstantAmount(amount)
     connection_amounts: List[ConnectionConstantAmount] = []
+    state.require(
+        len(conn_amounts) == state.last_graph.get_types_amount(),
+        f"Amount of connection amounts ({len(conn_amounts)}) does not match the amount of types ({state.last_graph.get_types_amount()}).",
+    )
     for conn_amount in conn_amounts:
         state.require(
             is_float(conn_amount), f"{conn_amount} is not a valid floating number."

@@ -14,6 +14,7 @@ from aasm.intermediate.graph import (
     MatrixGraph,
     StatisticalGraph,
     BarabasiGraph,
+    InhomogenousRandomGraph,
 )
 
 if TYPE_CHECKING:
@@ -43,6 +44,9 @@ class PythonGraph(PythonCode):
 
             case BarabasiGraph():
                 self.add_barabasi_graph(graph)
+
+            case InhomogenousRandomGraph():
+                self.add_irg_graph(graph)
 
             case _:
                 raise Exception(f"Unknown graph type: {graph.print()}")
@@ -216,8 +220,9 @@ class PythonGraph(PythonCode):
         self.add_line("random.shuffle(agent_types)")
 
         self.add_line("random_id = str(uuid.uuid4())[:5]")
-        self.add_line(f"m0 = {graph.m_params.m0}")
-        self.add_line(f"m = {graph.m_params.m_inc}")
+        if graph.m_params is not None:
+            self.add_line(f"m0 = {graph.m_params.m0}")
+            self.add_line(f"m = {graph.m_params.m_inc}")
         self.add_line('jids = [f"{i}_{random_id}@{domain}" for i in range(num_agents)]')
         # self.add_line("agents = []")
         self.add_line("connection_lists = []")
@@ -263,3 +268,6 @@ class PythonGraph(PythonCode):
         self.indent_left()
         self.add_line("return agents")
         self.indent_left()
+
+    def add_irg_graph(self, graph: InhomogenousRandomGraph):
+        return "{}"
