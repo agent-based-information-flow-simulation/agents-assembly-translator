@@ -18,6 +18,7 @@ from aasm.parsing.op.graph import op_EGRAPH, op_GRAPH
 from aasm.parsing.op.len import op_LEN
 from aasm.parsing.op.list_inclusion import handle_list_inclusion
 from aasm.parsing.op.list_modification import handle_list_modification
+from aasm.parsing.op.logs import op_LOGS
 from aasm.parsing.op.lr import op_LR
 from aasm.parsing.op.lw import op_LW
 from aasm.parsing.op.math import handle_math_statement
@@ -173,6 +174,9 @@ def parse_lines(lines: List[str], debug: bool) -> ParsedData:
 
             case ["LW", list_, idx, value]:
                 op_LW(state, list_, idx, value)
+
+            case ["LOGS", level, *args]:
+                op_LOGS(state, level, args)
 
             case _:
                 state.panic(f"Unknown tokens: {tokens}")

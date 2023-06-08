@@ -264,6 +264,8 @@ Types:
 
 `.` (`msg.prm`) - Allows to access the value of `prm` from `msg`.
 
+`LOGS level: {debug, info, warning, error, critical}, name0: Any, name1: Any, ...` - Logs a message with specified `level` and `name0`, `name1`, ... as arguments.
+
 ## Message Scope <a name = "message-scope"></a>
 
 ### Parameters <a name = "message-scope-parameters"></a>

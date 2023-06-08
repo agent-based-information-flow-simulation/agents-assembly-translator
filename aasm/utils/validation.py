@@ -60,11 +60,11 @@ def get_invalid_names() -> List[str]:
         "spade",
         "copy",
         "uuid",
+        "inspect",
         "get_json_from_spade_message",
         "get_spade_message",
         "logger",
         "any",
-        "sys",
         "limit_number",
         "int",
         "BackupBehaviour",
@@ -79,3 +79,11 @@ def get_invalid_names() -> List[str]:
 
 def print_invalid_names() -> str:
     return ", ".join(get_invalid_names())
+
+
+def get_valid_logs_levels() -> List[str]:
+    return ["debug", "info", "warning", "error", "critical"]
+
+
+def print_valid_logs_levels() -> str:
+    return ", ".join(get_valid_logs_levels())

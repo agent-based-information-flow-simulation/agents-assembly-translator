@@ -100,11 +100,21 @@ class Literal(ArgumentType):
 class Argument:
     """Doesn't panic. Use in the action context."""
 
-    def __init__(self, state: State, expr: str):
+    def __init__(self, state: State, expr: str, set_types: bool = True):
         self.expr: str = expr
         self.types: TypingList[ArgumentType] = []
         self.type_in_op: ArgumentType | None = None
-        self.set_types(state)
+        if set_types:
+            self.set_types(state)
+
+    def create_all_possible_types(self, state: State) -> TypingList[Argument]:
+        possible_types: TypingList[Argument] = []
+        for type_ in self.types:
+            possible_type = Argument(state, self.expr, set_types=False)
+            possible_type.types = [type_]
+            possible_type.type_in_op = type_
+            possible_types.append(possible_type)
+        return possible_types
 
     def set_types(self, state: State) -> None:
         self.check_agent_params(state)
@@ -120,6 +130,9 @@ class Argument:
 
         elif self.expr in state.last_agent.RESERVED_CONNECTION_LIST_PARAMS:
             self.types.append(self.compose(List, ConnectionList, AgentParam, Mutable))
+
+        elif self.expr in state.last_agent.RESERVED_CONNECTION_PARAMS:
+            self.types.append(self.compose(Connection, AgentParam, Immutable))
 
         elif self.expr in state.last_agent.float_param_names:
             self.types.append(self.compose(Float, AgentParam, Mutable))
@@ -514,10 +527,11 @@ class Argument:
         types += " ]"
         return types
 
+    def explain_type_in_op(self) -> str:
+        return type(self.type_in_op).__name__ if self.type_in_op else "UNKNOWN"
+
     def print(self) -> None:
         print(f"Argument {self.expr}")
-        print(
-            f"Type in op: {type(self.type_in_op).__name__ if self.type_in_op else 'UNKNOWN'}"
-        )
+        print(f"Type in op: {self.explain_type_in_op()}")
         for argument_type in self.types:
             type(argument_type).__name__

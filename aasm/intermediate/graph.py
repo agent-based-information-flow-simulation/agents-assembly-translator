@@ -80,6 +80,7 @@ class ConnectionDistUniformAmount(ConnectionAmount):
 
 
 class AdjRow:
+    # TODO 0d78038d: import List from typing
     def __init__(self, row: List[int]):
         self.row = row
 

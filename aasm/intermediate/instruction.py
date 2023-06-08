@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import List as TypingList
 
 if TYPE_CHECKING:
     from aasm.intermediate.argument import Argument
@@ -431,3 +432,58 @@ class Modulo(Instruction):
         self.dst.print()
         self.dividend.print()
         self.divisor.print()
+
+
+class Logs(Instruction):
+    def __init__(self, args: TypingList[Argument]):
+        self.args = args
+
+    def print(self) -> None:
+        print("Logs")
+        for arg in self.args:
+            arg.print()
+
+
+class LogsDebug(Logs):
+    def __init__(self, args: TypingList[Argument]):
+        super().__init__(args=args)
+
+    def print(self) -> None:
+        print("LogsDebug")
+        super().print()
+
+
+class LogsInfo(Logs):
+    def __init__(self, args: TypingList[Argument]):
+        super().__init__(args=args)
+
+    def print(self) -> None:
+        print("LogsInfo")
+        super().print()
+
+
+class LogsWarning(Logs):
+    def __init__(self, args: TypingList[Argument]):
+        super().__init__(args=args)
+
+    def print(self) -> None:
+        print("LogsWarning")
+        super().print()
+
+
+class LogsError(Logs):
+    def __init__(self, args: TypingList[Argument]):
+        super().__init__(args=args)
+
+    def print(self) -> None:
+        print("LogsError")
+        super().print()
+
+
+class LogsCritical(Logs):
+    def __init__(self, args: TypingList[Argument]):
+        super().__init__(args=args)
+
+    def print(self) -> None:
+        print("LogsCritical")
+        super().print()

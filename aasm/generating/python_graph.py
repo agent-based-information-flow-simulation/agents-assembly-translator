@@ -208,6 +208,7 @@ class PythonGraph(PythonCode):
         self.add_line("agents.append({")
         self.indent_right()
         self.add_line('"jid": jid,')
+        # TODO fa3d7007: fix unbound variable
         self.add_line(f'"type": "{agent.name}",')
         self.add_line('"connections": connections,')
         self.indent_left()
