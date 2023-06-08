@@ -1,18 +1,18 @@
 # Version 0.0.58
 
-- [ ] Add Barabasi-Albert graph generation
-- [ ] Add generalized random graph generation
+- [x] Add Barabasi-Albert graph generation
+- [x] Add generalized random graph generation
 - [x] Add a reference to self agent jid
 - [ ] Add uuid module (+ModuleVar)
 - [x] Add log instruction
 - [x] Optimize spade instance backup mechanism
 - [ ] Add tests
 - [x] Import only required Python modules
-- [ ] TODO 7a4a78ed -- aasm/generating/python_code.py
+- [x] TODO 7a4a78ed -- aasm/generating/python_code.py
 - [ ] TODO fa3d7007 -- aasm/generating/python_graph.py
-- [ ] TODO 0d78038d -- aasm/intermediate/graph.py
-- [ ] TODO dfa11b53 -- aasm/intermediate/graph.py
-- [ ] TODO b9750a60 -- aasm/intermediate/graph.py
+- [x] TODO 0d78038d -- aasm/intermediate/graph.py
+- [x] TODO dfa11b53 -- aasm/intermediate/graph.py
+- [x] TODO b9750a60 -- aasm/intermediate/graph.py
 - [ ] Add remaining assignment operators
 - [ ] Add simulation id to agent
 - [ ] Standardize logging format

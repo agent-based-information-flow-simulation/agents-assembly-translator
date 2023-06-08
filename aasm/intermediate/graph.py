@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Tuple, Callable
+from typing import Any, Dict, List, Tuple, Callable, List
 
 
 class MParameters:
@@ -80,7 +80,6 @@ class ConnectionDistUniformAmount(ConnectionAmount):
 
 
 class AdjRow:
-    # TODO 0d78038d: import List from typing
     def __init__(self, row: List[int]):
         self.row = row
 
