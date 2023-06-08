@@ -179,12 +179,16 @@ class PythonGraph(PythonCode):
         self.add_line("graph_size = scale_factor * n_agent_types")
         self.add_line("random_id = str(uuid.uuid4())[:5]")
         self.add_line('jids = [f"{i}_{random_id}@{domain}" for i in range(graph_size)]')
+        self.add_line("agent_types = []")
         self.add_line("agents = []")
         self.add_line("indx_sets = []")
         for agent in graph.agents:
+            self.add_line(f"agent_types.append('{agent.name}')")
             adj_indx = [True if x == 1 else False for x in agent.adj_row.row]
             adj_indx = list(compress(range(len(adj_indx)), adj_indx))
             self.add_line(f"indx_sets.append({adj_indx})")
+
+        self.add_line("agent_types = agent_types * scale_factor")
 
         self.add_line("for base_agent_index in range(n_agent_types):")
         self.indent_right()
@@ -197,7 +201,9 @@ class PythonGraph(PythonCode):
         self.indent_left()
         self.add_line("for shift in range(scale_factor):")
         self.indent_right()
-        self.add_line("jid = jids[base_agent_index + shift * n_agent_types]")
+        self.add_line("agent_idx = base_agent_index + shift * n_agent_types")
+        self.add_line("jid = jids[agent_idx]")
+        self.add_line("agent_type = agent_types[agent_idx]")
         self.add_line("connections = []")
         self.add_line("for i in indices:")
         self.indent_right()
@@ -208,8 +214,7 @@ class PythonGraph(PythonCode):
         self.add_line("agents.append({")
         self.indent_right()
         self.add_line('"jid": jid,')
-        # FIX: fa3d7007: fix unbound variable
-        self.add_line(f'"type": "{agent.name}",')
+        self.add_line(f'"type": agent_type,')
         self.add_line('"connections": connections,')
         self.indent_left()
         self.add_line("})")

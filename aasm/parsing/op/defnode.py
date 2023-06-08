@@ -11,10 +11,6 @@ if TYPE_CHECKING:
 def op_DEFNODE(state: State, agent_name: str, agent_row: str) -> None:
     state.require(state.agent_exists(agent_name), f"Agent {agent_name} is not defined.")
     state.require(
-        not state.last_graph.is_agent_defined(agent_name),
-        f"Agent {agent_name} is already defined.",
-    )
-    state.require(
         state.in_graph,
         "Cannot define agent node outside of graph scope.",
         "Try defining new graph using GRAPH.",

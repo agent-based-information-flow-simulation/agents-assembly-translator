@@ -9,7 +9,7 @@
 - [ ] Add tests
 - [x] Import only required Python modules
 - [x] TODO 7a4a78ed -- aasm/generating/python_code.py
-- [ ] TODO fa3d7007 -- aasm/generating/python_graph.py
+- [x] TODO fa3d7007 -- aasm/generating/python_graph.py
 - [x] TODO 0d78038d -- aasm/intermediate/graph.py
 - [x] TODO dfa11b53 -- aasm/intermediate/graph.py
 - [x] TODO b9750a60 -- aasm/intermediate/graph.py
