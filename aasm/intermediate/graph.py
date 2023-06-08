@@ -266,10 +266,11 @@ class InhomogenousRandomGraph(Graph):
     def __init__(self):
         super().__init__()
         self.agents: Dict[str, InhomogeneousAgent] = {}
-        self.order: List[str] = []
         self.types_no = None
+        self.order: list[str] = []
 
     def add_agent(self, graph_agent: InhomogeneousAgent) -> None:
+        self.order.append(graph_agent.name)
         self.agents[graph_agent.name] = graph_agent
 
     def is_agent_defined(self, agent_type: str) -> bool:
@@ -293,9 +294,6 @@ class InhomogenousRandomGraph(Graph):
         if self.types_no is None:
             raise ValueError("Types amount is not defined")
         return self.types_no
-
-    def is_order_defined(self) -> bool:
-        return len(self.order) > 0
 
     def print(self) -> None:
         super().print()

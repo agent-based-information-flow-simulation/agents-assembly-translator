@@ -27,7 +27,42 @@ class PythonGraph(PythonCode):
         if graph:
             self.add_required_imports()
             self.add_newlines(2)
+            self.add_class_definitions()
+            self.add_newlines(2)
             self.generate_graph(graph)
+
+    def add_class_definitions(self):
+        self.add_line("class Agent:")
+        self.indent_right()
+        self.add_line("def __init__(self, jid: str, type: str, connections = None):")
+        self.indent_right()
+        self.add_line("self.jid = jid")
+        self.add_line("self.type = type")
+        self.add_line("if connections is not None:")
+        self.indent_right()
+        self.add_line("self.connections = connections")
+        self.indent_left()
+        self.add_line("else:")
+        self.indent_right()
+        self.add_line("self.connections = []")
+        self.indent_left()
+        self.indent_left()
+        self.add_newline()
+        self.add_line("def add_connection(self, connection: str):")
+        self.indent_right()
+        self.add_line("self.connections.append(connection)")
+        self.indent_left()
+        self.add_line("def to_dict(self):")
+        self.indent_right()
+        self.add_line("return {")
+        self.indent_right()
+        self.add_line("'jid': self.jid,")
+        self.add_line("'type': self.type,")
+        self.add_line("'connections': self.connections")
+        self.add_line("}")
+        self.indent_left()
+        self.indent_left()
+        self.indent_left()
 
     def add_required_imports(self) -> None:
         self.add_line("import random")
@@ -59,7 +94,6 @@ class PythonGraph(PythonCode):
             self.add_line("return []")
             self.indent_left()
             return
-        # move to a function
         num_agents_expr: List[str] = []
         for agent in graph.agents.values():
             match agent.amount:
@@ -195,7 +229,6 @@ class PythonGraph(PythonCode):
 
         self.add_line(f"agent_types = []")
 
-        # move to a function
         num_agents_expr: List[str] = []
         for agent in graph.agents.values():
             match agent.amount:
@@ -270,4 +303,60 @@ class PythonGraph(PythonCode):
         self.indent_left()
 
     def add_irg_graph(self, graph: InhomogenousRandomGraph):
-        return "{}"
+        self.add_line("def generate_graph_structure(domain):")
+        self.indent_right()
+        if not graph.agents:
+            self.add_line("return []")
+            self.indent_left()
+            return
+        self.add_line("agent_types = []")
+        self.add_line("probo_matrix = {}")
+        num_agents_expr: List[str] = []
+        for agent in graph.agents.values():
+            self.add_line(f"probo_matrix['{agent.name}'] = []")
+            for probo in agent.amounts:
+                self.add_line(f"probo_matrix['{agent.name}'].append({probo.value})")
+            match agent.amount:
+                case AgentConstantAmount():
+                    self.add_line(f"_num_{agent.name} = {agent.amount.value}")
+
+                case AgentPercentAmount():
+                    self.add_line(
+                        f"_num_{agent.name} = round({agent.amount.value} / 100 * {graph.size})"
+                    )
+
+                case _:
+                    raise Exception(
+                        f"Unknown agent amount type: {agent.amount.print()}"
+                    )
+
+            num_agents_expr.append(f"_num_{agent.name}")
+            self.add_line(f"tmp = ['{agent.name}'] * _num_{agent.name}")
+            self.add_line("agent_types.extend(tmp)")
+
+        self.add_line(f'num_agents = {" + ".join(num_agents_expr)}')
+        self.add_line("random_id = str(uuid.uuid4())[:5]")
+        self.add_line('jids = [f"{i}_{random_id}@{domain}" for i in range(num_agents)]')
+        self.add_line(f"order = {graph.order}")
+        self.add_line("agents = []")
+        self.add_line("for i in range(num_agents):")
+        self.indent_right()
+        self.add_line("agents.append(Agent(jids[i], agent_types[i]))")
+        self.indent_left()
+        self.add_line("for agent in agents:")
+        self.indent_right()
+        self.add_line("for agent2 in agents:")
+        self.indent_right()
+        self.add_line("if agent != agent2:")
+        self.indent_right()
+        self.add_line("conn_index = order.index(agent2.type)")
+        self.add_line("probo = probo_matrix[agent.type][conn_index]")
+        self.add_line("if random.random() * 100 < probo:")
+        self.indent_right()
+        self.add_line("agent.add_connection(agent2.jid)")
+        self.indent_left()
+        self.indent_left()
+        self.indent_left()
+        self.indent_left()
+        self.add_line("return [agent.to_dict() for agent in agents]")
+        self.indent_left()
