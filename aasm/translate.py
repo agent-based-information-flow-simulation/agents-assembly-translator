@@ -56,7 +56,9 @@ def main(input_path: str, output_path: str, debug: bool, includes: List[str]) ->
         for module in loaded_modules:
             if "spade" in module.targets:
                 spade_modules.append(module)
-        spade_code = get_spade_code(lines, indent_size=4, debug=debug)
+        spade_code = get_spade_code(
+            lines, indent_size=4, debug=debug, modules=spade_modules
+        )
     except PanicException as e:
         e.print()
         exit(1)

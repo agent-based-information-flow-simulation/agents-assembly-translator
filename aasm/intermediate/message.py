@@ -38,6 +38,15 @@ class ConnectionParam(MessageParam):
         super().print()
 
 
+class ModuleVariableParam(MessageParam):
+    def __init__(self, name: str):
+        super().__init__(name)
+
+    def print(self) -> None:
+        print(f"MessageModuleVariableParam")
+        super().print()
+
+
 class Message:
     RESERVED_CONNECTION_PARAMS = ["sender"]
     RESERVED_TYPE_PARAMS = ["type", "performative"]
@@ -47,6 +56,7 @@ class Message:
         self.performative: str = msg_performative
         self.float_params: Dict[str, FloatParam] = {}
         self.connection_params: Dict[str, MessageParam] = {}
+        self.module_variable_params: Dict[str, MessageParam] = {}
 
     @property
     def param_names(self) -> List[str]:
@@ -55,6 +65,7 @@ class Message:
             *Message.RESERVED_TYPE_PARAMS,
             *list(self.float_params),
             *list(self.connection_params),
+            *list(self.module_variable_params),
         ]
 
     @property
@@ -69,6 +80,10 @@ class Message:
             if not connection_param.is_value_set:
                 unset_params.append(name)
 
+        for name, module_variable_param in self.module_variable_params.items():
+            if not module_variable_param.is_value_set:
+                unset_params.append(name)
+
         return unset_params
 
     def are_all_params_set(self) -> bool:
@@ -77,6 +92,10 @@ class Message:
             + [
                 connection_param.is_value_set
                 for connection_param in self.connection_params.values()
+            ]
+            + [
+                module_variable_param.is_value_set
+                for module_variable_param in self.module_variable_params.values()
             ]
         )
 
@@ -89,9 +108,14 @@ class Message:
     def add_connection(self, connection_param: ConnectionParam) -> None:
         self.connection_params[connection_param.name] = connection_param
 
+    def add_module_variable(self, module_variable_param: ModuleVariableParam) -> None:
+        self.module_variable_params[module_variable_param.name] = module_variable_param
+
     def print(self) -> None:
         print(f"Message {self.type}/{self.performative}")
         for float_param in self.float_params.values():
             float_param.print()
         for connection_param in self.connection_params.values():
             connection_param.print()
+        for module_variable_param in self.module_variable_params.values():
+            module_variable_param.print()

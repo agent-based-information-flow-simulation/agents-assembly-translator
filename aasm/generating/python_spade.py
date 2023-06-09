@@ -112,6 +112,8 @@ def get_spade_code(
     PanicException
         If an error is detected while parsing the `aasm_lines`.
     """
+    if modules is None:
+        modules = []
     parsed = parse_lines(aasm_lines, debug, modules)
     return Code(
         PythonSpadeCode(indent_size, parsed.agents).code_lines,
