@@ -4,13 +4,14 @@ from typing import List
 
 
 class Instruction:
-    def __init__(self, identifier: str, args: List[str]):
-        self.identifier = identifier
+    def __init__(self, opcode: str, args: List[str]):
+        self.opcode = opcode
         self.args = args
 
 
 class Module:
     def __init__(self, module_code_lines: List[str]):
+        self.name = None
         self.targets = []
         self.instructions = []
         self.preambles = {}
@@ -24,6 +25,8 @@ class Module:
         self._current_instruction = None
 
         self._parse_module_code(module_code_lines)
+        # TODO: validate module -- check that all instructions are implemented for all targets, has a name etc.
+        # self._validate_module()
 
     def _reset_scope(self):
         self._in_targets = False
@@ -37,6 +40,8 @@ class Module:
         for line in lines:
             tokens = line.strip().split()
             match tokens:
+                case ["%name", name]:
+                    self.name = name
                 case ["%targets"]:
                     self._reset_scope()
                     self._in_targets = True
@@ -53,6 +58,7 @@ class Module:
                     self._current_target = target
                     self._current_instruction = instruction
                 case _:
+                    # FIX: change to PanicException
                     if len(tokens) == 0:
                         continue
                     elif self._in_targets:
@@ -84,7 +90,7 @@ class Module:
 
     def __repr__(self):
         return (
-            "Module("
+            f"Module[{self.name}] ("
             + repr(self.targets)
             + ", "
             + repr(self.instructions)
@@ -97,7 +103,7 @@ class Module:
 
     def __str__(self):
         return (
-            "Module("
+            f"Module[{self.name}] ("
             + str(self.targets)
             + ", "
             + str(self.instructions)

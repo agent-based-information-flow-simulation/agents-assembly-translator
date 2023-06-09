@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from aasm.intermediate.behaviour import Behaviour
     from aasm.intermediate.graph import Graph
     from aasm.intermediate.message import Message
+    from aasm.intermediate.module import Module
 
 
 class ParsedData:
@@ -38,6 +39,7 @@ class State:
         self.agents: Dict[str, Agent] = {}
         self.messages: Dict[Tuple[str, str], Message] = {}
         self.graph: Graph | None = None
+        self.modules: Dict[str, Module] = {}
 
     @property
     def last_agent(self) -> Agent:
@@ -70,6 +72,9 @@ class State:
     def add_graph(self, graph: Graph) -> None:
         self.graph = graph
 
+    def add_module(self, module: Module) -> None:
+        self.modules[module.name] = module
+
     def agent_exists(self, name: str) -> bool:
         return name in self.agents
 
@@ -78,6 +83,9 @@ class State:
 
     def graph_exists(self) -> bool:
         return self.graph is not None
+
+    def module_exists(self, name: str) -> bool:
+        return name in self.modules
 
     def get_message_instance(self, msg_type: str, msg_performative: str) -> Message:
         return deepcopy(self.messages[(msg_type, msg_performative)])

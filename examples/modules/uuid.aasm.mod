@@ -1,3 +1,5 @@
+%name UUID
+
 %targets
 spade
 
@@ -8,6 +10,4 @@ GETUUID ModVar
 import uuid
 
 %impl GETUUID spade
-ModVar = str(uuid.uuid4())
-
-
+$1 = str(uuid.uuid4())

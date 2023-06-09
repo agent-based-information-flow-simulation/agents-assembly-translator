@@ -40,13 +40,22 @@ def save_output(output_path: str, code: Code) -> None:
 
 def main(input_path: str, output_path: str, debug: bool, includes: List[str]) -> None:
     loaded_modules = []
-    for include in includes:
-        loaded_modules.append(Module(get_input(include)))
+    try:
+        for include in includes:
+            loaded_modules.append(Module(get_input(include)))
+    except PanicException as e:
+        e.print()
+        exit(1)
+
     lines = get_input(input_path)
     start_time = datetime.now()
     for module in loaded_modules:
         print(f'Loaded module: \n"{module}"')
     try:
+        spade_modules = []
+        for module in loaded_modules:
+            if "spade" in module.targets:
+                spade_modules.append(module)
         spade_code = get_spade_code(lines, indent_size=4, debug=debug)
     except PanicException as e:
         e.print()

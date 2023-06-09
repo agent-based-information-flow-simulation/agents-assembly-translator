@@ -78,10 +78,14 @@ if TYPE_CHECKING:
     from aasm.intermediate.argument import Argument
     from aasm.intermediate.behaviour import Behaviour
     from aasm.intermediate.message import Message as IntermediateMessage
+    from aasm.modules.module import Module
 
 
 def get_spade_code(
-    aasm_lines: List[str], indent_size: int = 4, debug: bool = False
+    aasm_lines: List[str],
+    indent_size: int = 4,
+    debug: bool = False,
+    modules: None | List[Module] = None,
 ) -> Code:
     """Generates SPADE code in Python from `aasm_lines`.
 
@@ -96,6 +100,9 @@ def get_spade_code(
     debug: bool, optional
         Print the translator debug information to the standard output
 
+    modules: List[Module], optional
+        A list of Agents Assembly Modules compatible with SPADE platform
+
     Returns
     -------
     SPADE code along with the algorithm for the graph generation
@@ -105,7 +112,7 @@ def get_spade_code(
     PanicException
         If an error is detected while parsing the `aasm_lines`.
     """
-    parsed = parse_lines(aasm_lines, debug)
+    parsed = parse_lines(aasm_lines, debug, modules)
     return Code(
         PythonSpadeCode(indent_size, parsed.agents).code_lines,
         PythonGraph(indent_size, parsed.graph).code_lines,

@@ -37,13 +37,15 @@ from aasm.parsing.op.mparams import op_MPARAMS
 from aasm.parsing.op.subs import op_SUBS
 from aasm.parsing.op.deftype import op_DEFTYPE
 from aasm.parsing.op.types import op_TYPES
+from aasm.parsing.op.module import op_MODULE
 from aasm.parsing.state import State
 
 if TYPE_CHECKING:
     from aasm.parsing.state import ParsedData
+    from aasm.modules.module import Module
 
 
-def parse_lines(lines: List[str], debug: bool) -> ParsedData:
+def parse_lines(lines: List[str], debug: bool, modules: List[Module]) -> ParsedData:
     state = State(lines, debug)
     for tokens in state.tokens_from_lines():
         match tokens:
@@ -178,7 +180,18 @@ def parse_lines(lines: List[str], debug: bool) -> ParsedData:
             case ["LOGS", level, *args]:
                 op_LOGS(state, level, args)
 
-            case _:
-                state.panic(f"Unknown tokens: {tokens}")
+            case ["MODULE", name]:
+                op_MODULE(state, name)
+
+            case [OPCODE, *args]:
+                found = False
+                for module in modules:
+                    for instruction in module.instructions:
+                        if instruction.opcode == OPCODE:
+                            found = True
+                            state.panic("THIS IS NOT A PANIC")
+                            instruction.op(state, *args)
+                if not found:
+                    state.panic(f"Unknown tokens: {tokens}")
 
     return state.get_parsed_data()

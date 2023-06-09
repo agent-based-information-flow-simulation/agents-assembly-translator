@@ -1,5 +1,8 @@
+MODULE UUID
+
 message facebook_post, query
 	prm photos, float
+	prm msg_id, modvar
 emessage
 
 agent user
@@ -20,7 +23,9 @@ agent user
 		action post_photos, send_msg, facebook_post, query
 			decl num_photos, float, 0
 			rand num_photos, int, uniform, 21, 37
+			GETUUID to_send_id
 			set send.photos, num_photos
+			set send.msg_id, to_send_id
 			send friends
 		eaction
 	ebehav
