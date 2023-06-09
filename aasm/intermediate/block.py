@@ -12,6 +12,7 @@ class Declarations:
         self,
         float_names: List[str] | None = None,
         connection_names: List[str] | None = None,
+        module_variable_names: List[str] | None = None,
     ):
         if float_names:
             self.float_names: List[str] = float_names
@@ -22,6 +23,11 @@ class Declarations:
             self.connection_names: List[str] = connection_names
         else:
             self.connection_names: List[str] = []
+
+        if module_variable_names:
+            self.module_variable_names: List[str] = module_variable_names
+        else:
+            self.module_variable_names: List[str] = []
 
     def add_float_name(self, name: str) -> None:
         self.float_names.append(name)
@@ -35,16 +41,27 @@ class Declarations:
     def is_connection_name(self, name: str) -> bool:
         return name in self.connection_names
 
+    def add_module_variable_name(self, name: str) -> None:
+        self.module_variable_names.append(name)
+
+    def is_module_variable_name(self, name: str) -> bool:
+        return name in self.module_variable_names
+
     def get_declared_names(self) -> List[str]:
-        return [*self.float_names, *self.connection_names]
+        return [*self.float_names, *self.connection_names, *self.module_variable_names]
 
     def get_copy(self) -> Declarations:
-        return Declarations(list(self.float_names), list(self.connection_names))
+        return Declarations(
+            list(self.float_names),
+            list(self.connection_names),
+            list(self.module_variable_names),
+        )
 
     def print(self) -> None:
         print("Declarations")
         print(f"float_names = {self.float_names}")
         print(f"connection_names = {self.connection_names}")
+        print(f"module_variable_names = {self.module_variable_names}")
 
 
 class Block:
@@ -66,12 +83,19 @@ class Block:
     def is_declared_connection(self, name: str) -> bool:
         return self._declarations.is_connection_name(name)
 
+    def is_declared_module_variable(self, name: str) -> bool:
+        return self._declarations.is_module_variable_name(name)
+
     def add_float_declaration(self, declaration: Declaration) -> None:
         self._declarations.add_float_name(declaration.name)
         self.statements.append(declaration)
 
     def add_connection_declaration(self, declaration: Declaration) -> None:
         self._declarations.add_connection_name(declaration.name)
+        self.statements.append(declaration)
+
+    def add_module_variable_declaration(self, declaration: Declaration) -> None:
+        self._declarations.add_module_variable_name(declaration.name)
         self.statements.append(declaration)
 
     def add_statement(self, statement: Instruction | Block) -> None:

@@ -2,11 +2,7 @@ from __future__ import annotations
 
 from typing import List
 
-
-class Instruction:
-    def __init__(self, opcode: str, args: List[str]):
-        self.opcode = opcode
-        self.args = args
+from aasm.modules.instruction import Instruction
 
 
 class Module:

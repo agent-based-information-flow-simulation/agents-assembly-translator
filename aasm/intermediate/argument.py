@@ -97,6 +97,10 @@ class Literal(ArgumentType):
     ...
 
 
+class ModuleVariable(ArgumentType):
+    ...
+
+
 class Argument:
     """Doesn't panic. Use in the action context."""
 
@@ -149,6 +153,9 @@ class Argument:
         elif self.expr in state.last_agent.float_lists:
             self.types.append(self.compose(List, FloatList, AgentParam, Mutable))
 
+        elif self.expr in state.last_agent.module_variables:
+            self.types.append(self.compose(ModuleVariable, AgentParam, Mutable))
+
         for enum_param in state.last_agent.enums.values():
             for enum_value in enum_param.enum_values:
                 if self.expr == enum_value.value:
@@ -162,6 +169,9 @@ class Argument:
 
         elif state.last_action.is_declared_connection(self.expr):
             self.types.append(self.compose(Connection, Declared, Mutable))
+
+        elif state.last_action.is_declared_module_variable(self.expr):
+            self.types.append(self.compose(ModuleVariable, Declared, Mutable))
 
     def check_numerical_values(self) -> None:
         if is_float(self.expr):
@@ -202,6 +212,13 @@ class Argument:
                         self.compose(Connection, ReceivedMessageParam, Immutable)
                     )
 
+                elif (
+                    prop in state.last_behaviour.received_message.module_variable_params
+                ):
+                    self.types.append(
+                        self.compose(ModuleVariable, ReceivedMessageParam, Immutable)
+                    )
+
             elif self.expr.lower() == "rcv":
                 self.types.append(self.compose(Message, ReceivedMessage, Immutable))
 
@@ -221,6 +238,11 @@ class Argument:
                 elif prop in state.last_action.send_message.connection_params:
                     self.types.append(
                         self.compose(Connection, SendMessageParam, Mutable)
+                    )
+
+                elif prop in state.last_action.send_message.module_variable_params:
+                    self.types.append(
+                        self.compose(ModuleVariable, SendMessageParam, Mutable)
                     )
 
             elif self.expr.lower() == "send":
