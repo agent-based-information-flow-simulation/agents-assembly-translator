@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, List
+from aasm.intermediate.argument import Argument
 
 
 if TYPE_CHECKING:
@@ -8,7 +9,8 @@ if TYPE_CHECKING:
 
 
 class Instruction:
-    def __init__(self, opcode: str, args: List[str]):
+    def __init__(self, module: str, opcode: str, args: List[str]):
+        self.module = module
         self.opcode = opcode
         self.args = args
 
@@ -23,3 +25,10 @@ class Instruction:
             f"Wrong number of arguments for {self.opcode}.",
             f"Expected {len(self.args)}, got {len(arguments)}.",
         )
+
+        print(self.args)
+
+        parsed_args = [Argument(state, arg) for arg in arguments]
+
+        for arg in parsed_args:
+            arg.print()

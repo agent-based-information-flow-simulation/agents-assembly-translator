@@ -189,8 +189,8 @@ def parse_lines(lines: List[str], debug: bool, modules: List[Module]) -> ParsedD
                     for instruction in module.instructions:
                         if instruction.opcode == OPCODE:
                             found = True
+                            instruction.op(state, args)
                             state.panic("THIS IS NOT A PANIC")
-                            instruction.op(state, *args)
                 if not found:
                     state.panic(f"Unknown tokens: {tokens}")
 

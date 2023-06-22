@@ -1,13 +1,17 @@
-%name UUID
+!name UUID
 
-%targets
+!targets
 spade
 
-%instructions
-GETUUID ModVar
 
-%preamble spade
+!instructions
+GETUUID ModVar a
+ISEQ ModVar a, ModVar b
+
+!preamble spade
 import uuid
 
-%impl GETUUID spade
-$1 = str(uuid.uuid4())
+!impl GETUUID spade
+a = str(uuid.uuid4())
+
+

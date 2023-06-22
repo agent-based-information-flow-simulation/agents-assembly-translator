@@ -62,7 +62,14 @@ class Module:
                             raise Exception("Invalid target line: " + line)
                         self.targets.append(tokens[0])
                     elif self._in_instructions:
-                        self.instructions.append(Instruction(tokens[0], tokens[1:]))
+                        if self.name is None:
+                            self.instructions.append(
+                                Instruction("unknown", tokens[0], tokens[1:])
+                            )
+                        else:
+                            self.instructions.append(
+                                Instruction(self.name, tokens[0], tokens[1:])
+                            )
                     elif self._in_preamble:
                         if self._current_target is None:
                             raise Exception(
