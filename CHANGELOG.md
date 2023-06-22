@@ -15,7 +15,7 @@
 - [x] TODO b9750a60 -- aasm/intermediate/graph.py
 - [ ] Add remaining assignment operators
 - [ ] Add simulation id to agent
-- [ ] Standardize logging format
+- [ ] Standardize logging format -- make it event log compatible
 - [ ] Add optional initialization of httpx client in backup behaviour
 
 ## BACKLOG
