@@ -17,6 +17,7 @@
 - [ ] Add simulation id to agent
 - [ ] Standardize logging format -- make it event log compatible
 - [ ] Add optional initialization of httpx client in backup behaviour
+- [ ] Add str and float to reserved keywords
 
 ## BACKLOG
 - [ ] Change graph generation to types + adjacency row format?
