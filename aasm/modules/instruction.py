@@ -32,3 +32,6 @@ class Instruction:
 
         for arg in parsed_args:
             arg.print()
+
+    def __str__(self) -> str:
+        return f"{self.module}.{self.opcode}({', '.join(self.args)})"

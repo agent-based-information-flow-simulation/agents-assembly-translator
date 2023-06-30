@@ -3,10 +3,14 @@
 !targets
 spade
 
+!types
+uuid
 
 !instructions
-GETUUID ModVar a
-ISEQ ModVar a, ModVar b
+GETUUID uuid a
+
+!blocks
+ISEQ uuid a, uuid b
 
 !preamble spade
 import uuid

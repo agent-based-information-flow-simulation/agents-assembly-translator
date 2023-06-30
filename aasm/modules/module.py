@@ -3,13 +3,14 @@ from __future__ import annotations
 from typing import List
 
 from aasm.modules.instruction import Instruction
+from aasm.utils.exception import PanicException
 
 
 class Module:
     def __init__(self, module_code_lines: List[str]):
         self.name = None
-        self.targets = []
-        self.instructions = []
+        self.targets: List[str] = []
+        self.instructions: List[Instruction] = []
         self.preambles = {}
         self.impls = {}
 
@@ -36,19 +37,19 @@ class Module:
         for line in lines:
             tokens = line.strip().split()
             match tokens:
-                case ["%name", name]:
+                case ["!name", name]:
                     self.name = name
-                case ["%targets"]:
+                case ["!targets"]:
                     self._reset_scope()
                     self._in_targets = True
-                case ["%instructions"]:
+                case ["!instructions"]:
                     self._reset_scope()
                     self._in_instructions = True
-                case ["%preamble", target]:
+                case ["!preamble", target]:
                     self._reset_scope()
                     self._in_preamble = True
                     self._current_target = target
-                case ["%impl", instruction, target]:
+                case ["!impl", instruction, target]:
                     self._reset_scope()
                     self._in_impl = True
                     self._current_target = target
@@ -57,14 +58,28 @@ class Module:
                     # FIX: change to PanicException
                     if len(tokens) == 0:
                         continue
+                    elif tokens[0].startswith("#"):
+                        continue
+                    elif tokens[0].startswith("!"):
+                        raise PanicException(
+                            "Invalid line: " + line,
+                            "Unkown module directive",
+                            "Only module directives can start with !",
+                        )
                     elif self._in_targets:
                         if len(tokens) != 1:
-                            raise Exception("Invalid target line: " + line)
+                            raise PanicException(
+                                "Invalid target line: " + line,
+                                "Multiple tokens in target line",
+                                "Target lines must have exactly one token: e.g. spade",
+                            )
                         self.targets.append(tokens[0])
                     elif self._in_instructions:
                         if self.name is None:
-                            self.instructions.append(
-                                Instruction("unknown", tokens[0], tokens[1:])
+                            raise PanicException(
+                                "Invalid instruction line: " + line,
+                                "Module name is undefined",
+                                "Module name must be defined before instructions. Define module name with !name [name]",
                             )
                         else:
                             self.instructions.append(
@@ -72,24 +87,34 @@ class Module:
                             )
                     elif self._in_preamble:
                         if self._current_target is None:
-                            raise Exception(
-                                "Invalid preamble line: Target is undefined: " + line
+                            raise PanicException(
+                                "Invalid preamble line: Target is undefined: " + line,
+                                "Target is undefined",
+                                "Target must be defined before preamble. Define target with !preamble [target]",
                             )
                         self.preambles.setdefault(self._current_target, []).append(line)
                     elif self._in_impl:
                         if self._current_target is None:
-                            raise Exception(
-                                "Invalid impl line: Target is undefined: " + line
+                            raise PanicException(
+                                "Invalid impl line: Target is undefined: " + line,
+                                "Target is undefined",
+                                "Target must be defined before impl. Define target with !impl [instruction] [target]",
                             )
                         if self._current_instruction is None:
-                            raise Exception(
-                                "Invalid impl line: Instruction is undefined: " + line
+                            raise PanicException(
+                                "Invalid impl line: Instruction is undefined: " + line,
+                                "Instruction is undefined",
+                                "Instruction must be defined before impl. Define instruction with !impl [instruction] [target]",
                             )
                         self.impls.setdefault(
                             (self._current_target, self._current_instruction), []
                         ).append(line)
                     else:
-                        raise Exception("Invalid line: " + line)
+                        raise PanicException(
+                            "Invalid line: " + line,
+                            "Unkown line",
+                            "Line is not a module directive, target, instruction, preamble or impl",
+                        )
 
     def __repr__(self):
         return (
