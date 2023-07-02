@@ -7,10 +7,8 @@ spade
 uuid
 
 !instructions
-GETUUID uuid a
-
-!blocks
-ISEQ uuid a, uuid b
+GETUUID a: mut uuid
+ISEQ a: uuid, b: uuid
 
 !preamble spade
 import uuid

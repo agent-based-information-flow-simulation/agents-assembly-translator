@@ -39,12 +39,14 @@ class ConnectionParam(MessageParam):
 
 
 class ModuleVariableParam(MessageParam):
-    def __init__(self, name: str):
+    def __init__(self, name: str, type: str):
         super().__init__(name)
+        self.type: str = type
 
     def print(self) -> None:
         print(f"MessageModuleVariableParam")
         super().print()
+        print(f"Type: {self.type}")
 
 
 class Message:
@@ -56,7 +58,7 @@ class Message:
         self.performative: str = msg_performative
         self.float_params: Dict[str, FloatParam] = {}
         self.connection_params: Dict[str, MessageParam] = {}
-        self.module_variable_params: Dict[str, MessageParam] = {}
+        self.module_variable_params: Dict[str, ModuleVariableParam] = {}
 
     @property
     def param_names(self) -> List[str]:
@@ -110,6 +112,9 @@ class Message:
 
     def add_module_variable(self, module_variable_param: ModuleVariableParam) -> None:
         self.module_variable_params[module_variable_param.name] = module_variable_param
+
+    def get_module_variable_type(self, name: str) -> str:
+        return self.module_variable_params[name].type
 
     def print(self) -> None:
         print(f"Message {self.type}/{self.performative}")

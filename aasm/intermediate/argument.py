@@ -154,7 +154,9 @@ class Argument:
             self.types.append(self.compose(List, FloatList, AgentParam, Mutable))
 
         elif self.expr in state.last_agent.module_variables:
-            self.types.append(self.compose(ModuleVariable, AgentParam, Mutable))
+            subtype = state.last_agent.get_module_variable_type(self.expr)
+            new_type = type(subtype, (ModuleVariable,), {})
+            self.types.append(self.compose(new_type, AgentParam, Mutable))
 
         for enum_param in state.last_agent.enums.values():
             for enum_value in enum_param.enum_values:
@@ -171,7 +173,12 @@ class Argument:
             self.types.append(self.compose(Connection, Declared, Mutable))
 
         elif state.last_action.is_declared_module_variable(self.expr):
-            self.types.append(self.compose(ModuleVariable, Declared, Mutable))
+            try:
+                subtype = state.last_action.get_module_variable_type(self.expr)
+                new_type = type(subtype, (ModuleVariable,), {})
+                self.types.append(self.compose(new_type, Declared, Mutable))
+            except ValueError:
+                pass
 
     def check_numerical_values(self) -> None:
         if is_float(self.expr):
@@ -215,8 +222,14 @@ class Argument:
                 elif (
                     prop in state.last_behaviour.received_message.module_variable_params
                 ):
+                    subtype = (
+                        state.last_behaviour.received_message.get_module_variable_type(
+                            prop
+                        )
+                    )
+                    new_type = type(subtype, (ModuleVariable,), {})
                     self.types.append(
-                        self.compose(ModuleVariable, ReceivedMessageParam, Immutable)
+                        self.compose(new_type, ReceivedMessageParam, Immutable)
                     )
 
             elif self.expr.lower() == "rcv":
@@ -241,9 +254,11 @@ class Argument:
                     )
 
                 elif prop in state.last_action.send_message.module_variable_params:
-                    self.types.append(
-                        self.compose(ModuleVariable, SendMessageParam, Mutable)
+                    subtype = state.last_action.send_message.get_module_variable_type(
+                        prop
                     )
+                    new_type = type(subtype, (ModuleVariable,), {})
+                    self.types.append(self.compose(new_type, SendMessageParam, Mutable))
 
             elif self.expr.lower() == "send":
                 self.types.append(self.compose(Message, SendMessage, Mutable))

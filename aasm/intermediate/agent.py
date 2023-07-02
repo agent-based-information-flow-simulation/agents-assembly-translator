@@ -101,11 +101,12 @@ class FloatListParam:
 
 
 class ModuleVariableParam:
-    def __init__(self, name: str):
+    def __init__(self, name: str, type: str):
         self.name: str = name
+        self.type: str = type
 
     def print(self) -> None:
-        print(f"ModuleVariableParam {self.name}")
+        print(f"ModuleVariableParam {self.name}: {self.type}")
 
 
 class Agent:
@@ -129,6 +130,9 @@ class Agent:
         self.cyclic_behaviours: Dict[str, CyclicBehaviour] = {}
         self.message_received_behaviours: Dict[str, MessageReceivedBehaviour] = {}
         self._last_modified_behaviour: Behaviour | None = None
+
+    def get_module_variable_type(self, name):
+        return self.module_variables[name].type
 
     @property
     def last_behaviour(self) -> Behaviour:

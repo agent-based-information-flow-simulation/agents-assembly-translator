@@ -40,6 +40,9 @@ class Action:
     def is_declared_module_variable(self, name: str) -> bool:
         return self.current_block.is_declared_module_variable(name)
 
+    def get_module_variable_type(self, name: str) -> str:
+        return self.current_block.get_module_variable_type(name)
+
     def add_float_declaration(self, declaration: Declaration) -> None:
         self.current_block.add_float_declaration(declaration)
 
