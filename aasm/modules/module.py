@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List
+from typing import List, Dict, Tuple
 
 from aasm.modules.instruction import Instruction
 from aasm.modules.type import Type
@@ -25,14 +25,16 @@ class Module:
         self.targets: List[Target] = []
         self.types: List[Type] = []
         self.instructions: List[Instruction] = []
-        self.preambles = {}
-        self.impls = {}
+        self.preambles: Dict[str, List[str]] = {}
+        self.impls: Dict[Tuple[str, str], List[str]] = {}
+        self.description: List[str] = []
 
         self._in_targets = False
         self._in_instructions = False
         self._in_preamble = False
         self._in_impl = False
         self._in_types = False
+        self._in_description = False
         self._current_target = None
         self._current_instruction = None
 
@@ -49,6 +51,7 @@ class Module:
         self._in_preamble = False
         self._in_impl = False
         self._in_types = False
+        self._in_description = False
         self._current_target = None
         self._current_instruction = None
 
@@ -63,6 +66,9 @@ class Module:
                 case ["!types"]:
                     self._reset_scope()
                     self._in_types = True
+                case ["!description"]:
+                    self._reset_scope()
+                    self._in_description = True
                 case ["!targets"]:
                     self._reset_scope()
                     self._in_targets = True
@@ -149,6 +155,8 @@ class Module:
                             )
                         else:
                             self.types.append(Type(tokens[0], self.name))
+                    elif self._in_description:
+                        self.description.append(line)
                     else:
                         raise PanicException(
                             "Invalid line: " + line,
@@ -174,6 +182,8 @@ class Module:
     def __str__(self):
         return (
             f"Module[{self.name}] (\n"
+            + str(self.description)
+            + "\n"
             + str(self.targets)
             + "\n"
             + str(self.types)

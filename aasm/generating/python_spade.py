@@ -5,6 +5,8 @@ from typing import TYPE_CHECKING, List
 from aasm.generating.code import Code
 from aasm.generating.python_code import PythonCode
 from aasm.generating.python_graph import PythonGraph
+from aasm.generating.python_module import PythonModule
+
 from aasm.intermediate.action import SendMessageAction
 from aasm.intermediate.argument import (
     AgentParam,
@@ -19,7 +21,11 @@ from aasm.intermediate.argument import (
 )
 from aasm.intermediate.behaviour import MessageReceivedBehaviour
 from aasm.intermediate.block import Block
-from aasm.intermediate.declaration import ConnectionDeclaration, FloatDeclaration
+from aasm.intermediate.declaration import (
+    ConnectionDeclaration,
+    FloatDeclaration,
+    ModuleVariableDeclaration,
+)
 from aasm.intermediate.instruction import (
     Add,
     AddElement,
@@ -69,6 +75,7 @@ from aasm.intermediate.instruction import (
     WhileLessThan,
     WhileLessThanOrEqual,
     WhileNotEqual,
+    ModuleInstruction,
 )
 from aasm.parsing.parse import parse_lines
 
@@ -115,19 +122,46 @@ def get_spade_code(
     if modules is None:
         modules = []
     parsed = parse_lines(aasm_lines, debug, modules)
+    module_code_lines = []
+    for module in modules:
+        module_code_lines += PythonModule(indent_size, module).code_lines
     return Code(
-        PythonSpadeCode(indent_size, parsed.agents).code_lines,
+        PythonSpadeCode(indent_size, parsed.agents, modules).code_lines,
         PythonGraph(indent_size, parsed.graph).code_lines,
+        module_code_lines,
     )
 
 
 class PythonSpadeCode(PythonCode):
-    def __init__(self, indent_size: int, agents: List[Agent]):
+    def __init__(self, indent_size: int, agents: List[Agent], modules: List[Module]):
         super().__init__(indent_size)
+        self.modules = modules
+        self.target = "spade"
+        self.filter_modules()
+        self.add_module_imports()
         for agent in agents:
             self.add_newlines(2)
             self.generate_agent(agent)
             self.add_required_imports()
+
+    def filter_modules(self):
+        self.modules = [
+            target_mod
+            for target_mod in self.modules
+            for target in target_mod.targets
+            if target.name == self.target
+        ]
+
+    def add_module_imports(self):
+        for module in self.modules:
+            self.add_line(f"import {module.name}")
+
+    #    spade_modules = []
+    #    for target_mod in self.modules:
+    #        for target in target_mod.targets:
+    #            if target.name == self.target:
+    #                spade_modules.append(target_mod)
+    #    self.modules = spade_modules
 
     def generate_agent(self, agent: Agent) -> None:
         self.add_line(f"class {agent.name}(spade.agent.Agent):", {"spade"})
@@ -604,6 +638,12 @@ class PythonSpadeCode(PythonCode):
                 case ConnectionDeclaration():
                     self.add_line("")
                     self.add_line("# connection declaration")
+                    value = f"{self.parse_arg(statement.value)}"
+                    self.add_line(f"{statement.name} = {value}")
+
+                case ModuleVariableDeclaration():
+                    self.add_line("")
+                    self.add_line("# module variable declaration")
                     value = f"{self.parse_arg(statement.value)}"
                     self.add_line(f"{statement.name} = {value}")
 
@@ -1126,6 +1166,16 @@ class PythonSpadeCode(PythonCode):
                             raise Exception(
                                 f"Unknown logs statement: {statement.print()}"
                             )
+                case ModuleInstruction():
+                    self.add_line("")
+                    self.add_line(f"# module instruction {statement.op_code}")
+                    arguments_string = ",".join(
+                        [self.parse_arg(arg) for arg in statement.args]
+                    )
+                    self.add_line(
+                        f"{statement.module}.{statement.op_code}({arguments_string})"
+                    )
 
                 case _:
+                    print(statement)
                     raise Exception(f"Unknown statement: {statement.print()}")

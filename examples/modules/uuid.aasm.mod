@@ -1,5 +1,9 @@
 !name UUID
 
+!description
+Simple module to use uuids.
+Provides a single function, GETUUID, which returns a uuid as a string.
+
 !targets
 spade
 
