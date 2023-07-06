@@ -277,17 +277,46 @@ class Argument:
             ...
         return False
 
+    def _check_subclasses(self, type_: ArgumentType, klass: Type[ArgumentType]) -> bool:
+        class_strings = [
+            f"{type_class.__module__}.{type_class.__name__}"
+            for type_class in type_.__class__.mro()
+        ]
+        return any(
+            [
+                f"{klass.__module__}.{klass.__name__}" == class_name
+                for class_name in class_strings
+            ]
+        )
+
     def has_type(self, *classes: Type[ArgumentType], **args: str) -> bool:
         for type_ in self.types:
-            if all([isinstance(type_, klass) for klass in classes]) and all(
+            if all([self._check_subclasses(type_, klass) for klass in classes]) and all(
                 [self.has_arg(type_, key, value) for key, value in args.items()]
             ):
                 return True
         return False
 
+    # def has_type(self, *classes: Type[ArgumentType], **args: str) -> bool:
+    #     for type_ in self.types:
+    #         all_classes = True
+    #         for klass in classes:
+    #             if not self._check_subclasses(type_, klass):
+    #                 all_classes = False
+    #                 break
+    #         if all_classes:
+    #             all_args = True
+    #             for key, value in args.items():
+    #                 if not self.has_arg(type_, key, value):
+    #                     all_args = False
+    #                     break
+    #             if all_args:
+    #                 return True
+    #     return False
+
     def set_op_type(self, *classes: Type[ArgumentType], **args: str) -> None:
         for type_ in self.types:
-            if all([isinstance(type_, klass) for klass in classes]) and all(
+            if all([self._check_subclasses(type_, klass) for klass in classes]) and all(
                 [self.has_arg(type_, key, value) for key, value in args.items()]
             ):
                 self.type_in_op = type_
@@ -415,6 +444,10 @@ class Argument:
         elif self.has_type(SendMessageParam, Mutable) and rhs.has_type(Float):
             self.set_op_type(SendMessageParam, Mutable)
             rhs.set_op_type(Float)
+
+        elif self.has_type(SendMessageParam, Mutable) and rhs.has_type(ModuleVariable):
+            self.set_op_type(SendMessageParam, Mutable)
+            rhs.set_op_type(ModuleVariable)
 
         elif self.has_type(Connection, Mutable) and rhs.has_type(Connection):
             self.set_op_type(Connection, Mutable)
@@ -555,6 +588,10 @@ class Argument:
             return False
 
         return True
+
+    def get_modvar_type(self, subtype: str) -> Type:
+        new_type = type(subtype, (ModuleVariable,), {})
+        return new_type
 
     def explain(self) -> str:
         types = f"{self.expr}: [ "

@@ -40,6 +40,9 @@ class Module:
         # TODO: validate module -- check that all instructions are implemented for all targets, has a name etc.
         # self._validate_module()
 
+    def does_target(self, target: str) -> bool:
+        return target in [target.name for target in self.targets]
+
     def _reset_scope(self):
         self._in_targets = False
         self._in_instructions = False

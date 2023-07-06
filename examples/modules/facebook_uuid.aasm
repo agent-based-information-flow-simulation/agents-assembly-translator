@@ -22,6 +22,7 @@ agent user
 	behav facebook_activity, cyclic, 30
 		action post_photos, send_msg, facebook_post, query
 			decl num_photos, float, 0
+			DECL to_send_id, uuid, ""
 			rand num_photos, int, uniform, 21, 37
 			GETUUID to_send_id
 			set send.photos, num_photos

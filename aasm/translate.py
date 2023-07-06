@@ -50,11 +50,11 @@ def main(input_path: str, output_path: str, debug: bool, includes: List[str]) ->
     lines = get_input(input_path)
     start_time = datetime.now()
     for module in loaded_modules:
-        print(f'Loaded module: \n"{module}"')
+        print(f"Loaded module: \n{module}\n")
     try:
         spade_modules = []
         for module in loaded_modules:
-            if "spade" in module.targets:
+            if module.does_target("spade"):
                 spade_modules.append(module)
         spade_code = get_spade_code(
             lines, indent_size=4, debug=debug, modules=spade_modules

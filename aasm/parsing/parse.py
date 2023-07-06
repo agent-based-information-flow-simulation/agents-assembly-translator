@@ -46,7 +46,7 @@ if TYPE_CHECKING:
 
 
 def parse_lines(lines: List[str], debug: bool, modules: List[Module]) -> ParsedData:
-    state = State(lines, debug)
+    state = State(lines, modules, debug)
     for tokens in state.tokens_from_lines():
         match tokens:
             case ["AGENT", name]:
@@ -185,12 +185,11 @@ def parse_lines(lines: List[str], debug: bool, modules: List[Module]) -> ParsedD
 
             case [OPCODE, *args]:
                 found = False
-                for module in modules:
+                for module in state.loaded_modules:
                     for instruction in module.instructions:
                         if instruction.opcode == OPCODE:
                             found = True
                             instruction.op(state, args)
-                            state.panic("THIS IS NOT A PANIC")
                 if not found:
                     state.panic(f"Unknown tokens: {tokens}")
 

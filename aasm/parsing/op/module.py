@@ -23,6 +23,12 @@ def op_MODULE(state: State, name: str) -> None:
         not state.module_exists(name),
         f"Module {name} already exists in the current environment.",
     )
+
+    state.require(
+        state.module_is_loaded(name),
+        f"Module {name} is not loaded.",
+    )
+
     # NOTE: I don't think that's necessary for modules
     # state.require(
     #     is_valid_name(name),

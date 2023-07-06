@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Dict, Generator, List, NoReturn, Tuple
 from aasm.preprocessor.preprocessor import Preprocessor
 from aasm.utils.exception import PanicException
 
+
 if TYPE_CHECKING:
     from aasm.intermediate.action import Action
     from aasm.intermediate.agent import Agent
@@ -14,6 +15,7 @@ if TYPE_CHECKING:
     from aasm.intermediate.graph import Graph
     from aasm.intermediate.message import Message
     from aasm.intermediate.module import Module
+    from aasm.modules.module import Module as LoadedModule
 
 
 class ParsedData:
@@ -26,7 +28,7 @@ class ParsedData:
 
 
 class State:
-    def __init__(self, lines: List[str], debug: bool):
+    def __init__(self, lines: List[str], modules: List[LoadedModule], debug: bool):
         self.debug: bool = debug
         self.preprocessor = Preprocessor(lines)
         self.lines: List[str] = self.preprocessor.run()
@@ -39,7 +41,9 @@ class State:
         self.agents: Dict[str, Agent] = {}
         self.messages: Dict[Tuple[str, str], Message] = {}
         self.graph: Graph | None = None
+        # TODO: Refactor this to a single module type
         self.modules: Dict[str, Module] = {}
+        self.loaded_modules: List[LoadedModule] = modules
 
     @property
     def last_agent(self) -> Agent:
@@ -87,8 +91,25 @@ class State:
     def module_exists(self, name: str) -> bool:
         return name in self.modules
 
+    def module_is_loaded(self, name: str) -> bool:
+        return name in [module.name for module in self.loaded_modules]
+
     def get_message_instance(self, msg_type: str, msg_performative: str) -> Message:
         return deepcopy(self.messages[(msg_type, msg_performative)])
+
+    def get_module_types(self) -> List[str]:
+        ret_list = []
+        for module in self.modules.values():
+            loaded_module = self._find_module(module.name)
+            if loaded_module is not None:
+                ret_list += [mod_type.name for mod_type in loaded_module.types]
+        return ret_list
+
+    def _find_module(self, name):
+        for module in self.loaded_modules:
+            if module.name == name:
+                return module
+        return None
 
     def tokens_from_lines(self) -> Generator[list[str], None, None]:
         for line in self.lines:

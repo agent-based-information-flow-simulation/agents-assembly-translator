@@ -1,11 +1,13 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Dict
 from aasm.intermediate.argument import Argument
 from aasm.modules.type import Type
 
 from aasm.utils.exception import PanicException
 
+from aasm.intermediate.argument import Mutable, Float, ModuleVariable
+from aasm.intermediate.instruction import ModuleInstruction
 
 if TYPE_CHECKING:
     from aasm.parsing.state import State
@@ -22,19 +24,20 @@ class Instruction:
         self.module = module_name
         self.opcode = opcode
         self.available_types = available_types
+        self.args_dict: Dict[str, List[str]] = {}
+        self.arg_names = []
         self._parse_args(args)
-        self.args_dict = {}
 
     def _parse_args(self, args: List[str]):
-        print(f"Parsing args for: {self.opcode}")
         current_var_name = ""
         current_var_type = ""
-        self.args_dict = {}
         first_arg = True
         for arg in args:
-            print(arg)
             if arg.endswith(":"):
+                if not first_arg:
+                    self._validate_var_declaration(current_var_name)
                 current_var_name = arg[:-1]
+                self.arg_names.append(current_var_name)
                 current_var_type = ""
                 # verify that the variable name is not already used
                 if current_var_name in self.args_dict:
@@ -48,9 +51,6 @@ class Instruction:
             else:
                 current_var_type = arg
                 self.args_dict[current_var_name].append(current_var_type)
-        print("\n")
-        print(self.args_dict)
-        print("\n")
 
     def _validate_var_declaration(self, current_var_name: str):
         if len(self.args_dict[current_var_name]) == 0:
@@ -80,12 +80,40 @@ class Instruction:
             f"Expected {len(self.args_dict.keys())}, got {len(arguments)}.",
         )
 
-        print(self.args_dict)
-
+        # print(f"Parsing arguments from self.args_dict: {self.args_dict} and arguments: {arguments}")
         parsed_args = [Argument(state, arg) for arg in arguments]
+        state.require(
+            self._validate_types_in_op_context(parsed_args),
+            f"Mismatched types in the {self.module}::{self.opcode} context.",
+            f"Refer to module documentation for further help.",
+        )
 
+        state.last_action.add_instruction(
+            ModuleInstruction(parsed_args, self.opcode, self.module)
+        )
+        # for arg in parsed_args:
+        #     arg.print()
+
+    def _validate_types_in_op_context(self, parsed_args) -> bool:
+        arg_idx = 0
+        types_to_check = []
         for arg in parsed_args:
-            arg.print()
+            for arg_type in self.args_dict[self.arg_names[arg_idx]]:
+                if arg_type == "mut":
+                    types_to_check.append(Mutable)
+                elif arg_type == "float":
+                    types_to_check.append(Float)
+                else:
+                    new_type = arg.get_modvar_type(arg_type)
+                    types_to_check.append(new_type)
+
+            for arg_type in types_to_check:
+                if not arg.has_type(arg_type):
+                    return False
+            arg.set_op_type(*types_to_check)
+            arg_idx += 1
+
+        return True
 
     def __str__(self) -> str:
         return f"{self.module}.{self.opcode}({', '.join(self.args_dict.keys())})"
