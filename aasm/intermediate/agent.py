@@ -100,6 +100,15 @@ class FloatListParam:
         print(f"FloatListParam {self.name} = []")
 
 
+class ModuleVariableParam:
+    def __init__(self, name: str, type: str):
+        self.name: str = name
+        self.type: str = type
+
+    def print(self) -> None:
+        print(f"ModuleVariableParam {self.name}: {self.type}")
+
+
 class Agent:
     RESERVED_CONNECTION_PARAMS = ["self"]
     RESERVED_CONNECTION_LIST_PARAMS = ["connections"]
@@ -115,11 +124,15 @@ class Agent:
         self.connection_lists: Dict[str, ConnectionListParam] = {}
         self.message_lists: Dict[str, MessageListParam] = {}
         self.float_lists: Dict[str, FloatListParam] = {}
+        self.module_variables: Dict[str, ModuleVariableParam] = {}
         self.setup_behaviours: Dict[str, SetupBehaviour] = {}
         self.one_time_behaviours: Dict[str, OneTimeBehaviour] = {}
         self.cyclic_behaviours: Dict[str, CyclicBehaviour] = {}
         self.message_received_behaviours: Dict[str, MessageReceivedBehaviour] = {}
         self._last_modified_behaviour: Behaviour | None = None
+
+    def get_module_variable_type(self, name):
+        return self.module_variables[name].type
 
     @property
     def last_behaviour(self) -> Behaviour:
@@ -141,6 +154,7 @@ class Agent:
             *list(self.connection_lists),
             *list(self.message_lists),
             *list(self.float_lists),
+            *list(self.module_variables),
         ]
 
     @property
@@ -184,6 +198,9 @@ class Agent:
 
     def add_float_list(self, list_param: FloatListParam) -> None:
         self.float_lists[list_param.name] = list_param
+
+    def add_module_variable(self, variable_param: ModuleVariableParam) -> None:
+        self.module_variables[variable_param.name] = variable_param
 
     def add_setup_behaviour(self, behaviour: SetupBehaviour) -> None:
         self.setup_behaviours[behaviour.name] = behaviour
@@ -241,6 +258,8 @@ class Agent:
             message_list_param.print()
         for float_list_param in self.float_lists.values():
             float_list_param.print()
+        for module_variable in self.module_variables.values():
+            module_variable.print()
         for setup_behaviour in self.setup_behaviours.values():
             setup_behaviour.print()
         for one_time_behaviour in self.one_time_behaviours.values():

@@ -12,6 +12,7 @@ from aasm.intermediate.agent import InitFloatParam as AgentInitFloatParam
 from aasm.intermediate.agent import MessageListParam as AgentMessageListParam
 from aasm.intermediate.message import ConnectionParam as MessageConnectionParam
 from aasm.intermediate.message import FloatParam as MessageFloatParam
+from aasm.intermediate.message import ModuleVariableParam as MessageModuleVariableParam
 from aasm.utils.validation import (
     is_float,
     is_valid_enum_list,
@@ -126,5 +127,10 @@ def op_message_PRM(state: State, name: str, category: str) -> None:
         case "conn":
             state.last_message.add_connection(MessageConnectionParam(name))
 
+        # FIX: modvar is not a valid category, should check for custom defined categories from modules
+        case "modvar":
+            state.last_message.add_module_variable(
+                MessageModuleVariableParam(name, "modvar")
+            )
         case _:
             state.panic(f"Incorrect operation: (message) PRM {name} {category}")
