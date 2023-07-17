@@ -434,6 +434,18 @@ class Modulo(Instruction):
         self.divisor.print()
 
 
+class ModuleInstruction(Instruction):
+    def __init__(self, args: TypingList[Argument], op_code: str = "", module: str = ""):
+        self.args = args
+        self.op_code = op_code
+        self.module = module
+
+    def print(self) -> None:
+        print(f"{self.module}::{self.op_code}")
+        for arg in self.args:
+            arg.print()
+
+
 class Logs(Instruction):
     def __init__(self, args: TypingList[Argument]):
         self.args = args

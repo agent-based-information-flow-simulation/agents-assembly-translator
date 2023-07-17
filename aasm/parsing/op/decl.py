@@ -3,7 +3,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from aasm.intermediate.argument import Argument
-from aasm.intermediate.declaration import ConnectionDeclaration, FloatDeclaration
+from aasm.intermediate.declaration import (
+    ConnectionDeclaration,
+    FloatDeclaration,
+    ModuleVariableDeclaration,
+)
 from aasm.utils.validation import is_valid_name, print_invalid_names
 
 if TYPE_CHECKING:
@@ -45,4 +49,9 @@ def op_DECL(state: State, name: str, category: str, value: str) -> None:
             )
 
         case _:
-            state.panic(f"Incorrect declaration: DECL {name} {category} {value}")
+            if category in state.get_module_types():
+                state.last_action.add_module_variable_declaration(
+                    ModuleVariableDeclaration(name_arg, value_arg, category)
+                )
+            else:
+                state.panic(f"Incorrect declaration: DECL {name} {category} {value}")
