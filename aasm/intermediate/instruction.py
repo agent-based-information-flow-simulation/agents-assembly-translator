@@ -435,10 +435,17 @@ class Modulo(Instruction):
 
 
 class ModuleInstruction(Instruction):
-    def __init__(self, args: TypingList[Argument], op_code: str = "", module: str = ""):
+    def __init__(
+        self,
+        args: TypingList[Argument],
+        op_code: str = "",
+        module: str = "",
+        is_block=False,
+    ):
         self.args = args
         self.op_code = op_code
         self.module = module
+        self.is_block = is_block
 
     def print(self) -> None:
         print(f"{self.module}::{self.op_code}")
