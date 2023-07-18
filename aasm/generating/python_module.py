@@ -23,7 +23,7 @@ class PythonModule(PythonCode):
     def create_module_header(self) -> None:
         self.add_line(f"# Module: {self.module.name}")
         for line in self.module.description:
-            self.add_line(f"# {line}")
+            self.add_line(f"# {line}", add_newline=False)
 
     def create_module_imports(self):
         try:

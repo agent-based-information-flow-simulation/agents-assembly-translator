@@ -1169,12 +1169,18 @@ class PythonSpadeCode(PythonCode):
                 case ModuleInstruction():
                     self.add_line("")
                     self.add_line(f"# module instruction {statement.op_code}")
-                    arguments_string = ",".join(
+                    arguments_string = ", ".join(
                         [self.parse_arg(arg) for arg in statement.args]
                     )
-                    self.add_line(
-                        f"{statement.module}.{statement.op_code}({arguments_string})"
-                    )
+                    if statement.is_block:
+                        self.add_line(
+                            # NOTE: there are no while statements in the modules, all blocks are ifs
+                            f"if {statement.module}.{statement.op_code}({arguments_string}):"
+                        )
+                    else:
+                        self.add_line(
+                            f"{statement.module}.{statement.op_code}({arguments_string})"
+                        )
 
                 case _:
                     print(statement)

@@ -22,7 +22,12 @@ class Instruction:
         args: List[str],
     ):
         self.module = module_name
-        self.opcode = opcode
+        if opcode.endswith("*"):
+            self.opcode = opcode[:-1]
+            self.is_block = True
+        else:
+            self.opcode = opcode
+            self.is_block = False
         self.available_types = available_types
         self.args_dict: Dict[str, List[str]] = {}
         self.arg_names = []
@@ -84,15 +89,17 @@ class Instruction:
         parsed_args = [Argument(state, arg) for arg in arguments]
         state.require(
             self._validate_types_in_op_context(parsed_args),
-            f"Mismatched types in the {self.module}::{self.opcode} context.",
+            f"Mismatched types in the {self.module}::{self.opcode} context.: {[arg.explain() for arg in parsed_args]}",
             f"Refer to module documentation for further help.",
         )
 
         state.last_action.add_instruction(
-            ModuleInstruction(parsed_args, self.opcode, self.module)
+            ModuleInstruction(parsed_args, self.opcode, self.module, self.is_block)
         )
         # for arg in parsed_args:
         #     arg.print()
+        if self.is_block:
+            state.last_action.start_block()
 
     def _validate_types_in_op_context(self, parsed_args) -> bool:
         arg_idx = 0
@@ -116,7 +123,10 @@ class Instruction:
         return True
 
     def __str__(self) -> str:
-        return f"{self.module}.{self.opcode}({', '.join(self.args_dict.keys())})"
+        ret = f"{self.module}.{self.opcode}({', '.join(self.args_dict.keys())})"
+        if self.is_block:
+            ret += "[BLOCK]"
+        return ret
 
     def __repr__(self) -> str:
         return str(self)

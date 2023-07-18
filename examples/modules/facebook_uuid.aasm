@@ -2,7 +2,7 @@ MODULE UUID
 
 message facebook_post, query
 	prm photos, float
-	prm msg_id, modvar
+	prm msg_id, uuid
 emessage
 
 agent user
@@ -34,6 +34,15 @@ agent user
 	behav read_posts, msg_rcv, facebook_post, query
 		action update_seen_photos, modify_self
 			add num_seen_photos, rcv.photos
+			DECL random_id, uuid, ""
+			GETUUID random_id
+			ISEQ rcv.msg_id, random_id
+				# this should never occur
+				CLR friends
+			EBLOCK
+			ISNEQ rcv.msg_id, random_id
+				add num_seen_photos, 1
+			EBLOCK
 		eaction
 	ebehav
 eagent
