@@ -2,9 +2,6 @@
 
 !description
 Simple module to use uuids.
-<<<<<<< HEAD
-Provides a single function, GETUUID, which returns a uuid as a string.
-=======
 Provides functionality to utilise uuids.
 targets: spade
 Introduces one type: uuid.
@@ -12,7 +9,6 @@ Instructions:
 GETUUID will generate a new uuid and store it in the declared variable.
 ISEQ will compare two uuids and return true if they are equal.
 ISNEQ will compare two uuids and return true if they are not equal.
->>>>>>> add-uuid-module
 
 !targets
 spade
