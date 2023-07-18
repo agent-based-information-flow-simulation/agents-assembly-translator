@@ -36,6 +36,8 @@ def op_DECL(state: State, name: str, category: str, value: str) -> None:
         "Mismatched types in the declaration context.",
         f"NAME {name_arg.explain()}, VALUE {value_arg.explain()}",
     )
+    print(name_arg.explain())
+    print(value_arg.explain())
 
     match category:
         case "float":

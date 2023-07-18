@@ -8,7 +8,7 @@ from aasm.utils.validation import is_connection, is_float, is_int
 
 if TYPE_CHECKING:
     from typing import List as TypingList
-    from typing import Type
+    from typing import Type, Tuple
 
     from parsing.state import State
 
@@ -426,37 +426,61 @@ class Argument:
         return False
 
     # SET
-    def assignment_context(self, rhs: Argument) -> bool:
-        if self.has_type(Enum, Mutable) and rhs.has_type(
-            EnumValue, from_enum=self.expr
-        ):
-            self.set_op_type(Enum, Mutable)
-            rhs.set_op_type(EnumValue, from_enum=self.expr)
+    def assignment_context(self, rhs: Argument, state: State) -> bool:
+        basic_assigment_types: TypingList[Tuple[Type, Type]] = [
+            (Enum, EnumValue),
+            (Float, Float),
+            (Message, MessageList),
+            (Connection, Connection),
+            (ConnectionList, ConnectionList),
+            (MessageList, MessageList),
+            (FloatList, FloatList),
+            (SendMessageParam, Float),
+            (SendMessageParam, ModuleVariable),
+        ]
 
-        elif self.has_type(Float, Mutable) and rhs.has_type(Float):
-            self.set_op_type(Float, Mutable)
-            rhs.set_op_type(Float)
+        found_flag = False
+        for assignment_possiblity in basic_assigment_types:
+            if self.has_type(assignment_possiblity[0], Mutable) and rhs.has_type(
+                assignment_possiblity[1]
+            ):
+                self.set_op_type(assignment_possiblity[0], Mutable)
+                rhs.set_op_type(assignment_possiblity[1])
+                found_flag = True
+                break
 
-        elif self.has_type(Message, Mutable) and rhs.has_type(MessageList):
-            self.set_op_type(Message, Mutable)
-            rhs.set_op_type(MessageList)
+        if self.has_type(ModuleVariable, Mutable) and rhs.has_type(ModuleVariable):
+            lhs_type_name = self._find_module_variable_type(state)
+            rhs_type_name = rhs._find_module_variable_type(state)
+            if lhs_type_name == "" or rhs_type_name == "":
+                return False
+            lhs_type = self.get_modvar_type(lhs_type_name)
+            rhs_type = rhs.get_modvar_type(rhs_type_name)
+            self.set_op_type(lhs_type, Mutable)
+            rhs.set_op_type(rhs_type)
+            found_flag = True
 
-        elif self.has_type(SendMessageParam, Mutable) and rhs.has_type(Float):
-            self.set_op_type(SendMessageParam, Mutable)
-            rhs.set_op_type(Float)
+        return found_flag
 
-        elif self.has_type(SendMessageParam, Mutable) and rhs.has_type(ModuleVariable):
-            self.set_op_type(SendMessageParam, Mutable)
-            rhs.set_op_type(ModuleVariable)
-
-        elif self.has_type(Connection, Mutable) and rhs.has_type(Connection):
-            self.set_op_type(Connection, Mutable)
-            rhs.set_op_type(Connection)
-
-        else:
-            return False
-
-        return True
+    def _find_module_variable_type(self, state: State) -> str:
+        subtype = ""
+        if not self.has_type(ModuleVariable):
+            return subtype
+        elif self.expr in state.last_agent.module_variables:
+            subtype = state.last_agent.get_module_variable_type(self.expr)
+        elif state.last_action.is_declared_module_variable(self.expr):
+            subtype = state.last_action.get_module_variable_type(self.expr)
+        elif self.has_type(ReceivedMessageParam):
+            behav = state.last_behaviour
+            if isinstance(behav, MessageReceivedBehaviour):
+                subtype = behav.received_message.get_module_variable_type(self.expr)
+        elif self.has_type(SendMessageParam):
+            action = state.last_action
+            if isinstance(action, SendMessageAction):
+                # get the expr split after . character
+                split_expr = self.expr.split(".")[-1]
+                subtype = action.send_message.get_module_variable_type(split_expr)
+        return subtype
 
     # SUBS
     def list_subset_context(self, from_list: Argument, num: Argument) -> bool:
