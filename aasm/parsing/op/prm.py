@@ -135,11 +135,6 @@ def op_message_PRM(state: State, name: str, category: str) -> None:
         case "conn":
             state.last_message.add_connection(MessageConnectionParam(name))
 
-        # FIX: modvar is not a valid category, should check for custom defined categories from modules
-        case "modvar":
-            state.last_message.add_module_variable(
-                MessageModuleVariableParam(name, "modvar")
-            )
         case _:
             if category in state.get_module_types():
                 state.last_message.add_module_variable(
