@@ -52,8 +52,6 @@ def main(
 
     lines = get_input(input_path)
     start_time = datetime.now()
-    for module in loaded_modules:
-        print(f"Loaded module: \n{module}\n")
     try:
         spade_modules = []
         for module in loaded_modules:
