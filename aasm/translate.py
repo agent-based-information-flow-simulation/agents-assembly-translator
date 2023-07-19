@@ -38,14 +38,17 @@ def save_output(output_path: str, code: Code) -> None:
             f.write(code_line)
 
 
-def main(input_path: str, output_path: str, debug: bool, includes: List[str]) -> None:
+def main(
+    input_path: str, output_path: str, debug: bool, includes: List[str] | None
+) -> None:
     loaded_modules = []
-    try:
-        for include in includes:
-            loaded_modules.append(Module(get_input(include)))
-    except PanicException as e:
-        e.print()
-        exit(1)
+    if includes is not None:
+        try:
+            for include in includes:
+                loaded_modules.append(Module(get_input(include)))
+        except PanicException as e:
+            e.print()
+            exit(1)
 
     lines = get_input(input_path)
     start_time = datetime.now()

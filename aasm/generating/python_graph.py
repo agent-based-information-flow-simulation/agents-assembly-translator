@@ -34,10 +34,14 @@ class PythonGraph(PythonCode):
     def add_class_definitions(self):
         self.add_line("class Agent:")
         self.indent_right()
-        self.add_line("def __init__(self, jid: str, type: str, connections = None):")
+        self.add_line(
+            "def __init__(self, jid: str, type: str, connections = None, sim_id: str = "
+            "):"
+        )
         self.indent_right()
         self.add_line("self.jid = jid")
         self.add_line("self.type = type")
+        self.add_line("self.sim_id = sim_id")
         self.add_line("if connections is not None:")
         self.indent_right()
         self.add_line("self.connections = connections")
@@ -59,6 +63,7 @@ class PythonGraph(PythonCode):
         self.add_line("'jid': self.jid,")
         self.add_line("'type': self.type,")
         self.add_line("'connections': self.connections")
+        self.add_line("'sim_id': self.sim_id")
         self.add_line("}")
         self.indent_left()
         self.indent_left()
@@ -87,7 +92,7 @@ class PythonGraph(PythonCode):
                 raise Exception(f"Unknown graph type: {graph.print()}")
 
     def add_statistical_graph(self, graph: StatisticalGraph) -> None:
-        self.add_line("def generate_graph_structure(domain):")
+        self.add_line('def generate_graph_structure(domain, sim_id=""):')
         self.indent_right()
 
         if not graph.agents:
@@ -113,7 +118,15 @@ class PythonGraph(PythonCode):
             num_agents_expr.append(f"_num_{agent.name}")
 
         self.add_line(f'num_agents = {" + ".join(num_agents_expr)}')
+
+        self.add_line('if sim_id == "":')
+        self.indent_right()
         self.add_line("random_id = str(uuid.uuid4())[:5]")
+        self.indent_left()
+        self.add_line("else:")
+        self.indent_right()
+        self.add_line("random_id = sim_id")
+        self.indent_left()
         self.add_line('jids = [f"{i}_{random_id}@{domain}" for i in range(num_agents)]')
         self.add_line("agents = []")
         self.add_line("next_agent_idx = 0")
@@ -165,7 +178,7 @@ class PythonGraph(PythonCode):
         self.indent_left()
 
     def add_matrix_graph(self, graph: MatrixGraph):
-        self.add_line("def generate_graph_structure(domain):")
+        self.add_line('def generate_graph_structure(domain, sim_id=""):')
         self.indent_right()
         if not graph.agents:
             self.add_line("return []")
@@ -177,7 +190,14 @@ class PythonGraph(PythonCode):
             self.add_line(f"scale_factor = 1")
         self.add_line(f"n_agent_types = {len(graph.agents)}")
         self.add_line("graph_size = scale_factor * n_agent_types")
+        self.add_line('if sim_id == "":')
+        self.indent_right()
         self.add_line("random_id = str(uuid.uuid4())[:5]")
+        self.indent_left()
+        self.add_line("else:")
+        self.indent_right()
+        self.add_line("random_id = sim_id")
+        self.indent_left()
         self.add_line('jids = [f"{i}_{random_id}@{domain}" for i in range(graph_size)]')
         self.add_line("agent_types = []")
         self.add_line("agents = []")
@@ -216,6 +236,7 @@ class PythonGraph(PythonCode):
         self.add_line('"jid": jid,')
         self.add_line(f'"type": agent_type,')
         self.add_line('"connections": connections,')
+        self.add_line('"sim_id": sim_id,')
         self.indent_left()
         self.add_line("})")
         self.indent_left()
@@ -226,7 +247,7 @@ class PythonGraph(PythonCode):
 
     def add_barabasi_graph(self, graph: BarabasiGraph):
         # generate jid list using draw by draw Barabasi-Albert algorithm for the provided graph with its m0 and m
-        self.add_line("def generate_graph_structure(domain):")
+        self.add_line('def generate_graph_structure(domain, sim_id=""):')
         self.indent_right()
         if not graph.agents:
             self.add_line("return []")
@@ -258,7 +279,14 @@ class PythonGraph(PythonCode):
         self.add_line(f'num_agents = {" + ".join(num_agents_expr)}')
         self.add_line("random.shuffle(agent_types)")
 
+        self.add_line('if sim_id == "":')
+        self.indent_right()
         self.add_line("random_id = str(uuid.uuid4())[:5]")
+        self.indent_left()
+        self.add_line("else:")
+        self.indent_right()
+        self.add_line("random_id = sim_id")
+        self.indent_left()
         if graph.m_params is not None:
             self.add_line(f"m0 = {graph.m_params.m0}")
             self.add_line(f"m = {graph.m_params.m_inc}")
@@ -309,7 +337,7 @@ class PythonGraph(PythonCode):
         self.indent_left()
 
     def add_irg_graph(self, graph: InhomogenousRandomGraph):
-        self.add_line("def generate_graph_structure(domain):")
+        self.add_line('def generate_graph_structure(domain, sim_id=""):')
         self.indent_right()
         if not graph.agents:
             self.add_line("return []")
@@ -341,13 +369,23 @@ class PythonGraph(PythonCode):
             self.add_line("agent_types.extend(tmp)")
 
         self.add_line(f'num_agents = {" + ".join(num_agents_expr)}')
+
+        self.add_line('if sim_id == "":')
+        self.indent_right()
         self.add_line("random_id = str(uuid.uuid4())[:5]")
+        self.indent_left()
+        self.add_line("else:")
+        self.indent_right()
+        self.add_line("random_id = sim_id")
+        self.indent_left()
         self.add_line('jids = [f"{i}_{random_id}@{domain}" for i in range(num_agents)]')
         self.add_line(f"order = {graph.order}")
         self.add_line("agents = []")
         self.add_line("for i in range(num_agents):")
         self.indent_right()
-        self.add_line("agents.append(Agent(jids[i], agent_types[i]))")
+        self.add_line(
+            "agents.append(Agent(jids[i], agent_types[i], sim_id = random_id))"
+        )
         self.indent_left()
         self.add_line("for agent in agents:")
         self.indent_right()
