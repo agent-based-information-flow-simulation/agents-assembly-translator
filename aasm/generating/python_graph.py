@@ -169,6 +169,7 @@ class PythonGraph(PythonCode):
             self.add_line(
                 '"connections": random.sample([other_jid for other_jid in jids if other_jid != jid], num_connections),'
             )
+            self.add_line('"sim_id": random_id,')
             self.indent_left()
             self.add_line("})")
             self.add_line("next_agent_idx += 1")
@@ -236,7 +237,7 @@ class PythonGraph(PythonCode):
         self.add_line('"jid": jid,')
         self.add_line(f'"type": agent_type,')
         self.add_line('"connections": connections,')
-        self.add_line('"sim_id": sim_id,')
+        self.add_line('"sim_id": random_id,')
         self.indent_left()
         self.add_line("})")
         self.indent_left()
@@ -328,8 +329,9 @@ class PythonGraph(PythonCode):
         self.add_line("agents.append({")
         self.indent_right()
         self.add_line('"jid": jids[i],')
-        self.add_line(f'"type": agent_types[i],')
+        self.add_line('"type": agent_types[i],')
         self.add_line('"connections": connection_lists[i],')
+        self.add_line('"sim_id": random_id,')
         self.indent_left()
         self.add_line("})")
         self.indent_left()

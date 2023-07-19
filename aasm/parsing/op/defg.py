@@ -33,7 +33,7 @@ def op_DEFG(state: State, agent_name: str, amount: str, args: List[str]) -> None
     state.require(
         is_statistical ^ is_barabsi,
         "DEFG can be used with statistical and barabasi graphs.",
-        "Define statistical graphs with GRAPH statistical|GRAPH barabasi.",
+        "Define statistical graphs with GRAPH statistical|GRAPH barabasi-albert.",
     )
     state.require(state.agent_exists(agent_name), f"Agent {agent_name} is not defined.")
 

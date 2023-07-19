@@ -1,0 +1,54 @@
+message facebook_post, query
+	prm photos, float
+emessage
+
+agent user
+	prm friends, list, conn
+	prm num_seen_photos, float, init, 0
+
+	behav initialize, setup
+		action initialize_friends, modify_self
+			decl max_friends, float, 0
+			len max_friends, connections
+			decl num_friends, float, 0
+			rand num_friends, int, uniform, 0, max_friends
+			subs friends, connections, num_friends
+		eaction
+	ebehav
+
+	behav facebook_activity, cyclic, 30
+		action post_photos, send_msg, facebook_post, query
+			decl num_photos, float, 0
+			rand num_photos, int, uniform, 21, 37
+			set send.photos, num_photos
+			send friends
+		eaction
+	ebehav
+
+	behav read_posts, msg_rcv, facebook_post, query
+		action update_seen_photos, modify_self
+			add num_seen_photos, rcv.photos
+		eaction
+	ebehav
+eagent
+
+agent null
+eagent
+
+agent media_source
+  behav facebook_activity, cyclic, 30
+		action new_post, send_msg, facebook_post, query
+			decl idx, float, 0
+			rand idx, int, uniform, 21, 37
+			set send.photos, idx
+			send connections
+		eaction
+  ebehav
+
+eagent
+
+graph barabasi-albert
+  MPARAMS 5,3
+  DEFG user, 50
+  DEFG media_source, 10
+egraph
