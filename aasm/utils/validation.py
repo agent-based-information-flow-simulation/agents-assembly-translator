@@ -72,6 +72,8 @@ def get_invalid_names() -> List[str]:
         "backup_period",
         "backup_delay",
         "setup",
+        "str",
+        "float",
     ]
     invalid_names.extend(keyword.kwlist)
     return invalid_names
