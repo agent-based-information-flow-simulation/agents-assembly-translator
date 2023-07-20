@@ -5,11 +5,12 @@ from datetime import datetime
 from typing import TYPE_CHECKING, List, Tuple
 
 from aasm.generating.python_spade import get_spade_code
+from aasm.generating.python_module import get_modules_for_target
 from aasm.utils.exception import PanicException
-from aasm.modules.module import Module
 
 if TYPE_CHECKING:
     from aasm.generating.code import Code
+    from aasm.modules.module import Module
 
 
 def get_args() -> Tuple[str, str, bool, List[str]]:
@@ -41,11 +42,11 @@ def save_output(output_path: str, code: Code) -> None:
 def main(
     input_path: str, output_path: str, debug: bool, includes: List[str] | None
 ) -> None:
-    loaded_modules = []
+    loaded_module_files: List[List[str]] = []
     if includes is not None:
         try:
             for include in includes:
-                loaded_modules.append(Module(get_input(include)))
+                loaded_module_files.append(get_input(include))
         except PanicException as e:
             e.print()
             exit(1)
@@ -53,10 +54,7 @@ def main(
     lines = get_input(input_path)
     start_time = datetime.now()
     try:
-        spade_modules = []
-        for module in loaded_modules:
-            if module.does_target("spade"):
-                spade_modules.append(module)
+        spade_modules = get_modules_for_target(loaded_module_files, "spade")
         spade_code = get_spade_code(
             lines, indent_size=4, debug=debug, modules=spade_modules
         )

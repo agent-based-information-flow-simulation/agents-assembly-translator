@@ -3,9 +3,26 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, List
 
 from aasm.generating.python_code import PythonCode
+from aasm.modules.module import Module
 
-if TYPE_CHECKING:
-    from aasm.modules.module import Module
+
+def get_modules_for_target(
+    module_code_lines: List[List[str]], target: str
+) -> List[Module]:
+    """
+    Get all modules from `module_code_lines` that target the given `target`.
+
+    :param module_code_lines: the code lines of all modules
+    :param target: the target to filter by
+
+    :return: the modules that target the given `target`
+    """
+    target_modules = []
+    for module_lines in module_code_lines:
+        module = Module(module_lines)
+        if module.does_target(target):
+            target_modules.append(module)
+    return target_modules
 
 
 class PythonModule(PythonCode):
