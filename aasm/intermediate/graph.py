@@ -1,6 +1,15 @@
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any, Dict, List, Tuple, Callable, List
+
+
+class MParameters:
+    def __init__(self, a: int, b: int):
+        self.m0 = a
+        self.m_inc = b
+
+    def print(self) -> None:
+        print(f"MParameters values = {self.m0}, {self.m_inc}")
 
 
 class AgentAmount:
@@ -76,7 +85,7 @@ class AdjRow:
 
     def print(self) -> None:
         print("AdjRow")
-        for key, value in self.row.items():
+        for key, value in enumerate(self.row):
             print(f"{key} = {value}")
 
 
@@ -102,10 +111,36 @@ class StatisticalAgent:
         self.connections.print()
 
 
+class BarabasiAgent:
+    def __init__(self, name: str, amount: AgentAmount):
+        self.name = name
+        self.amount = amount
+
+    def print(self) -> None:
+        print(f"BarabasiAgent name = {self.name}")
+        self.amount.print()
+
+
+class InhomogeneousAgent:
+    def __init__(
+        self,
+        name: str,
+        amount: AgentConstantAmount,
+        conn_amounts: List[ConnectionConstantAmount],
+    ):
+        self.name = name
+        self.amount = amount
+        self.amounts = conn_amounts
+
+    def print(self) -> None:
+        print(f"InhomogeneousAgent name = {self.name}")
+        for amount in self.amounts:
+            amount.print()
+
+
 class Graph:
     def __init__(self):
         self.size = None
-        self.scale = None
 
     def set_size(self, size: int) -> None:
         self.size = size
@@ -113,11 +148,29 @@ class Graph:
     def is_size_defined(self) -> bool:
         return self.size is not None
 
+    def is_types_amount_defined(self) -> bool:
+        return False
+
+    def is_agent_defined(self, agent_type: str) -> bool:
+        return False
+
+    def set_types_amount(self, types_no: int) -> None:
+        raise NotImplementedError()
+
+    def get_types_amount(self) -> int:
+        raise NotImplementedError()
+
     def set_scale(self, scale: int) -> None:
-        self.scale = scale
+        raise NotImplementedError()
 
     def is_scale_defined(self) -> bool:
-        return self.scale is not None
+        return False
+
+    def set_m(self, m: Tuple[int, int]) -> None:
+        raise NotImplementedError()
+
+    def is_m_defined(self) -> bool:
+        return False
 
     def add_agent(self, graph_agent: Any) -> None:
         raise NotImplementedError()
@@ -150,16 +203,51 @@ class StatisticalGraph(Graph):
             agent.print()
 
 
+class BarabasiGraph(Graph):
+    def __init__(self):
+        super().__init__()
+        self.agents: Dict[str, BarabasiAgent] = {}
+        self.m_params = None
+
+    def add_agent(self, graph_agent: BarabasiAgent) -> None:
+        self.agents[graph_agent.name] = graph_agent
+
+    def is_agent_defined(self, agent_type: str) -> bool:
+        return agent_type in self.agents
+
+    def is_agent_percent_amount_used(self) -> bool:
+        for agent in self.agents.values():
+            if isinstance(agent.amount, AgentPercentAmount):
+                return True
+        return False
+
+    def set_m(self, m: Tuple[int, int]) -> None:
+        self.m_params = MParameters(*m)
+
+    def is_m_defined(self) -> bool:
+        return self.m_params is not None
+
+    def print(self) -> None:
+        super().print()
+        print("BarabasiGraph")
+        for agent in self.agents.values():
+            agent.print()
+
+
 class MatrixGraph(Graph):
     def __init__(self):
         super().__init__()
-        self.agents = []
+        self.agents: List[MatrixAgent] = []
+        self.scale = None
 
     def add_agent(self, graph_agent: MatrixAgent) -> None:
         self.agents.append(graph_agent)
 
     def is_agent_defined(self, agent_type: str) -> bool:
-        return any(self.agents, lambda agent: agent.name == agent_type)
+        check_agent: Callable[[MatrixAgent], bool] = (
+            lambda agent: agent.name == agent_type
+        )
+        return all(check_agent(agent) for agent in self.agents)
 
     def set_scale(self, scale: int) -> None:
         self.scale = scale
@@ -170,5 +258,45 @@ class MatrixGraph(Graph):
     def print(self) -> None:
         super().print()
         print("MatrixGraph")
+        for agent in self.agents:
+            agent.print()
+
+
+class InhomogenousRandomGraph(Graph):
+    def __init__(self):
+        super().__init__()
+        self.agents: Dict[str, InhomogeneousAgent] = {}
+        self.types_no = None
+        self.order: list[str] = []
+
+    def add_agent(self, graph_agent: InhomogeneousAgent) -> None:
+        self.order.append(graph_agent.name)
+        self.agents[graph_agent.name] = graph_agent
+
+    def is_agent_defined(self, agent_type: str) -> bool:
+        return agent_type in self.agents
+
+    def is_agent_percent_amount_used(self) -> bool:
+        check_agent: Callable[[InhomogeneousAgent], bool] = lambda amount: isinstance(
+            amount, AgentPercentAmount
+        )
+        if any(check_agent(agent) for agent in self.agents.values()):
+            return True
+        return False
+
+    def is_types_amount_defined(self) -> bool:
+        return self.types_no is not None
+
+    def set_types_amount(self, types_no: int) -> None:
+        self.types_no = types_no
+
+    def get_types_amount(self) -> int:
+        if self.types_no is None:
+            raise ValueError("Types amount is not defined")
+        return self.types_no
+
+    def print(self) -> None:
+        super().print()
+        print("InhomogenousRandomGraph")
         for agent in self.agents.values():
             agent.print()

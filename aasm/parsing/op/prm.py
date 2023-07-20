@@ -10,8 +10,10 @@ from aasm.intermediate.agent import EnumParam as AgentEnumParam
 from aasm.intermediate.agent import FloatListParam as AgentFloatListParam
 from aasm.intermediate.agent import InitFloatParam as AgentInitFloatParam
 from aasm.intermediate.agent import MessageListParam as AgentMessageListParam
+from aasm.intermediate.agent import ModuleVariableParam as AgentModuleVariableParam
 from aasm.intermediate.message import ConnectionParam as MessageConnectionParam
 from aasm.intermediate.message import FloatParam as MessageFloatParam
+from aasm.intermediate.message import ModuleVariableParam as MessageModuleVariableParam
 from aasm.utils.validation import (
     is_float,
     is_valid_enum_list,
@@ -100,7 +102,14 @@ def op_agent_PRM(state: State, name: str, category: str, args: List[str]) -> Non
             state.last_agent.add_enum(AgentEnumParam(name, enums))
 
         case _:
-            state.panic(f"Incorrect operation: (agent) PRM {name} {category} {args}")
+            if category in state.get_module_types():
+                state.last_agent.add_module_variable(
+                    AgentModuleVariableParam(name, category)
+                )
+            else:
+                state.panic(
+                    f"Incorrect operation: (agent) PRM {name} {category} {args}"
+                )
 
 
 def op_message_PRM(state: State, name: str, category: str) -> None:
@@ -127,4 +136,9 @@ def op_message_PRM(state: State, name: str, category: str) -> None:
             state.last_message.add_connection(MessageConnectionParam(name))
 
         case _:
-            state.panic(f"Incorrect operation: (message) PRM {name} {category}")
+            if category in state.get_module_types():
+                state.last_message.add_module_variable(
+                    MessageModuleVariableParam(name, category)
+                )
+            else:
+                state.panic(f"Incorrect operation: (message) PRM {name} {category}")

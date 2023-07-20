@@ -1,5 +1,8 @@
+MODULE UUID
+
 message facebook_post, query
 	prm photos, float
+	prm msg_id, uuid
 emessage
 
 agent user
@@ -19,8 +22,11 @@ agent user
 	behav facebook_activity, cyclic, 30
 		action post_photos, send_msg, facebook_post, query
 			decl num_photos, float, 0
+			DECL to_send_id, uuid, ""
 			rand num_photos, int, uniform, 21, 37
+			GETUUID to_send_id
 			set send.photos, num_photos
+			set send.msg_id, to_send_id
 			send friends
 		eaction
 	ebehav
@@ -28,10 +34,20 @@ agent user
 	behav read_posts, msg_rcv, facebook_post, query
 		action update_seen_photos, modify_self
 			add num_seen_photos, rcv.photos
+			DECL random_id, uuid, ""
+			GETUUID random_id
+			ISEQ rcv.msg_id, random_id
+				# this should never occur
+				CLR friends
+			EBLOCK
+			ISNEQ rcv.msg_id, random_id
+				add num_seen_photos, 1
+			EBLOCK
 		eaction
 	ebehav
 eagent
 
-graph statistical
-	defg user, 15, dist_exp, 0.1
+graph barabasi-albert
+	MPARAMS 5, 3
+	defg user, 150
 egraph
