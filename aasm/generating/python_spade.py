@@ -138,7 +138,6 @@ class PythonSpadeCode(PythonCode):
         self.modules = modules
         self.target = "spade"
         self.filter_modules()
-        self.add_module_imports()
         for agent in agents:
             self.add_newlines(2)
             self.generate_agent(agent)
@@ -151,10 +150,6 @@ class PythonSpadeCode(PythonCode):
             for target in target_mod.targets
             if target.name == self.target
         ]
-
-    def add_module_imports(self):
-        for module in self.modules:
-            self.add_line(f"import {module.name}")
 
     #    spade_modules = []
     #    for target_mod in self.modules:

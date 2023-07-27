@@ -54,6 +54,8 @@ class PythonModule(PythonCode):
         for impl in self.module.impls:
             if impl[0] == self.target:
                 self.add_line(f"def {impl[1]}():")
+                self.indent_right()
                 for line in self.module.impls[impl]:
                     self.add_line(line)
+                self.indent_left()
                 self.add_newline()

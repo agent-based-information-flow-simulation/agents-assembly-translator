@@ -29,10 +29,10 @@ a = str(uuid.uuid4())
 
 !impl ISEQ spade
 if a == b:
-  return True
+    return True
 return False
 
 !impl ISNEQ spade
 if a != b:
-  return True
+    return True
 return False
