@@ -25,7 +25,7 @@ ISNEQ* a: uuid, b: uuid
 import uuid
 
 !impl GETUUID spade
-a = str(uuid.uuid4())
+return a = str(uuid.uuid4())
 
 !impl ISEQ spade
 if a == b:
