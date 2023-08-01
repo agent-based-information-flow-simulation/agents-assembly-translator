@@ -8,7 +8,7 @@ from aasm.utils.validation import is_connection, is_float, is_int
 
 if TYPE_CHECKING:
     from typing import List as TypingList
-    from typing import Type
+    from typing import Type, Tuple
 
     from parsing.state import State
 
@@ -97,14 +97,28 @@ class Literal(ArgumentType):
     ...
 
 
+class ModuleVariable(ArgumentType):
+    ...
+
+
 class Argument:
     """Doesn't panic. Use in the action context."""
 
-    def __init__(self, state: State, expr: str):
+    def __init__(self, state: State, expr: str, set_types: bool = True):
         self.expr: str = expr
         self.types: TypingList[ArgumentType] = []
         self.type_in_op: ArgumentType | None = None
-        self.set_types(state)
+        if set_types:
+            self.set_types(state)
+
+    def create_all_possible_types(self, state: State) -> TypingList[Argument]:
+        possible_types: TypingList[Argument] = []
+        for type_ in self.types:
+            possible_type = Argument(state, self.expr, set_types=False)
+            possible_type.types = [type_]
+            possible_type.type_in_op = type_
+            possible_types.append(possible_type)
+        return possible_types
 
     def set_types(self, state: State) -> None:
         self.check_agent_params(state)
@@ -121,6 +135,9 @@ class Argument:
         elif self.expr in state.last_agent.RESERVED_CONNECTION_LIST_PARAMS:
             self.types.append(self.compose(List, ConnectionList, AgentParam, Mutable))
 
+        elif self.expr in state.last_agent.RESERVED_CONNECTION_PARAMS:
+            self.types.append(self.compose(Connection, AgentParam, Immutable))
+
         elif self.expr in state.last_agent.float_param_names:
             self.types.append(self.compose(Float, AgentParam, Mutable))
 
@@ -136,6 +153,11 @@ class Argument:
         elif self.expr in state.last_agent.float_lists:
             self.types.append(self.compose(List, FloatList, AgentParam, Mutable))
 
+        elif self.expr in state.last_agent.module_variables:
+            subtype = state.last_agent.get_module_variable_type(self.expr)
+            new_type = type(subtype, (ModuleVariable,), {})
+            self.types.append(self.compose(new_type, AgentParam, Mutable))
+
         for enum_param in state.last_agent.enums.values():
             for enum_value in enum_param.enum_values:
                 if self.expr == enum_value.value:
@@ -149,6 +171,14 @@ class Argument:
 
         elif state.last_action.is_declared_connection(self.expr):
             self.types.append(self.compose(Connection, Declared, Mutable))
+
+        elif state.last_action.is_declared_module_variable(self.expr):
+            try:
+                subtype = state.last_action.get_module_variable_type(self.expr)
+                new_type = type(subtype, (ModuleVariable,), {})
+                self.types.append(self.compose(new_type, Declared, Mutable))
+            except ValueError:
+                pass
 
     def check_numerical_values(self) -> None:
         if is_float(self.expr):
@@ -189,6 +219,19 @@ class Argument:
                         self.compose(Connection, ReceivedMessageParam, Immutable)
                     )
 
+                elif (
+                    prop in state.last_behaviour.received_message.module_variable_params
+                ):
+                    subtype = (
+                        state.last_behaviour.received_message.get_module_variable_type(
+                            prop
+                        )
+                    )
+                    new_type = type(subtype, (ModuleVariable,), {})
+                    self.types.append(
+                        self.compose(new_type, ReceivedMessageParam, Immutable)
+                    )
+
             elif self.expr.lower() == "rcv":
                 self.types.append(self.compose(Message, ReceivedMessage, Immutable))
 
@@ -210,6 +253,13 @@ class Argument:
                         self.compose(Connection, SendMessageParam, Mutable)
                     )
 
+                elif prop in state.last_action.send_message.module_variable_params:
+                    subtype = state.last_action.send_message.get_module_variable_type(
+                        prop
+                    )
+                    new_type = type(subtype, (ModuleVariable,), {})
+                    self.types.append(self.compose(new_type, SendMessageParam, Mutable))
+
             elif self.expr.lower() == "send":
                 self.types.append(self.compose(Message, SendMessage, Mutable))
 
@@ -227,17 +277,46 @@ class Argument:
             ...
         return False
 
+    def _check_subclasses(self, type_: ArgumentType, klass: Type[ArgumentType]) -> bool:
+        class_strings = [
+            f"{type_class.__module__}.{type_class.__name__}"
+            for type_class in type_.__class__.mro()
+        ]
+        return any(
+            [
+                f"{klass.__module__}.{klass.__name__}" == class_name
+                for class_name in class_strings
+            ]
+        )
+
     def has_type(self, *classes: Type[ArgumentType], **args: str) -> bool:
         for type_ in self.types:
-            if all([isinstance(type_, klass) for klass in classes]) and all(
+            if all([self._check_subclasses(type_, klass) for klass in classes]) and all(
                 [self.has_arg(type_, key, value) for key, value in args.items()]
             ):
                 return True
         return False
 
+    # def has_type(self, *classes: Type[ArgumentType], **args: str) -> bool:
+    #     for type_ in self.types:
+    #         all_classes = True
+    #         for klass in classes:
+    #             if not self._check_subclasses(type_, klass):
+    #                 all_classes = False
+    #                 break
+    #         if all_classes:
+    #             all_args = True
+    #             for key, value in args.items():
+    #                 if not self.has_arg(type_, key, value):
+    #                     all_args = False
+    #                     break
+    #             if all_args:
+    #                 return True
+    #     return False
+
     def set_op_type(self, *classes: Type[ArgumentType], **args: str) -> None:
         for type_ in self.types:
-            if all([isinstance(type_, klass) for klass in classes]) and all(
+            if all([self._check_subclasses(type_, klass) for klass in classes]) and all(
                 [self.has_arg(type_, key, value) for key, value in args.items()]
             ):
                 self.type_in_op = type_
@@ -347,33 +426,61 @@ class Argument:
         return False
 
     # SET
-    def assignment_context(self, rhs: Argument) -> bool:
-        if self.has_type(Enum, Mutable) and rhs.has_type(
-            EnumValue, from_enum=self.expr
-        ):
-            self.set_op_type(Enum, Mutable)
-            rhs.set_op_type(EnumValue, from_enum=self.expr)
+    def assignment_context(self, rhs: Argument, state: State) -> bool:
+        basic_assigment_types: TypingList[Tuple[Type, Type]] = [
+            (Enum, EnumValue),
+            (Float, Float),
+            (Message, MessageList),
+            (Connection, Connection),
+            (ConnectionList, ConnectionList),
+            (MessageList, MessageList),
+            (FloatList, FloatList),
+            (SendMessageParam, Float),
+            (SendMessageParam, ModuleVariable),
+        ]
 
-        elif self.has_type(Float, Mutable) and rhs.has_type(Float):
-            self.set_op_type(Float, Mutable)
-            rhs.set_op_type(Float)
+        found_flag = False
+        for assignment_possiblity in basic_assigment_types:
+            if self.has_type(assignment_possiblity[0], Mutable) and rhs.has_type(
+                assignment_possiblity[1]
+            ):
+                self.set_op_type(assignment_possiblity[0], Mutable)
+                rhs.set_op_type(assignment_possiblity[1])
+                found_flag = True
+                break
 
-        elif self.has_type(Message, Mutable) and rhs.has_type(MessageList):
-            self.set_op_type(Message, Mutable)
-            rhs.set_op_type(MessageList)
+        if self.has_type(ModuleVariable, Mutable) and rhs.has_type(ModuleVariable):
+            lhs_type_name = self._find_module_variable_type(state)
+            rhs_type_name = rhs._find_module_variable_type(state)
+            if lhs_type_name == "" or rhs_type_name == "":
+                return False
+            lhs_type = self.get_modvar_type(lhs_type_name)
+            rhs_type = rhs.get_modvar_type(rhs_type_name)
+            self.set_op_type(lhs_type, Mutable)
+            rhs.set_op_type(rhs_type)
+            found_flag = True
 
-        elif self.has_type(SendMessageParam, Mutable) and rhs.has_type(Float):
-            self.set_op_type(SendMessageParam, Mutable)
-            rhs.set_op_type(Float)
+        return found_flag
 
-        elif self.has_type(Connection, Mutable) and rhs.has_type(Connection):
-            self.set_op_type(Connection, Mutable)
-            rhs.set_op_type(Connection)
-
-        else:
-            return False
-
-        return True
+    def _find_module_variable_type(self, state: State) -> str:
+        subtype = ""
+        if not self.has_type(ModuleVariable):
+            return subtype
+        elif self.expr in state.last_agent.module_variables:
+            subtype = state.last_agent.get_module_variable_type(self.expr)
+        elif state.last_action.is_declared_module_variable(self.expr):
+            subtype = state.last_action.get_module_variable_type(self.expr)
+        elif self.has_type(ReceivedMessageParam):
+            behav = state.last_behaviour
+            if isinstance(behav, MessageReceivedBehaviour):
+                subtype = behav.received_message.get_module_variable_type(self.expr)
+        elif self.has_type(SendMessageParam):
+            action = state.last_action
+            if isinstance(action, SendMessageAction):
+                # get the expr split after . character
+                split_expr = self.expr.split(".")[-1]
+                subtype = action.send_message.get_module_variable_type(split_expr)
+        return subtype
 
     # SUBS
     def list_subset_context(self, from_list: Argument, num: Argument) -> bool:
@@ -506,6 +613,10 @@ class Argument:
 
         return True
 
+    def get_modvar_type(self, subtype: str) -> Type:
+        new_type = type(subtype, (ModuleVariable,), {})
+        return new_type
+
     def explain(self) -> str:
         types = f"{self.expr}: [ "
         for argument_type in self.types:
@@ -514,10 +625,11 @@ class Argument:
         types += " ]"
         return types
 
+    def explain_type_in_op(self) -> str:
+        return type(self.type_in_op).__name__ if self.type_in_op else "UNKNOWN"
+
     def print(self) -> None:
         print(f"Argument {self.expr}")
-        print(
-            f"Type in op: {type(self.type_in_op).__name__ if self.type_in_op else 'UNKNOWN'}"
-        )
+        print(f"Type in op: {self.explain_type_in_op()}")
         for argument_type in self.types:
             type(argument_type).__name__

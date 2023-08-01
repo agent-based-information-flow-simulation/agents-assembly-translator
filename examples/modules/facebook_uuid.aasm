@@ -1,0 +1,58 @@
+MODULE UUID
+MODULE LISTS
+
+message facebook_post, query
+	prm photos, float
+	prm msg_id, uuid
+emessage
+
+agent user
+	prm friends, list, conn
+	prm numbers, list, float
+	prm counter, float, init, 0
+	prm num_seen_photos, float, init, 0
+
+	behav initialize, setup
+		action initialize_friends, modify_self
+			decl max_friends, float, 0
+			len max_friends, connections
+			decl num_friends, float, 0
+			rand num_friends, int, uniform, 0, max_friends
+			subs friends, connections, num_friends
+		eaction
+	ebehav
+
+	behav facebook_activity, cyclic, 30
+		action post_photos, send_msg, facebook_post, query
+			decl num_photos, float, 0
+			DECL to_send_id, uuid, ""
+			rand num_photos, int, uniform, 21, 37
+			ADDE numbers, num_photos
+			GETUUID to_send_id
+			set send.photos, num_photos
+			set send.msg_id, to_send_id
+			send friends
+		eaction
+	ebehav
+
+	behav read_posts, msg_rcv, facebook_post, query
+		action update_seen_photos, modify_self
+			add num_seen_photos, rcv.photos
+			DECL random_id, uuid, ""
+			GETUUID random_id
+			ISEQ rcv.msg_id, random_id
+				# this should never occur
+				CLR friends
+			EBLOCK
+			ISNEQ rcv.msg_id, random_id
+				add num_seen_photos, 1
+			EBLOCK
+			SUM numbers, counter
+		eaction
+	ebehav
+eagent
+
+graph barabasi-albert
+	MPARAMS 5, 3
+	defg user, 150
+egraph

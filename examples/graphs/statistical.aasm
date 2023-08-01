@@ -32,6 +32,23 @@ agent user
 	ebehav
 eagent
 
+agent null
+eagent
+
+agent media_source
+  behav facebook_activity, cyclic, 30
+		action new_post, send_msg, facebook_post, query
+			decl idx, float, 0
+			rand idx, int, uniform, 21, 37
+			set send.photos, idx
+			send connections
+		eaction
+  ebehav
+
+eagent
+
 graph statistical
-	defg user, 15, dist_exp, 0.1
+  SIZE 150
+  DEFG user, 20, 10
+  DEFG media_source, 100%, dist_exp, 0.1
 egraph

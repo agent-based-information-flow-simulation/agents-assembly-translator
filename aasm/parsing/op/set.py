@@ -16,7 +16,7 @@ def op_SET(state: State, arg1: str, arg2: str) -> None:
     lhs = Argument(state, arg1)
     rhs = Argument(state, arg2)
     state.require(
-        lhs.assignment_context(rhs),
+        lhs.assignment_context(rhs, state),
         "Mismatched types in the assignment context.",
         f"ARG1 {lhs.explain()}, ARG2 {rhs.explain()}",
     )

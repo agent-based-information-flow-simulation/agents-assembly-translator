@@ -32,3 +32,13 @@ class ConnectionDeclaration(Declaration):
     def print(self) -> None:
         print(f"ConnectionDeclaration: {self.name}")
         super().print()
+
+
+class ModuleVariableDeclaration(Declaration):
+    def __init__(self, name: Argument, value: Argument, subtype: str):
+        super().__init__(name=name, value=value)
+        self.subtype: str = subtype
+
+    def print(self) -> None:
+        print(f"ModuleVariableDeclaration: {self.name}: {self.subtype}")
+        super().print()

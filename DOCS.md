@@ -241,7 +241,7 @@ Types:
 
 `REMEN list: List, num, Integer` - Removes `num` random elements from `list`. If `list` is too short, it clears it.
 
-`LEN result: MutFlost, list: List` - Saves length of `list` in `result`.
+`LEN result: MutFloat, list: List` - Saves length of `list` in `result`.
 
 `CLR list: List` - Clears contents of `list`.
 
@@ -264,6 +264,10 @@ Types:
 
 `.` (`msg.prm`) - Allows to access the value of `prm` from `msg`.
 
+`LOGS level: {debug, info, warning, error, critical}, name0: Any, name1: Any, ...` - Logs a message with specified `level` and `name0`, `name1`, ... as arguments.
+
+`MODULE module_name` - Introduces module with given `module_name`
+
 ## Message Scope <a name = "message-scope"></a>
 
 ### Parameters <a name = "message-scope-parameters"></a>
@@ -275,3 +279,31 @@ Types:
 `SIZE value: Integer` - Sets the size of the graph.
 
 `DEFG agent_type: Name, amount: Float[%], connections: {Float, dist_normal, dist_uniform, dist_exp} [, DistArgs]` - Creates a new agent type with specified `amount` of agents and number `connections`. If the `amount` ends with `%`, then the percent refers to the size of the graph; else, it does not respect the size of the graph. The number of connections can be specified as a number or distribution. In the case of a fixed number, each agent will have the same number of connections. In the case of a distribution, each agent will have the number of connections drawn from the distribution.
+
+## Modules <a name = "modules"></a>
+
+### Module definition
+
+Modules are defined in .aasm.mod files which utilise the following directives:
+
+`!name NAME` - Obligatory, defines the name of the module as `NAME`.
+
+`!description` - All lines following this directive, until the next one or end of file will be used as a module description. In the generated code this will be available as a comment or skipped.
+
+`!targets` - All lines following this directive, until the next one or end of file must be one-word (no whitespaces), names of targets for which the module has been implemented.
+
+`!types` - All line following this directive, until the next one or end of file must be one-word (no whitespaces), unique names of types which the module uses.
+
+`!instructions` - All lines following this directive, until the next one or end of file contain declarations of instructions available in the module.
+The format of the declaration is the following: `NAME[*] [arg_name [mut] arg_type]...`
+Only one argument can have the `mut` annotation. *Modifying multiple values in the instruction is not supported.*
+If `NAME` ends with `*` then the instruction is considered to be a conditional (if) block.
+Conditional blocks cannot contain `mut` annotations.
+The following types are availble for `arg_type`: `float`, `enum`, `enum_val`, `list`, `list_conn`, `list_msg`, `list_float`, `conn`, `literal`, `message` and any type introduced by `!types` in the given module.
+
+`!preamble TARGET` - All lines following this directive, until the next one or end of file will be inserted verbatim at the top of the translated file for a given target.
+
+`!impl NAME TARGET` - All lines following this directive, until the next one or end of file are the implementation of instruction `NAME` for provided `TARGET`.
+If the insturction is a conditional block it must return boolean values on all code paths to ensure proper functioning.
+If the instruction contains a `mut` argument it must return it on all code paths to ensure proper functioning.
+The above conditions are not verified by the translator.

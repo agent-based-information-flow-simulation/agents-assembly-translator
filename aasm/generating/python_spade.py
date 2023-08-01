@@ -5,6 +5,8 @@ from typing import TYPE_CHECKING, List
 from aasm.generating.code import Code
 from aasm.generating.python_code import PythonCode
 from aasm.generating.python_graph import PythonGraph
+from aasm.generating.python_module import PythonModule
+
 from aasm.intermediate.action import SendMessageAction
 from aasm.intermediate.argument import (
     AgentParam,
@@ -19,7 +21,11 @@ from aasm.intermediate.argument import (
 )
 from aasm.intermediate.behaviour import MessageReceivedBehaviour
 from aasm.intermediate.block import Block
-from aasm.intermediate.declaration import ConnectionDeclaration, FloatDeclaration
+from aasm.intermediate.declaration import (
+    ConnectionDeclaration,
+    FloatDeclaration,
+    ModuleVariableDeclaration,
+)
 from aasm.intermediate.instruction import (
     Add,
     AddElement,
@@ -42,6 +48,12 @@ from aasm.intermediate.instruction import (
     ListRead,
     ListWrite,
     Logarithm,
+    Logs,
+    LogsCritical,
+    LogsDebug,
+    LogsError,
+    LogsInfo,
+    LogsWarning,
     MathOperation,
     Modulo,
     Multiply,
@@ -63,6 +75,7 @@ from aasm.intermediate.instruction import (
     WhileLessThan,
     WhileLessThanOrEqual,
     WhileNotEqual,
+    ModuleInstruction,
 )
 from aasm.parsing.parse import parse_lines
 
@@ -72,10 +85,14 @@ if TYPE_CHECKING:
     from aasm.intermediate.argument import Argument
     from aasm.intermediate.behaviour import Behaviour
     from aasm.intermediate.message import Message as IntermediateMessage
+    from aasm.modules.module import Module
 
 
 def get_spade_code(
-    aasm_lines: List[str], indent_size: int = 4, debug: bool = False
+    aasm_lines: List[str],
+    indent_size: int = 4,
+    debug: bool = False,
+    modules: None | List[Module] = None,
 ) -> Code:
     """Generates SPADE code in Python from `aasm_lines`.
 
@@ -90,6 +107,9 @@ def get_spade_code(
     debug: bool, optional
         Print the translator debug information to the standard output
 
+    modules: List[Module], optional
+        A list of Agents Assembly Modules compatible with SPADE platform
+
     Returns
     -------
     SPADE code along with the algorithm for the graph generation
@@ -99,34 +119,47 @@ def get_spade_code(
     PanicException
         If an error is detected while parsing the `aasm_lines`.
     """
-    parsed = parse_lines(aasm_lines, debug)
+    if modules is None:
+        modules = []
+    parsed = parse_lines(aasm_lines, debug, modules)
+    module_code_lines = []
+    for module in modules:
+        module_code_lines += PythonModule(indent_size, module).code_lines
     return Code(
-        PythonSpadeCode(indent_size, parsed.agents).code_lines,
+        PythonSpadeCode(indent_size, parsed.agents, modules).code_lines,
         PythonGraph(indent_size, parsed.graph).code_lines,
+        module_code_lines,
     )
 
 
 class PythonSpadeCode(PythonCode):
-    def __init__(self, indent_size: int, agents: List[Agent]):
+    def __init__(self, indent_size: int, agents: List[Agent], modules: List[Module]):
         super().__init__(indent_size)
-        if agents:
+        self.modules = modules
+        self.target = "spade"
+        self.filter_modules()
+        for agent in agents:
+            self.add_newlines(2)
+            self.generate_agent(agent)
             self.add_required_imports()
-            for agent in agents:
-                self.add_newlines(2)
-                self.generate_agent(agent)
 
-    def add_required_imports(self) -> None:
-        self.add_line("import copy")
-        self.add_line("import datetime")
-        self.add_line("import random")
-        self.add_line("import httpx")
-        self.add_line("import numpy")
-        self.add_line("import orjson")
-        self.add_line("import spade")
-        self.add_line("import sys")
+    def filter_modules(self):
+        self.modules = [
+            target_mod
+            for target_mod in self.modules
+            for target in target_mod.targets
+            if target.name == self.target
+        ]
+
+    #    spade_modules = []
+    #    for target_mod in self.modules:
+    #        for target in target_mod.targets:
+    #            if target.name == self.target:
+    #                spade_modules.append(target_mod)
+    #    self.modules = spade_modules
 
     def generate_agent(self, agent: Agent) -> None:
-        self.add_line(f"class {agent.name}(spade.agent.Agent):")
+        self.add_line(f"class {agent.name}(spade.agent.Agent):", {"spade"})
         self.indent_right()
 
         self.add_agent_constructor(agent)
@@ -202,14 +235,16 @@ class PythonSpadeCode(PythonCode):
             mean = f"self.limit_number({dist_normal_float_param.mean})"
             std_dev = f"self.limit_number({dist_normal_float_param.std_dev})"
             self.add_line(
-                f'self.{name} = self.limit_number(kwargs.get("{name}", numpy.random.normal({mean}, {std_dev})))'
+                f'self.{name} = self.limit_number(kwargs.get("{name}", numpy.random.normal({mean}, {std_dev})))',
+                {"numpy"},
             )
 
         for dist_exp_float_param in agent.dist_exp_floats.values():
             name = dist_exp_float_param.name
             lambda_ = f"self.limit_number({dist_exp_float_param.lambda_})"
             self.add_line(
-                f'self.{name} = self.limit_number(kwargs.get("{name}", numpy.random.exponential(self.limit_number(1 / {lambda_}))))'
+                f'self.{name} = self.limit_number(kwargs.get("{name}", numpy.random.exponential(self.limit_number(1 / {lambda_}))))',
+                {"numpy"},
             )
 
         for dist_uniform_float_param in agent.dist_unifrom_floats.values():
@@ -217,7 +252,8 @@ class PythonSpadeCode(PythonCode):
             a = f"self.limit_number({dist_uniform_float_param.a})"
             b = f"self.limit_number({dist_uniform_float_param.b})"
             self.add_line(
-                f'self.{name} = self.limit_number(kwargs.get("{name}", random.uniform({a}, {b})))'
+                f'self.{name} = self.limit_number(kwargs.get("{name}", random.uniform({a}, {b})))',
+                {"random"},
             )
 
         for enum_param in agent.enums.values():
@@ -229,7 +265,8 @@ class PythonSpadeCode(PythonCode):
             values = f'[{", ".join(value_list)}]'
             percentages = f'[{", ".join(percentage_list)}]'
             self.add_line(
-                f'self.{enum_param.name} = kwargs.get("{enum_param.name}", random.choices({values}, {percentages})[0])'
+                f'self.{enum_param.name} = kwargs.get("{enum_param.name}", random.choices({values}, {percentages})[0])',
+                {"random"},
             )
 
         for connection_list_param in agent.connection_lists.values():
@@ -270,17 +307,19 @@ class PythonSpadeCode(PythonCode):
     def add_message_utils(self) -> None:
         self.add_line("def get_json_from_spade_message(self, msg):")
         self.indent_right()
-        self.add_line("return orjson.loads(msg.body)")
+        self.add_line("return orjson.loads(msg.body)", {"orjson"})
         self.indent_left()
         self.add_newline()
 
         self.add_line("def get_spade_message(self, receiver_jid, body):")
         self.indent_right()
-        self.add_line("msg = spade.message.Message(to=receiver_jid)")
+        self.add_line("msg = spade.message.Message(to=receiver_jid)", {"spade"})
         self.add_line('body["sender"] = str(self.jid)')
         self.add_line('msg.metadata["type"] = body["type"]')
         self.add_line('msg.metadata["performative"] = body["performative"]')
-        self.add_line('msg.body = str(orjson.dumps(body), encoding="utf-8")')
+        self.add_line(
+            'msg.body = str(orjson.dumps(body), encoding="utf-8")', {"orjson"}
+        )
         self.add_line("return msg")
 
         self.indent_left()
@@ -293,7 +332,8 @@ class PythonSpadeCode(PythonCode):
         self.indent_right()
         self.add_no_match_template("BackupBehaviour")
         self.add_line(
-            "self.add_behaviour(self.BackupBehaviour(start_at=datetime.datetime.now() + datetime.timedelta(seconds=self.backup_delay), period=self.backup_period), BackupBehaviour_template)"
+            "self.add_behaviour(self.BackupBehaviour(start_at=datetime.datetime.now() + datetime.timedelta(seconds=self.backup_delay), period=self.backup_period), BackupBehaviour_template)",
+            {"datetime"},
         )
         self.indent_left()
 
@@ -306,7 +346,8 @@ class PythonSpadeCode(PythonCode):
         for one_time_behaviour in agent.one_time_behaviours.values():
             self.add_no_match_template(f"{one_time_behaviour.name}")
             self.add_line(
-                f"self.add_behaviour(self.{one_time_behaviour.name}(start_at=datetime.datetime.now() + datetime.timedelta(seconds={one_time_behaviour.delay})), {one_time_behaviour.name}_template)"
+                f"self.add_behaviour(self.{one_time_behaviour.name}(start_at=datetime.datetime.now() + datetime.timedelta(seconds={one_time_behaviour.delay})), {one_time_behaviour.name}_template)",
+                {"datetime"},
             )
 
         for cyclic_behaviour in agent.cyclic_behaviours.values():
@@ -317,7 +358,8 @@ class PythonSpadeCode(PythonCode):
 
         for message_received_behaviour in agent.message_received_behaviours.values():
             self.add_line(
-                f"{message_received_behaviour.name}_template = spade.template.Template()"
+                f"{message_received_behaviour.name}_template = spade.template.Template()",
+                {"spade"},
             )
             self.add_line(
                 f'{message_received_behaviour.name}_template.set_metadata("type", "{message_received_behaviour.received_message.type}")'
@@ -336,18 +378,22 @@ class PythonSpadeCode(PythonCode):
         self.indent_left()
 
     def add_no_match_template(self, behaviour_name: str) -> None:
-        self.add_line(f"{behaviour_name}_template = spade.template.Template()")
+        self.add_line(
+            f"{behaviour_name}_template = spade.template.Template()", {"spade"}
+        )
         self.add_line(
             f'{behaviour_name}_template.set_metadata("reserved", "no_message_match")'
         )
 
     def add_backup_behaviour(self, agent: Agent) -> None:
-        self.add_line("class BackupBehaviour(spade.behaviour.PeriodicBehaviour):")
+        self.add_line(
+            "class BackupBehaviour(spade.behaviour.PeriodicBehaviour):", {"spade"}
+        )
         self.indent_right()
         self.add_line("def __init__(self, start_at, period):")
         self.indent_right()
         self.add_line("super().__init__(start_at=start_at, period=period)")
-        self.add_line("self.http_client = httpx.AsyncClient(timeout=period)")
+        self.add_line("self.http_client = httpx.AsyncClient(timeout=period)", {"httpx"})
         self.indent_left()
         self.add_newline()
 
@@ -356,7 +402,8 @@ class PythonSpadeCode(PythonCode):
         self.add_line("data = {")
         self.indent_right()
         self.add_line(
-            '"__timestamp__": int(datetime.datetime.timestamp(datetime.datetime.utcnow())),'
+            '"__timestamp__": int(datetime.datetime.timestamp(datetime.datetime.utcnow())),',
+            {"datetime"},
         )
         self.add_line('"jid": str(self.agent.jid),')
         self.add_line(f'"type": "{agent.name}",')
@@ -416,7 +463,8 @@ class PythonSpadeCode(PythonCode):
         self.add_line("try:")
         self.indent_right()
         self.add_line(
-            'await self.http_client.post(self.agent.backup_url, headers={"Content-Type": "application/json"}, data=orjson.dumps(data))'
+            'await self.http_client.post(self.agent.backup_url, headers={"Content-Type": "application/json"}, data=orjson.dumps(data))',
+            {"orjson"},
         )
         self.indent_left()
         self.add_line("except Exception as e:")
@@ -452,7 +500,7 @@ class PythonSpadeCode(PythonCode):
         self.indent_left()
 
     def add_agent_behaviour(self, behaviour: Behaviour, behaviour_type: str) -> None:
-        self.add_line(f"class {behaviour.name}({behaviour_type}):")
+        self.add_line(f"class {behaviour.name}({behaviour_type}):", {"spade"})
         self.indent_right()
 
         for action in behaviour.actions.values():
@@ -543,7 +591,10 @@ class PythonSpadeCode(PythonCode):
     def parse_arg(self, arg: Argument) -> str:
         match arg.type_in_op:
             case AgentParam():
-                return f"self.agent.{arg.expr}"
+                if arg.expr == "self":
+                    return "self.agent.jid"
+                else:
+                    return f"self.agent.{arg.expr}"
 
             case EnumValue():
                 return f'"{arg.expr}"'
@@ -585,6 +636,12 @@ class PythonSpadeCode(PythonCode):
                     value = f"{self.parse_arg(statement.value)}"
                     self.add_line(f"{statement.name} = {value}")
 
+                case ModuleVariableDeclaration():
+                    self.add_line("")
+                    self.add_line("# module variable declaration")
+                    value = f"{self.parse_arg(statement.value)}"
+                    self.add_line(f"{statement.name} = {value}")
+
                 case Subset():
                     self.add_line("")
                     self.add_line("# subset")
@@ -600,7 +657,8 @@ class PythonSpadeCode(PythonCode):
                     self.add_line("return")
                     self.indent_left()
                     self.add_line(
-                        f"{dst_list} = [copy.deepcopy(elem) for elem in random.sample({src_list}, min({num}, {src_list_len}))]"
+                        f"{dst_list} = [copy.deepcopy(elem) for elem in random.sample({src_list}, min({num}, {src_list_len}))]",
+                        {"copy", "random"},
                     )
 
                 case Clear():
@@ -657,7 +715,8 @@ class PythonSpadeCode(PythonCode):
                     self.add_line("return")
                     self.indent_left()
                     self.add_line(
-                        f'{msg} = copy.deepcopy(random.choice(list(filter(lambda msg: msg["type"] == {msg}["type"] and msg["performative"] == {msg}["performative"], {msg_list}))))'
+                        f'{msg} = copy.deepcopy(random.choice(list(filter(lambda msg: msg["type"] == {msg}["type"] and msg["performative"] == {msg}["performative"], {msg_list}))))',
+                        {"copy", "random"},
                     )
 
                 case Set() if isinstance(statement.value.type_in_op, Float):
@@ -689,7 +748,8 @@ class PythonSpadeCode(PythonCode):
                     a = f"self.agent.limit_number({self.parse_arg(statement.a)})"
                     b = f"self.agent.limit_number({self.parse_arg(statement.b)})"
                     self.add_line(
-                        f"{dst} = self.agent.limit_number(random.uniform({a}, {b}))"
+                        f"{dst} = self.agent.limit_number(random.uniform({a}, {b}))",
+                        {"random"},
                     )
 
                 case NormalDist():
@@ -708,7 +768,8 @@ class PythonSpadeCode(PythonCode):
                     self.add_line("return")
                     self.indent_left()
                     self.add_line(
-                        f"{dst} = self.agent.limit_number(numpy.random.normal({mean}, {std_dev}))"
+                        f"{dst} = self.agent.limit_number(numpy.random.normal({mean}, {std_dev}))",
+                        {"numpy"},
                     )
 
                 case ExpDist():
@@ -726,7 +787,8 @@ class PythonSpadeCode(PythonCode):
                     self.add_line("return")
                     self.indent_left()
                     self.add_line(
-                        f"{dst} = self.agent.limit_number(numpy.random.exponential(self.agent.limit_number(1 / {lambda_})))"
+                        f"{dst} = self.agent.limit_number(numpy.random.exponential(self.agent.limit_number(1 / {lambda_})))",
+                        {"numpy"},
                     )
 
                 case Comparaison():
@@ -926,7 +988,7 @@ class PythonSpadeCode(PythonCode):
                     )
                     self.add_line("return")
                     self.indent_left()
-                    self.add_line(f"random.shuffle({list_})")
+                    self.add_line(f"random.shuffle({list_})", {"random"})
                     self.add_line(
                         f"{list_} = {list_}[:int(self.agent.limit_number({list_len} - {num}))]"
                     )
@@ -991,14 +1053,16 @@ class PythonSpadeCode(PythonCode):
                             self.add_line("")
                             self.add_line("# sin")
                             self.add_line(
-                                f"{dst} = self.agent.limit_number(numpy.sin(numpy.deg2rad({degree})))"
+                                f"{dst} = self.agent.limit_number(numpy.sin(numpy.deg2rad({degree})))",
+                                {"numpy"},
                             )
 
                         case Cos():
                             self.add_line("")
                             self.add_line("# cos")
                             self.add_line(
-                                f"{dst} = self.agent.limit_number(numpy.cos(numpy.deg2rad({degree})))"
+                                f"{dst} = self.agent.limit_number(numpy.cos(numpy.deg2rad({degree})))",
+                                {"numpy"},
                             )
 
                         case _:
@@ -1016,7 +1080,8 @@ class PythonSpadeCode(PythonCode):
                             self.add_line("")
                             self.add_line("# power")
                             self.add_line(
-                                f"{dst} = self.agent.limit_number(numpy.power({base}, {num}))"
+                                f"{dst} = self.agent.limit_number(numpy.power({base}, {num}))",
+                                {"numpy"},
                             )
 
                         case Logarithm():
@@ -1034,7 +1099,8 @@ class PythonSpadeCode(PythonCode):
                             numerator = f"self.agent.limit_number(numpy.log({num}))"
                             denominator = f"self.agent.limit_number(numpy.log({base}))"
                             self.add_line(
-                                f"{dst} = self.agent.limit_number({numerator} / {denominator})"
+                                f"{dst} = self.agent.limit_number({numerator} / {denominator})",
+                                {"numpy"},
                             )
 
                         case _:
@@ -1042,5 +1108,80 @@ class PythonSpadeCode(PythonCode):
                                 f"Unknown exponentiation operation statement: {statement.print()}"
                             )
 
+                case Logs():
+                    logger_msg = '{ "jid": self.agent.jid, "agent": type(self.agent).__name__, "behaviour": type(self).__name__, "action": inspect.stack()[0].function'
+                    for arg in statement.args:
+                        name = arg.expr + "__" + arg.explain_type_in_op()
+                        value = self.parse_arg(arg)
+                        logger_msg += f', "{name}": {value}'
+                    logger_msg += " }"
+
+                    match statement:
+                        case LogsDebug():
+                            self.add_line("")
+                            self.add_line("# logs (debug)")
+                            self.add_line(
+                                f"if self.agent.logger: self.agent.logger.debug({logger_msg})",
+                                {"inspect"},
+                            )
+
+                        case LogsInfo():
+                            self.add_line("")
+                            self.add_line("# logs (info)")
+                            self.add_line(
+                                f"if self.agent.logger: self.agent.logger.info({logger_msg})",
+                                {"inspect"},
+                            )
+
+                        case LogsWarning():
+                            self.add_line("")
+                            self.add_line("# logs (warning)")
+                            self.add_line(
+                                f"if self.agent.logger: self.agent.logger.warning({logger_msg})",
+                                {"inspect"},
+                            )
+
+                        case LogsError():
+                            self.add_line("")
+                            self.add_line("# logs (error)")
+                            self.add_line(
+                                f"if self.agent.logger: self.agent.logger.error({logger_msg})",
+                                {"inspect"},
+                            )
+
+                        case LogsCritical():
+                            self.add_line("")
+                            self.add_line("# logs (critical)")
+                            self.add_line(
+                                f"if self.agent.logger: self.agent.logger.critical({logger_msg})",
+                                {"inspect"},
+                            )
+
+                        case _:
+                            raise Exception(
+                                f"Unknown logs statement: {statement.print()}"
+                            )
+                case ModuleInstruction():
+                    self.add_line("")
+                    self.add_line(f"# module instruction {statement.op_code}")
+                    arguments_string = ", ".join(
+                        [self.parse_arg(arg) for arg in statement.args]
+                    )
+                    if statement.is_block:
+                        self.add_line(
+                            # NOTE: there are no while statements in the modules, all blocks are ifs
+                            f"if {statement.module}.{statement.op_code}({arguments_string}):"
+                        )
+                    else:
+                        if statement.assignment is None:
+                            self.add_line(
+                                f"{statement.module}.{statement.op_code}({arguments_string})"
+                            )
+                        else:
+                            self.add_line(
+                                f"{self.parse_arg(statement.assignment)} = {statement.module}.{statement.op_code}({arguments_string})"
+                            )
+
                 case _:
+                    print(statement)
                     raise Exception(f"Unknown statement: {statement.print()}")

@@ -18,6 +18,7 @@ from aasm.parsing.op.graph import op_EGRAPH, op_GRAPH
 from aasm.parsing.op.len import op_LEN
 from aasm.parsing.op.list_inclusion import handle_list_inclusion
 from aasm.parsing.op.list_modification import handle_list_modification
+from aasm.parsing.op.logs import op_LOGS
 from aasm.parsing.op.lr import op_LR
 from aasm.parsing.op.lw import op_LW
 from aasm.parsing.op.math import handle_math_statement
@@ -32,15 +33,20 @@ from aasm.parsing.op.scale import op_SCALE
 from aasm.parsing.op.send import op_SEND
 from aasm.parsing.op.set import op_SET
 from aasm.parsing.op.size import op_SIZE
+from aasm.parsing.op.mparams import op_MPARAMS
 from aasm.parsing.op.subs import op_SUBS
+from aasm.parsing.op.deftype import op_DEFTYPE
+from aasm.parsing.op.types import op_TYPES
+from aasm.parsing.op.module import op_MODULE
 from aasm.parsing.state import State
 
 if TYPE_CHECKING:
     from aasm.parsing.state import ParsedData
+    from aasm.modules.module import Module
 
 
-def parse_lines(lines: List[str], debug: bool) -> ParsedData:
-    state = State(lines, debug)
+def parse_lines(lines: List[str], debug: bool, modules: List[Module]) -> ParsedData:
+    state = State(lines, modules, debug)
     for tokens in state.tokens_from_lines():
         match tokens:
             case ["AGENT", name]:
@@ -150,11 +156,20 @@ def parse_lines(lines: List[str], debug: bool) -> ParsedData:
             case ["SCALE", scale]:
                 op_SCALE(state, scale)
 
+            case ["MPARAMS", m0, m_inc]:
+                op_MPARAMS(state, m0, m_inc)
+
             case ["DEFG", agent_name, amount, *args]:
                 op_DEFG(state, agent_name, amount, args)
 
             case ["DEFNODE", agent_name, row]:
                 op_DEFNODE(state, agent_name, row)
+
+            case ["DEFTYPE", agent_type, amount, *args]:
+                op_DEFTYPE(state, agent_type, amount, args)
+
+            case ["TYPES", amount]:
+                op_TYPES(state, amount)
 
             case ["LR", dst, list_, idx]:
                 op_LR(state, dst, list_, idx)
@@ -162,7 +177,20 @@ def parse_lines(lines: List[str], debug: bool) -> ParsedData:
             case ["LW", list_, idx, value]:
                 op_LW(state, list_, idx, value)
 
-            case _:
-                state.panic(f"Unknown tokens: {tokens}")
+            case ["LOGS", level, *args]:
+                op_LOGS(state, level, args)
+
+            case ["MODULE", name]:
+                op_MODULE(state, name)
+
+            case [OPCODE, *args]:
+                found = False
+                for module in state.loaded_modules:
+                    for instruction in module.instructions:
+                        if instruction.opcode == OPCODE:
+                            found = True
+                            instruction.op(state, args)
+                if not found:
+                    state.panic(f"Unknown tokens: {tokens}")
 
     return state.get_parsed_data()

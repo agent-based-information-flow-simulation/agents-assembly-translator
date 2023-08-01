@@ -37,11 +37,20 @@ class Action:
     def is_declared_connection(self, name: str) -> bool:
         return self.current_block.is_declared_connection(name)
 
+    def is_declared_module_variable(self, name: str) -> bool:
+        return self.current_block.is_declared_module_variable(name)
+
+    def get_module_variable_type(self, name: str) -> str:
+        return self.current_block.get_module_variable_type(name)
+
     def add_float_declaration(self, declaration: Declaration) -> None:
         self.current_block.add_float_declaration(declaration)
 
     def add_connection_declaration(self, declaration: Declaration) -> None:
         self.current_block.add_connection_declaration(declaration)
+
+    def add_module_variable_declaration(self, declaration: Declaration) -> None:
+        self.current_block.add_module_variable_declaration(declaration)
 
     def add_instruction(self, instruction: Instruction) -> None:
         self.current_block.add_statement(instruction)
