@@ -1,25 +1,39 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Dict
+from typing import TYPE_CHECKING, List as TypingList, Dict
 from aasm.intermediate.argument import Argument
 from aasm.modules.type import Type
 
 from aasm.utils.exception import PanicException
 
-from aasm.intermediate.argument import Mutable, Float, ModuleVariable
+from aasm.intermediate.argument import (
+    Mutable,
+    Float,
+    Enum,
+    EnumValue,
+    ConnectionList,
+    MessageList,
+    FloatList,
+    List,
+    Connection,
+    Literal,
+    Message,
+)
 from aasm.intermediate.instruction import ModuleInstruction
 
 if TYPE_CHECKING:
     from aasm.parsing.state import State
+
+from pprint import pprint
 
 
 class Instruction:
     def __init__(
         self,
         module_name: str,
-        available_types: List[Type],
+        available_types: TypingList[Type],
         opcode: str,
-        args: List[str],
+        args: TypingList[str],
     ):
         self.module = module_name
         if opcode.endswith("*"):
@@ -28,12 +42,51 @@ class Instruction:
         else:
             self.opcode = opcode
             self.is_block = False
-        self.available_types = available_types
-        self.args_dict: Dict[str, List[str]] = {}
+        self.available_types = [
+            Type("mut", "base"),
+            Type("float", "base"),
+            Type("enum", "base"),
+            Type("enum_val", "base"),
+            Type("list_conn", "base"),
+            Type("list_msg", "base"),
+            Type("list_float", "base"),
+            Type("list", "base"),
+            Type("conn", "base"),
+            Type("literal", "base"),
+            Type("msg", "base"),
+        ]
+        self.available_types.extend(available_types)
+        self.args_dict: Dict[str, TypingList[str]] = {}
         self.arg_names = []
         self._parse_args(args)
+        self._validate_args_dict()
 
-    def _parse_args(self, args: List[str]):
+        print("\n")
+        print(f"Instruction {self.opcode} created with:")
+        pprint(self.args_dict)
+        print("\n")
+
+    def _validate_args_dict(self):
+        # ensure that at most one argument is mutable
+        mutable_count = 0
+        for arg_name in self.args_dict.keys():
+            for arg_type in self.args_dict[arg_name]:
+                if arg_type == "mut":
+                    mutable_count += 1
+        if mutable_count > 1:
+            raise PanicException(
+                f"Error in module {self.module}, instruction {self.opcode}.",
+                f"Instruction {self.opcode} has more than one mutable argument.",
+                "Ensure that at most one argument is mutable.",
+            )
+        elif mutable_count == 1 and self.is_block:
+            raise PanicException(
+                f"Error in module {self.module}, instruction {self.opcode}.",
+                f"Instruction {self.opcode} is a block instruction and cannot have a mutable argument.",
+                "Remove the mutable argument.",
+            )
+
+    def _parse_args(self, args: TypingList[str]):
         current_var_name = ""
         current_var_type = ""
         first_arg = True
@@ -64,6 +117,14 @@ class Instruction:
                 f"Variable {current_var_name} has no type specified.",
                 "Specify a type for the variable.",
             )
+
+        if len(self.args_dict[current_var_name]) > 1:
+            if "mut" not in self.args_dict[current_var_name]:
+                raise PanicException(
+                    f"Error in module {self.module}, instruction {self.opcode}. Variable {current_var_name} cannot have multiple types.",
+                    f"Variable {current_var_name} cannot have multiple types.",
+                    "Specify only one type for the variable.",
+                )
         # verify that the types associated with current_var_name are valid
         for var_type in self.args_dict[current_var_name]:
             if var_type not in [tmp_type.name for tmp_type in self.available_types]:
@@ -73,7 +134,7 @@ class Instruction:
                     "Define the type.",
                 )
 
-    def op(self, state: State, arguments: List[str]) -> None:
+    def op(self, state: State, arguments: TypingList[str]) -> None:
         state.require(
             state.in_action,
             "Not inside any action.",
@@ -103,19 +164,43 @@ class Instruction:
 
     def _validate_types_in_op_context(self, parsed_args) -> bool:
         arg_idx = 0
-        types_to_check = []
         for arg in parsed_args:
+            types_to_check = []
+            print(f"\nChecking arg: {arg.explain()}")
             for arg_type in self.args_dict[self.arg_names[arg_idx]]:
                 if arg_type == "mut":
                     types_to_check.append(Mutable)
                 elif arg_type == "float":
                     types_to_check.append(Float)
+                elif arg_type == "enum":
+                    types_to_check.append(Enum)
+                elif arg_type == "enum_val":
+                    types_to_check.append(EnumValue)
+                elif arg_type == "list_conn":
+                    types_to_check.append(List)
+                    types_to_check.append(ConnectionList)
+                elif arg_type == "list_msg":
+                    types_to_check.append(List)
+                    types_to_check.append(MessageList)
+                elif arg_type == "list_float":
+                    types_to_check.append(List)
+                    types_to_check.append(FloatList)
+                elif arg_type == "list":
+                    types_to_check.append(List)
+                elif arg_type == "conn":
+                    types_to_check.append(Connection)
+                elif arg_type == "literal":
+                    types_to_check.append(Literal)
+                elif arg_type == "msg":
+                    types_to_check.append(Message)
                 else:
                     new_type = arg.get_modvar_type(arg_type)
                     types_to_check.append(new_type)
 
+            print(f"Checking types: {types_to_check} for arg: {arg.explain()}")
             for arg_type in types_to_check:
                 if not arg.has_type(arg_type):
+                    print(f"{arg_type} Failed!")
                     return False
             arg.set_op_type(*types_to_check)
             arg_idx += 1

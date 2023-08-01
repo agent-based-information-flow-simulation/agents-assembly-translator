@@ -20,12 +20,13 @@ uuid
 GETUUID a: mut uuid
 ISEQ* a: uuid, b: uuid
 ISNEQ* a: uuid, b: uuid
+TEST a: float, b: float
 
 !preamble spade
 import uuid
 
 !impl GETUUID spade
-return a = str(uuid.uuid4())
+return str(uuid.uuid4())
 
 !impl ISEQ spade
 if a == b:
@@ -36,3 +37,7 @@ return False
 if a != b:
     return True
 return False
+
+!impl TEST spade
+return a
+

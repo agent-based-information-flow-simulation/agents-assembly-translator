@@ -1,4 +1,5 @@
 MODULE UUID
+MODULE LISTS
 
 message facebook_post, query
 	prm photos, float
@@ -7,6 +8,8 @@ emessage
 
 agent user
 	prm friends, list, conn
+	prm numbers, list, float
+	prm counter, float, init, 0
 	prm num_seen_photos, float, init, 0
 
 	behav initialize, setup
@@ -24,6 +27,7 @@ agent user
 			decl num_photos, float, 0
 			DECL to_send_id, uuid, ""
 			rand num_photos, int, uniform, 21, 37
+			ADDE numbers, num_photos
 			GETUUID to_send_id
 			set send.photos, num_photos
 			set send.msg_id, to_send_id
@@ -43,6 +47,7 @@ agent user
 			ISNEQ rcv.msg_id, random_id
 				add num_seen_photos, 1
 			EBLOCK
+			SUM numbers, counter
 		eaction
 	ebehav
 eagent
