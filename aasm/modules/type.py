@@ -10,6 +10,11 @@ class Type:
     def full_qualified_name(self) -> str:
         return f"{self.module}::{self.name}"
 
+    def __eq__(self, other):
+        if isinstance(other, Type):
+            return self.name == other.name and self.module == other.module
+        return False
+
     def __repr__(self):
         return f"Type[{self.full_qualified_name()}]"
 

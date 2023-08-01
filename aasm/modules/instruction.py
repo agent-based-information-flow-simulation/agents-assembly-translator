@@ -53,25 +53,31 @@ class Instruction:
             Type("list", "base"),
             Type("conn", "base"),
             Type("literal", "base"),
-            Type("msg", "base"),
+            Type("message", "base"),
         ]
         self.available_types.extend(available_types)
-        self.args_dict: Dict[str, TypingList[str]] = {}
+        self.args_dict: Dict[str, TypingList[Type]] = {}
         self.arg_names = []
+        self.assignment = None
         self._parse_args(args)
         self._validate_args_dict()
+        self._set_assignment()
 
-        print("\n")
-        print(f"Instruction {self.opcode} created with:")
-        pprint(self.args_dict)
-        print("\n")
+    def _set_assignment(self):
+        # find the mutable value in args_dict
+        mutable_arg = None
+        for arg_name in self.args_dict.keys():
+            for arg_type in self.args_dict[arg_name]:
+                if arg_type == Type("mut", "base"):
+                    mutable_arg = arg_name
+        self.assignment = mutable_arg
 
     def _validate_args_dict(self):
         # ensure that at most one argument is mutable
         mutable_count = 0
         for arg_name in self.args_dict.keys():
             for arg_type in self.args_dict[arg_name]:
-                if arg_type == "mut":
+                if arg_type == Type("mut", "base"):
                     mutable_count += 1
         if mutable_count > 1:
             raise PanicException(
@@ -107,8 +113,18 @@ class Instruction:
                 self.args_dict[current_var_name] = []
                 first_arg = False
             else:
-                current_var_type = arg
+                current_var_type = self._get_arg_type_from_name(arg)
                 self.args_dict[current_var_name].append(current_var_type)
+
+    def _get_arg_type_from_name(self, arg_name: str) -> Type:
+        for arg_type in self.available_types:
+            if arg_type.name == arg_name:
+                return arg_type
+        raise PanicException(
+            f"Error in module {self.module}, instruction {self.opcode}. Type {arg_name} is not defined.",
+            f"Type {arg_name} is not defined.",
+            "Define the type.",
+        )
 
     def _validate_var_declaration(self, current_var_name: str):
         if len(self.args_dict[current_var_name]) == 0:
@@ -119,7 +135,10 @@ class Instruction:
             )
 
         if len(self.args_dict[current_var_name]) > 1:
-            if "mut" not in self.args_dict[current_var_name]:
+            if Type("mut", "base") not in self.args_dict[current_var_name]:
+                print(self.args_dict[current_var_name])
+                print(current_var_name)
+                print(Type("mut", "base"))
                 raise PanicException(
                     f"Error in module {self.module}, instruction {self.opcode}. Variable {current_var_name} cannot have multiple types.",
                     f"Variable {current_var_name} cannot have multiple types.",
@@ -127,7 +146,8 @@ class Instruction:
                 )
         # verify that the types associated with current_var_name are valid
         for var_type in self.args_dict[current_var_name]:
-            if var_type not in [tmp_type.name for tmp_type in self.available_types]:
+            if var_type not in self.available_types:
+                print("CASE 2")
                 raise PanicException(
                     f"Error in module {self.module}, instruction {self.opcode}. Type {var_type} is not defined.",
                     f"Type {var_type} is not defined.",
@@ -146,7 +166,6 @@ class Instruction:
             f"Expected {len(self.args_dict.keys())}, got {len(arguments)}.",
         )
 
-        # print(f"Parsing arguments from self.args_dict: {self.args_dict} and arguments: {arguments}")
         parsed_args = [Argument(state, arg) for arg in arguments]
         state.require(
             self._validate_types_in_op_context(parsed_args),
@@ -154,11 +173,24 @@ class Instruction:
             f"Refer to module documentation for further help.",
         )
 
+        instruction_assignment = None
+
+        if self.assignment is not None:
+            idx = 0
+            for name in self.arg_names:
+                if name == self.assignment:
+                    instruction_assignment = parsed_args[idx]
+                idx += 1
+
         state.last_action.add_instruction(
-            ModuleInstruction(parsed_args, self.opcode, self.module, self.is_block)
+            ModuleInstruction(
+                parsed_args,
+                self.opcode,
+                self.module,
+                self.is_block,
+                instruction_assignment,
+            )
         )
-        # for arg in parsed_args:
-        #     arg.print()
         if self.is_block:
             state.last_action.start_block()
 
@@ -166,41 +198,38 @@ class Instruction:
         arg_idx = 0
         for arg in parsed_args:
             types_to_check = []
-            print(f"\nChecking arg: {arg.explain()}")
             for arg_type in self.args_dict[self.arg_names[arg_idx]]:
-                if arg_type == "mut":
+                if arg_type == Type("mut", "base"):
                     types_to_check.append(Mutable)
-                elif arg_type == "float":
+                elif arg_type == Type("float", "base"):
                     types_to_check.append(Float)
-                elif arg_type == "enum":
+                elif arg_type == Type("enum", "base"):
                     types_to_check.append(Enum)
-                elif arg_type == "enum_val":
+                elif arg_type == Type("enum_val", "base"):
                     types_to_check.append(EnumValue)
-                elif arg_type == "list_conn":
+                elif arg_type == Type("list_conn", "base"):
                     types_to_check.append(List)
                     types_to_check.append(ConnectionList)
-                elif arg_type == "list_msg":
+                elif arg_type == Type("list_msg", "base"):
                     types_to_check.append(List)
                     types_to_check.append(MessageList)
-                elif arg_type == "list_float":
+                elif arg_type == Type("list_float", "base"):
                     types_to_check.append(List)
                     types_to_check.append(FloatList)
-                elif arg_type == "list":
+                elif arg_type == Type("list", "base"):
                     types_to_check.append(List)
-                elif arg_type == "conn":
+                elif arg_type == Type("conn", "base"):
                     types_to_check.append(Connection)
-                elif arg_type == "literal":
+                elif arg_type == Type("literal", "base"):
                     types_to_check.append(Literal)
-                elif arg_type == "msg":
+                elif arg_type == Type("message", "base"):
                     types_to_check.append(Message)
                 else:
-                    new_type = arg.get_modvar_type(arg_type)
+                    new_type = arg.get_modvar_type(arg_type.name)
                     types_to_check.append(new_type)
 
-            print(f"Checking types: {types_to_check} for arg: {arg.explain()}")
             for arg_type in types_to_check:
                 if not arg.has_type(arg_type):
-                    print(f"{arg_type} Failed!")
                     return False
             arg.set_op_type(*types_to_check)
             arg_idx += 1

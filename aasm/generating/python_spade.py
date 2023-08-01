@@ -1173,9 +1173,14 @@ class PythonSpadeCode(PythonCode):
                             f"if {statement.module}.{statement.op_code}({arguments_string}):"
                         )
                     else:
-                        self.add_line(
-                            f"{statement.module}.{statement.op_code}({arguments_string})"
-                        )
+                        if statement.assignment is None:
+                            self.add_line(
+                                f"{statement.module}.{statement.op_code}({arguments_string})"
+                            )
+                        else:
+                            self.add_line(
+                                f"{self.parse_arg(statement.assignment)} = {statement.module}.{statement.op_code}({arguments_string})"
+                            )
 
                 case _:
                     print(statement)

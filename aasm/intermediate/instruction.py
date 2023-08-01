@@ -441,11 +441,13 @@ class ModuleInstruction(Instruction):
         op_code: str = "",
         module: str = "",
         is_block=False,
+        assignment: Argument | None = None,
     ):
-        self.args = args
-        self.op_code = op_code
-        self.module = module
-        self.is_block = is_block
+        self.args: TypingList[Argument] = args
+        self.op_code: str = op_code
+        self.module: str = module
+        self.is_block: bool = is_block
+        self.assignment: Argument | None = assignment
 
     def print(self) -> None:
         print(f"{self.module}::{self.op_code}")

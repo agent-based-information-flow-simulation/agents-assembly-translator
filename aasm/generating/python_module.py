@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, List
 
 from aasm.generating.python_code import PythonCode
-from aasm.modules.module import Module
+from aasm.modules.module import Module, Type
 
 
 def get_modules_for_target(
@@ -53,7 +53,9 @@ class PythonModule(PythonCode):
     def create_module_implementations(self):
         for impl in self.module.impls:
             if impl[0] == self.target:
-                self.add_line(f"def {impl[1]}():")
+                args_data = self.module.get_args_for_instruction(impl[1])
+                args_string = ", ".join(args_data.keys())
+                self.add_line(f"def {impl[1]}({args_string}):")
                 self.indent_right()
                 for line in self.module.impls[impl]:
                     self.add_line(line)

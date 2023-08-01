@@ -42,6 +42,12 @@ class Module:
         # TODO: validate module -- check that all instructions are implemented for all targets, has a name etc.
         # self._validate_module()
 
+    def get_args_for_instruction(self, instruction_name: str) -> Dict[str, List[Type]]:
+        for instruction in self.instructions:
+            if instruction.opcode == instruction_name:
+                return instruction.args_dict
+        return {}
+
     def does_target(self, target: str) -> bool:
         return target in [target.name for target in self.targets]
 
