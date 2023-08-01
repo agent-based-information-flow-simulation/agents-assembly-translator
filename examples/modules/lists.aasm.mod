@@ -13,7 +13,7 @@ spade
 !types
 
 !instructions
-SUM a: mut list_float, dst: float
+SUM a: list_float, dst: mut float
 
 !preamble spade
 
