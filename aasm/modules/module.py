@@ -33,8 +33,10 @@ class Module:
         self._in_instructions = False
         self._in_preamble = False
         self._in_impl = False
+        self._in_init = False
         self._in_types = False
         self._in_description = False
+        self._current_type = None
         self._current_target = None
         self._current_instruction = None
 
@@ -56,9 +58,11 @@ class Module:
         self._in_instructions = False
         self._in_preamble = False
         self._in_impl = False
+        self._in_init = False
         self._in_types = False
         self._in_description = False
         self._current_target = None
+        self._current_type = None
         self._current_instruction = None
 
     def _parse_module_code(self, lines: List[str]):
@@ -90,6 +94,11 @@ class Module:
                     self._in_impl = True
                     self._current_target = target
                     self._current_instruction = instruction
+                case ["!init", type, target]:
+                    self._reset_scope()
+                    self._in_init = True
+                    self._current_target = target
+                    self._current_type = type
                 case _:
                     if len(tokens) == 0:
                         continue
@@ -161,6 +170,33 @@ class Module:
                             )
                         else:
                             self.types.append(Type(tokens[0], self.name))
+                    elif self._in_init:
+                        if self._current_target is None:
+                            raise PanicException(
+                                "Invalid init line: Target is undefined: " + line,
+                                "Target is undefined",
+                                "Target must be defined before init. Define target with !init [type] [target]",
+                            )
+                        if self._current_type is None:
+                            raise PanicException(
+                                "Invalid init line: Type is undefined: " + line,
+                                "Type is undefined",
+                                "Type must be defined before init. Define type with !init [type] [target]",
+                            )
+                        # find the type
+                        found = False
+                        for t in self.types:
+                            if t.name == self._current_type:
+                                t.add_init_line(line)
+                                found = True
+                                break
+                        if not found:
+                            raise PanicException(
+                                "Invalid init line: Type is undefined: " + line,
+                                f"Unkown type {self._current_type}",
+                                "Type must be defined before init. Define type with !init [type] [target]",
+                            )
+
                     elif self._in_description:
                         self.description.append(line)
                     else:

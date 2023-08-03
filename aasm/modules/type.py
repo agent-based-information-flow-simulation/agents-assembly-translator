@@ -6,9 +6,13 @@ class Type:
         self.name = name
         self.type_class = type(name, (ModuleVariable,), {})
         self.module = module
+        self.init_lines = []
 
     def full_qualified_name(self) -> str:
         return f"{self.module}::{self.name}"
+
+    def add_init_line(self, line: str):
+        self.init_lines.append(line)
 
     def __eq__(self, other):
         if isinstance(other, Type):

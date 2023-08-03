@@ -25,6 +25,9 @@ TEST a: float, b: float
 !preamble spade
 import uuid
 
+!init uuid spade
+return str(uuid.uuid4())
+
 !impl GETUUID spade
 return str(uuid.uuid4())
 

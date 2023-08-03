@@ -11,6 +11,7 @@ agent user
 	prm numbers, list, float
 	prm counter, float, init, 0
 	prm num_seen_photos, float, init, 0
+	prm datum, uuid
 
 	behav initialize, setup
 		action initialize_friends, modify_self
@@ -25,7 +26,7 @@ agent user
 	behav facebook_activity, cyclic, 30
 		action post_photos, send_msg, facebook_post, query
 			decl num_photos, float, 0
-			DECL to_send_id, uuid, ""
+			DECL to_send_id, uuid
 			rand num_photos, int, uniform, 21, 37
 			ADDE numbers, num_photos
 			GETUUID to_send_id
@@ -38,7 +39,7 @@ agent user
 	behav read_posts, msg_rcv, facebook_post, query
 		action update_seen_photos, modify_self
 			add num_seen_photos, rcv.photos
-			DECL random_id, uuid, ""
+			DECL random_id, uuid
 			GETUUID random_id
 			ISEQ rcv.msg_id, random_id
 				# this should never occur

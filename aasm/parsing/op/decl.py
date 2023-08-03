@@ -32,7 +32,7 @@ def op_DECL(state: State, name: str, category: str, value: str) -> None:
     name_arg = Argument(state, name)
     value_arg = Argument(state, value)
     state.require(
-        name_arg.declaration_context(value_arg),
+        name_arg.declaration_context(value_arg) or category in state.get_module_types(),
         "Mismatched types in the declaration context.",
         f"NAME {name_arg.explain()}, VALUE {value_arg.explain()}",
     )

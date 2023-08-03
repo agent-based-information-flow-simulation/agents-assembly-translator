@@ -35,8 +35,7 @@ class PythonGraph(PythonCode):
         self.add_line("class Agent:")
         self.indent_right()
         self.add_line(
-            "def __init__(self, jid: str, type: str, connections = None, sim_id: str = "
-            "):"
+            "def __init__(self, jid: str, type: str, connections = None, sim_id: str = ''):"
         )
         self.indent_right()
         self.add_line("self.jid = jid")
@@ -62,7 +61,7 @@ class PythonGraph(PythonCode):
         self.indent_right()
         self.add_line("'jid': self.jid,")
         self.add_line("'type': self.type,")
-        self.add_line("'connections': self.connections")
+        self.add_line("'connections': self.connections,")
         self.add_line("'sim_id': self.sim_id")
         self.add_line("}")
         self.indent_left()
