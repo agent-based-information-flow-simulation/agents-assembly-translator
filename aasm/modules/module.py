@@ -187,7 +187,7 @@ class Module:
                         found = False
                         for t in self.types:
                             if t.name == self._current_type:
-                                t.add_init_line(line)
+                                t.add_init_line(self._current_target, line)
                                 found = True
                                 break
                         if not found:

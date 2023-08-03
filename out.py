@@ -293,6 +293,10 @@ def generate_graph_structure(domain, sim_id=""):
 import uuid
 
 
+def uuid__init():
+    return str(uuid.uuid4())
+
+
 def GETUUID(a):
     return str(uuid.uuid4())
 

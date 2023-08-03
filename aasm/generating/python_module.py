@@ -51,6 +51,15 @@ class PythonModule(PythonCode):
             return
 
     def create_module_implementations(self):
+        for type in self.module.types:
+            impl_lines = type.init_lines[self.target]
+            self.add_line(f"def {type.name}__init():")
+            self.indent_right()
+            for line in impl_lines:
+                self.add_line(line)
+            self.indent_left()
+            self.add_newline()
+
         for impl in self.module.impls:
             if impl[0] == self.target:
                 args_data = self.module.get_args_for_instruction(impl[1])
