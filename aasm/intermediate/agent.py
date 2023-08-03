@@ -101,9 +101,10 @@ class FloatListParam:
 
 
 class ModuleVariableParam:
-    def __init__(self, name: str, type: str):
+    def __init__(self, name: str, type: str, init_function: str):
         self.name: str = name
         self.type: str = type
+        self.init_function: str = init_function
 
     def print(self) -> None:
         print(f"ModuleVariableParam {self.name}: {self.type}")

@@ -23,6 +23,7 @@ class user(spade.agent.Agent):
         self.num_seen_photos = self.limit_number(kwargs.get("num_seen_photos", 0))
         self.friends = kwargs.get("friends", [])
         self.numbers = kwargs.get("numbers", [])
+        self.datum = UUID.uuid__init()
         if self.logger: self.logger.debug(f'[{self.jid}] Class dict after initialization: {self.__dict__}')
     
     @property
@@ -135,13 +136,13 @@ class user(spade.agent.Agent):
     class facebook_activity(spade.behaviour.PeriodicBehaviour):
         async def post_photos(self):
             if self.agent.logger: self.agent.logger.debug(f'[{self.agent.jid}] Run action post_photos')
-            send = { "type": "facebook_post", "performative": "query", "photos": 0.0, }
+            send = { "type": "facebook_post", "performative": "query", "photos": 0.0, "msg_id": UUID.uuid__init(), }
             
             # float declaration
             num_photos = self.agent.limit_number(0)
             
             # module variable declaration
-            to_send_id = 
+            to_send_id = UUID.uuid__init()
             
             # uniform distribution
             num_photos = self.agent.limit_number(random.uniform(self.agent.limit_number(21), self.agent.limit_number(37)))
@@ -178,7 +179,7 @@ class user(spade.agent.Agent):
             self.agent.num_seen_photos = self.agent.limit_number(self.agent.num_seen_photos + self.agent.limit_number(rcv["photos"]))
             
             # module variable declaration
-            random_id = 
+            random_id = UUID.uuid__init()
             
             # module instruction GETUUID
             random_id = UUID.GETUUID(random_id)

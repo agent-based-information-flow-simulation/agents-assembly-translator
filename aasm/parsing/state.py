@@ -105,6 +105,15 @@ class State:
                 ret_list += [mod_type.name for mod_type in loaded_module.types]
         return ret_list
 
+    def get_init_function(self, type_name: str) -> str:
+        for module in self.modules.values():
+            loaded_module = self._find_module(module.name)
+            if loaded_module is not None:
+                for mod_type in loaded_module.types:
+                    if mod_type.name == type_name:
+                        return f"{module.name}.{mod_type.name}__init()"
+        return ""
+
     def _find_module(self, name):
         for module in self.loaded_modules:
             if module.name == name:

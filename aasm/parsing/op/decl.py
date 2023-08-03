@@ -50,8 +50,13 @@ def op_DECL(state: State, name: str, category: str, value: str) -> None:
 
         case _:
             if category in state.get_module_types():
+                init_function = state.get_init_function(category)
+                if init_function is "":
+                    state.panic(f"Cannot find init function for {category}")
                 state.last_action.add_module_variable_declaration(
-                    ModuleVariableDeclaration(name_arg, value_arg, category)
+                    ModuleVariableDeclaration(
+                        name_arg, value_arg, category, init_function
+                    )
                 )
             else:
                 state.panic(f"Incorrect declaration: DECL {name} {category} {value}")

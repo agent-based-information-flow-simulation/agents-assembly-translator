@@ -103,8 +103,13 @@ def op_agent_PRM(state: State, name: str, category: str, args: List[str]) -> Non
 
         case _:
             if category in state.get_module_types():
+                init_func = state.get_init_function(category)
+                if init_func is "":
+                    state.panic(
+                        f"Cannot find init function for module type {category}.",
+                    )
                 state.last_agent.add_module_variable(
-                    AgentModuleVariableParam(name, category)
+                    AgentModuleVariableParam(name, category, init_func)
                 )
             else:
                 state.panic(
@@ -137,8 +142,13 @@ def op_message_PRM(state: State, name: str, category: str) -> None:
 
         case _:
             if category in state.get_module_types():
+                init_func = state.get_init_function(category)
+                if init_func is "":
+                    state.panic(
+                        f"Cannot find init function for module type {category}.",
+                    )
                 state.last_message.add_module_variable(
-                    MessageModuleVariableParam(name, category)
+                    MessageModuleVariableParam(name, category, init_func)
                 )
             else:
                 state.panic(f"Incorrect operation: (message) PRM {name} {category}")
