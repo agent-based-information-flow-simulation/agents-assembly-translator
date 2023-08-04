@@ -21,6 +21,7 @@ class user(spade.agent.Agent):
         self.msgSCount = self.limit_number(kwargs.get("msgSCount", 0))
         self.counter = self.limit_number(kwargs.get("counter", 0))
         self.num_seen_photos = self.limit_number(kwargs.get("num_seen_photos", 0))
+        self.user_list = kwargs.get("user_list", [])
         self.friends = kwargs.get("friends", [])
         self.numbers = kwargs.get("numbers", [])
         self.datum = UUID.uuid__init()
@@ -82,12 +83,16 @@ class user(spade.agent.Agent):
                 },
                 "connections": {
                     "connections": self.agent.connections,
+                    "user_list": self.agent.user_list,
                     "friends": self.agent.friends,
                 },
                 "messages": {
                 },
                 "float_lists": {
                     "numbers": self.agent.numbers,
+                },
+                "module_variables": {
+                    "datum": self.agent.datum,
                 },
             }
             if self.agent.backup_method == 'http':

@@ -42,7 +42,45 @@ class Module:
 
         self._parse_module_code(module_code_lines)
         # TODO: validate module -- check that all instructions are implemented for all targets, has a name etc.
-        # self._validate_module()
+        self._validate_module()
+
+    def _validate_module(self):
+        # has name
+        if self.name is None:
+            raise PanicException(
+                "Error while loading unkown module",
+                "Module has no name",
+                "Please add a name to the module using !name",
+            )
+        # has at least one target
+        if len(self.targets) == 0:
+            raise PanicException(
+                f"Error while loading module {self.name}",
+                "Module has no targets",
+                "Please add at least one target to the module using !targets",
+            )
+
+        # each type has an init for each target
+        for type in self.types:
+            for target in self.targets:
+                if target.name not in type.init_lines:
+                    raise PanicException(
+                        f"Error while loading module {self.name}",
+                        f"Type {type.name} has no init for target {target.name}",
+                        "Please add an init for the target using !init [type] [target]",
+                    )
+
+        # each instruction has impl for each target
+        for target in self.targets:
+            for instruction in self.instructions:
+                try:
+                    self.impls[(target.name, instruction.opcode)]
+                except KeyError:
+                    raise PanicException(
+                        f"Error while loading module {self.name}",
+                        f"Instruction {instruction.opcode} has no impl for target {target.name}",
+                        "Please add an impl for the target using !impl [instruction] [target]",
+                    )
 
     def get_args_for_instruction(self, instruction_name: str) -> Dict[str, List[Type]]:
         for instruction in self.instructions:

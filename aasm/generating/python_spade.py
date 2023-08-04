@@ -151,13 +151,6 @@ class PythonSpadeCode(PythonCode):
             if target.name == self.target
         ]
 
-    #    spade_modules = []
-    #    for target_mod in self.modules:
-    #        for target in target_mod.targets:
-    #            if target.name == self.target:
-    #                spade_modules.append(target_mod)
-    #    self.modules = spade_modules
-
     def generate_agent(self, agent: Agent) -> None:
         self.add_line(f"class {agent.name}(spade.agent.Agent):", {"spade"})
         self.indent_right()
@@ -452,6 +445,14 @@ class PythonSpadeCode(PythonCode):
         for float_list_param_name in agent.float_lists:
             self.add_line(
                 f'"{float_list_param_name}": self.agent.{float_list_param_name},'
+            )
+        self.indent_left()
+        self.add_line("},")
+        self.add_line('"module_variables": {')
+        self.indent_right()
+        for module_variable_name in agent.module_variables:
+            self.add_line(
+                f'"{module_variable_name}": self.agent.{module_variable_name},'
             )
         self.indent_left()
         self.add_line("},")
