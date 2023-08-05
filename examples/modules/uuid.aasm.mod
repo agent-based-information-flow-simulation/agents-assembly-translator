@@ -21,6 +21,7 @@ GETUUID a: mut uuid
 ISEQ* a: uuid, b: uuid
 ISNEQ* a: uuid, b: uuid
 TEST a: float, b: float
+TEST2*
 
 !preamble spade
 import uuid
@@ -43,4 +44,7 @@ return False
 
 !impl TEST spade
 return a
+
+!impl TEST2 spade
+return 2
 
