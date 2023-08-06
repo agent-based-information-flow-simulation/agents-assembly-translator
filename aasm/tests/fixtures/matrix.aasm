@@ -47,9 +47,11 @@ agent media_source
 
 eagent
 
-graph irg
-	TYPES 3
-	DEFTYPE user, 20, 15, 100, 70
-	DEFTYPE media_source, 2, 50, 10, 21
-	DEFTYPE null, 1, 80, 0, 0
+graph matrix
+	SCALE 3
+	DEFNODE user, R01111
+	DEFNODE user, R10111
+	DEFNODE user, R10011
+	DEFNODE media_source, R11100
+	DEFNODE null, R10000
 egraph

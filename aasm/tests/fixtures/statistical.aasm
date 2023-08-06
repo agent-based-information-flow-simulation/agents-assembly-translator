@@ -47,9 +47,8 @@ agent media_source
 
 eagent
 
-graph irg
-	TYPES 3
-	DEFTYPE user, 20, 15, 100, 70
-	DEFTYPE media_source, 2, 50, 10, 21
-	DEFTYPE null, 1, 80, 0, 0
+graph statistical
+  SIZE 150
+  DEFG user, 20, 10
+  DEFG media_source, 100%, dist_exp, 0.1
 egraph

@@ -43,7 +43,7 @@ class PythonGraph(PythonCode):
         self.add_line("self.conn_lists = {}")
         self.add_line("for name in conn_list_names:")
         self.indent_right()
-        self.add_line(f"self.conn_lists[name] = []")
+        self.add_line(f"self.conn_lists[name + '_list'] = []")
         self.indent_left()
         self.indent_left()
         self.add_line("else:")
@@ -63,6 +63,7 @@ class PythonGraph(PythonCode):
         self.add_line("def add_connection(self, connection: str, type: str):")
         self.indent_right()
         self.add_line("self.connections.append(connection)")
+        self.add_line("self.conn_lists[type + '_list'].append(connection)")
         self.indent_left()
         self.add_line("def to_dict(self):")
         self.indent_right()
@@ -399,7 +400,7 @@ class PythonGraph(PythonCode):
         self.add_line("for i in range(num_agents):")
         self.indent_right()
         self.add_line(
-            "agents.append(Agent(jids[i], agent_types[i], sim_id = random_id))"
+            "agents.append(Agent(jids[i], agent_types[i], sim_id = random_id, conn_list_names=agent_types))"
         )
         self.indent_left()
         self.add_line("for agent in agents:")
@@ -412,7 +413,7 @@ class PythonGraph(PythonCode):
         self.add_line("probo = probo_matrix[agent.type][conn_index]")
         self.add_line("if random.random() * 100 < probo:")
         self.indent_right()
-        self.add_line("agent.add_connection(agent2.jid)")
+        self.add_line("agent.add_connection(agent2.jid, agent2.type)")
         self.indent_left()
         self.indent_left()
         self.indent_left()
