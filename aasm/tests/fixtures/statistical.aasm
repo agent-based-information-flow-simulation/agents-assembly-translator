@@ -50,5 +50,5 @@ eagent
 graph statistical
   SIZE 150
   DEFG user, 20, 10
-  DEFG media_source, 100%, dist_exp, 0.1
+  DEFG media_source, 100%, dist_normal, 50, 5
 egraph
