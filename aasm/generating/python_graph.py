@@ -26,22 +26,30 @@ class PythonGraph(PythonCode):
         super().__init__(indent_size)
         if graph:
             self.add_required_imports()
-            self.add_newlines(2)
-            self.add_class_definitions()
-            self.add_newlines(2)
             self.generate_graph(graph)
 
-    def add_class_definitions(self):
+    def add_agent_class_definition(self):
         self.add_line("class Agent:")
         self.indent_right()
         self.add_line(
-            "def __init__(self, jid: str, type: str, connections = None, sim_id: str = "
-            "):"
+            "def __init__(self, jid: str, type: str, connections = None, sim_id: str = '', conn_list_names = None):"
         )
         self.indent_right()
         self.add_line("self.jid = jid")
         self.add_line("self.type = type")
         self.add_line("self.sim_id = sim_id")
+        self.add_line("if conn_list_names is not None:")
+        self.indent_right()
+        self.add_line("self.conn_lists = {}")
+        self.add_line("for name in conn_list_names:")
+        self.indent_right()
+        self.add_line(f"self.conn_lists[name + '_list'] = []")
+        self.indent_left()
+        self.indent_left()
+        self.add_line("else:")
+        self.indent_right()
+        self.add_line("self.conn_lists = {}")
+        self.indent_left()
         self.add_line("if connections is not None:")
         self.indent_right()
         self.add_line("self.connections = connections")
@@ -52,20 +60,29 @@ class PythonGraph(PythonCode):
         self.indent_left()
         self.indent_left()
         self.add_newline()
-        self.add_line("def add_connection(self, connection: str):")
+        self.add_line("def add_connection(self, connection: str, type: str):")
         self.indent_right()
         self.add_line("self.connections.append(connection)")
+        self.add_line("self.conn_lists[type + '_list'].append(connection)")
         self.indent_left()
+        self.add_newline()
+        self.add_line("def add_to_list(self, connection: str, type: str):")
+        self.indent_right()
+        self.add_line("self.conn_lists[type + '_list'].append(connection)")
+        self.indent_left()
+        self.add_newline()
         self.add_line("def to_dict(self):")
         self.indent_right()
-        self.add_line("return {")
+        self.add_line("ret = {}")
+        self.add_line("ret['jid'] = self.jid")
+        self.add_line("ret['type'] = self.type")
+        self.add_line("ret['connections'] = self.connections")
+        self.add_line("ret['sim_id'] = self.sim_id")
+        self.add_line("for name, conn_list in self.conn_lists.items():")
         self.indent_right()
-        self.add_line("'jid': self.jid,")
-        self.add_line("'type': self.type,")
-        self.add_line("'connections': self.connections")
-        self.add_line("'sim_id': self.sim_id")
-        self.add_line("}")
+        self.add_line("ret[name] = conn_list")
         self.indent_left()
+        self.add_line("return ret")
         self.indent_left()
         self.indent_left()
 
@@ -94,13 +111,16 @@ class PythonGraph(PythonCode):
     def add_statistical_graph(self, graph: StatisticalGraph) -> None:
         self.add_line('def generate_graph_structure(domain, sim_id=""):')
         self.indent_right()
+        self.add_agent_class_definition()
 
         if not graph.agents:
             self.add_line("return []")
             self.indent_left()
             return
         num_agents_expr: List[str] = []
+        self.add_line("agent_types = []")
         for agent in graph.agents.values():
+            self.add_line(f"agent_types += ['{agent.name}']")
             match agent.amount:
                 case AgentConstantAmount():
                     self.add_line(f"_num_{agent.name} = {agent.amount.value}")
@@ -162,25 +182,32 @@ class PythonGraph(PythonCode):
                 "num_connections = max(min(num_connections, len(jids) - 1), 0)"
             )
             self.add_line("jid = jids[next_agent_idx]")
-            self.add_line("agents.append({")
-            self.indent_right()
-            self.add_line('"jid": jid,')
-            self.add_line(f'"type": "{agent.name}",')
             self.add_line(
-                '"connections": random.sample([other_jid for other_jid in jids if other_jid != jid], num_connections),'
+                "connections = random.sample([other_jid for other_jid in jids if other_jid != jid], num_connections)"
             )
-            self.add_line('"sim_id": random_id,')
-            self.indent_left()
-            self.add_line("})")
+            self.add_line(
+                f"new_agent = Agent(jid, '{agent.name}', connections, random_id, agent_types)"
+            )
+            self.add_line("agents.append(new_agent)")
             self.add_line("next_agent_idx += 1")
             self.indent_left()
-
-        self.add_line("return agents")
+        self.add_line("for agent in agents:")
+        self.indent_right()
+        self.add_line("for other_agent in agents:")
+        self.indent_right()
+        self.add_line("if agent.jid in other_agent.connections:")
+        self.indent_right()
+        self.add_line("other_agent.add_to_list(agent.jid, agent.type)")
+        self.indent_left()
+        self.indent_left()
+        self.indent_left()
+        self.add_line("return [agent.to_dict() for agent in agents]")
         self.indent_left()
 
     def add_matrix_graph(self, graph: MatrixGraph):
         self.add_line('def generate_graph_structure(domain, sim_id=""):')
         self.indent_right()
+        self.add_agent_class_definition()
         if not graph.agents:
             self.add_line("return []")
             self.indent_left()
@@ -232,24 +259,30 @@ class PythonGraph(PythonCode):
             f"connections.append(jids[(i + shift * n_agent_types) % graph_size])"
         )
         self.indent_left()
-        self.add_line("agents.append({")
+        self.add_line(
+            "new_agent = Agent(jid, agent_type, connections, random_id, list(set(agent_types)))"
+        )
+        self.add_line("agents.append(new_agent)")
+        self.indent_left()
+        self.indent_left()
+        self.add_line("for agent in agents:")
         self.indent_right()
-        self.add_line('"jid": jid,')
-        self.add_line(f'"type": agent_type,')
-        self.add_line('"connections": connections,')
-        self.add_line('"sim_id": random_id,')
+        self.add_line("for other_agent in agents:")
+        self.indent_right()
+        self.add_line("if agent.jid in other_agent.connections:")
+        self.indent_right()
+        self.add_line("other_agent.add_to_list(agent.jid, agent.type)")
         self.indent_left()
-        self.add_line("})")
         self.indent_left()
-
         self.indent_left()
-        self.add_line("return agents")
+        self.add_line("return [agent.to_dict() for agent in agents]")
         self.indent_left()
 
     def add_barabasi_graph(self, graph: BarabasiGraph):
         # generate jid list using draw by draw Barabasi-Albert algorithm for the provided graph with its m0 and m
         self.add_line('def generate_graph_structure(domain, sim_id=""):')
         self.indent_right()
+        self.add_agent_class_definition()
         if not graph.agents:
             self.add_line("return []")
             self.indent_left()
@@ -310,37 +343,47 @@ class PythonGraph(PythonCode):
         self.add_line("ids = list(range(next_agent_idx))")
         self.add_line("while len(to_connect) < m:")
         self.indent_right()
-        self.add_line("weights = [len(connection_lists[i]) for i in ids]")
+        self.add_line("weights = [len(connection_lists[ident]) for ident in ids]")
         self.add_line("to_connect.append(random.choices(ids, weights=weights)[0])")
         self.add_line("ids.remove(to_connect[-1])")
         self.indent_left()
-        self.add_line("to_connect_jids = [jids[i] for i in to_connect]")
+        self.add_line("to_connect_jids = [jids[ident] for ident in to_connect]")
         self.add_line("connection_lists.append(to_connect_jids)")
         self.add_line("for id in to_connect:")
         self.indent_right()
         # two sided connections
         self.add_line("connection_lists[id].append(jids[next_agent_idx])")
+        self.add_line("connection_lists[id] = list(set(connection_lists[id]))")
         self.indent_left()
         self.add_line("next_agent_idx += 1")
         self.indent_left()
         self.add_line("agents = []")
         self.add_line("for i in range(num_agents):")
         self.indent_right()
-        self.add_line("agents.append({")
+        self.add_line(
+            "agent = Agent(jids[i], agent_types[i], connection_lists[i], random_id, list(set(agent_types)))"
+        )
+        self.add_line("agents.append(agent)")
+        self.indent_left()
+        self.add_line("for agent in agents:")
         self.indent_right()
-        self.add_line('"jid": jids[i],')
-        self.add_line('"type": agent_types[i],')
-        self.add_line('"connections": connection_lists[i],')
-        self.add_line('"sim_id": random_id,')
+        self.add_line("for other_agent in agents:")
+        self.indent_right()
+        self.add_line("if agent.jid in other_agent.connections:")
+        self.indent_right()
+        self.add_line("other_agent.add_to_list(agent.jid, agent.type)")
         self.indent_left()
-        self.add_line("})")
         self.indent_left()
-        self.add_line("return agents")
+        self.indent_left()
+        self.add_line("return [agent.to_dict() for agent in agents]")
         self.indent_left()
 
     def add_irg_graph(self, graph: InhomogenousRandomGraph):
         self.add_line('def generate_graph_structure(domain, sim_id=""):')
         self.indent_right()
+        self.add_newline()
+        self.add_agent_class_definition()
+        self.add_newline()
         if not graph.agents:
             self.add_line("return []")
             self.indent_left()
@@ -386,7 +429,7 @@ class PythonGraph(PythonCode):
         self.add_line("for i in range(num_agents):")
         self.indent_right()
         self.add_line(
-            "agents.append(Agent(jids[i], agent_types[i], sim_id = random_id))"
+            "agents.append(Agent(jids[i], agent_types[i], sim_id = random_id, conn_list_names=agent_types))"
         )
         self.indent_left()
         self.add_line("for agent in agents:")
@@ -399,7 +442,7 @@ class PythonGraph(PythonCode):
         self.add_line("probo = probo_matrix[agent.type][conn_index]")
         self.add_line("if random.random() * 100 < probo:")
         self.indent_right()
-        self.add_line("agent.add_connection(agent2.jid)")
+        self.add_line("agent.add_connection(agent2.jid, agent2.type)")
         self.indent_left()
         self.indent_left()
         self.indent_left()

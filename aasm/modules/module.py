@@ -33,14 +33,54 @@ class Module:
         self._in_instructions = False
         self._in_preamble = False
         self._in_impl = False
+        self._in_init = False
         self._in_types = False
         self._in_description = False
+        self._current_type = None
         self._current_target = None
         self._current_instruction = None
 
         self._parse_module_code(module_code_lines)
         # TODO: validate module -- check that all instructions are implemented for all targets, has a name etc.
-        # self._validate_module()
+        self._validate_module()
+
+    def _validate_module(self):
+        # has name
+        if self.name is None:
+            raise PanicException(
+                "Error while loading unkown module",
+                "Module has no name",
+                "Please add a name to the module using !name",
+            )
+        # has at least one target
+        if len(self.targets) == 0:
+            raise PanicException(
+                f"Error while loading module {self.name}",
+                "Module has no targets",
+                "Please add at least one target to the module using !targets",
+            )
+
+        # each type has an init for each target
+        for type in self.types:
+            for target in self.targets:
+                if target.name not in type.init_lines:
+                    raise PanicException(
+                        f"Error while loading module {self.name}",
+                        f"Type {type.name} has no init for target {target.name}",
+                        "Please add an init for the target using !init [type] [target]",
+                    )
+
+        # each instruction has impl for each target
+        for target in self.targets:
+            for instruction in self.instructions:
+                try:
+                    self.impls[(target.name, instruction.opcode)]
+                except KeyError:
+                    raise PanicException(
+                        f"Error while loading module {self.name}",
+                        f"Instruction {instruction.opcode} has no impl for target {target.name}",
+                        "Please add an impl for the target using !impl [instruction] [target]",
+                    )
 
     def get_args_for_instruction(self, instruction_name: str) -> Dict[str, List[Type]]:
         for instruction in self.instructions:
@@ -56,9 +96,11 @@ class Module:
         self._in_instructions = False
         self._in_preamble = False
         self._in_impl = False
+        self._in_init = False
         self._in_types = False
         self._in_description = False
         self._current_target = None
+        self._current_type = None
         self._current_instruction = None
 
     def _parse_module_code(self, lines: List[str]):
@@ -90,6 +132,11 @@ class Module:
                     self._in_impl = True
                     self._current_target = target
                     self._current_instruction = instruction
+                case ["!init", type, target]:
+                    self._reset_scope()
+                    self._in_init = True
+                    self._current_target = target
+                    self._current_type = type
                 case _:
                     if len(tokens) == 0:
                         continue
@@ -161,6 +208,33 @@ class Module:
                             )
                         else:
                             self.types.append(Type(tokens[0], self.name))
+                    elif self._in_init:
+                        if self._current_target is None:
+                            raise PanicException(
+                                "Invalid init line: Target is undefined: " + line,
+                                "Target is undefined",
+                                "Target must be defined before init. Define target with !init [type] [target]",
+                            )
+                        if self._current_type is None:
+                            raise PanicException(
+                                "Invalid init line: Type is undefined: " + line,
+                                "Type is undefined",
+                                "Type must be defined before init. Define type with !init [type] [target]",
+                            )
+                        # find the type
+                        found = False
+                        for t in self.types:
+                            if t.name == self._current_type:
+                                t.add_init_line(self._current_target, line)
+                                found = True
+                                break
+                        if not found:
+                            raise PanicException(
+                                "Invalid init line: Type is undefined: " + line,
+                                f"Unkown type {self._current_type}",
+                                "Type must be defined before init. Define type with !init [type] [target]",
+                            )
+
                     elif self._in_description:
                         self.description.append(line)
                     else:

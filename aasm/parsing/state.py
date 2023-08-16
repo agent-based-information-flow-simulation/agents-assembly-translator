@@ -69,6 +69,9 @@ class State:
 
     def add_agent(self, agent: Agent) -> None:
         self.agents[agent.name] = agent
+        new_list_name = f"{agent.name}_list"
+        for ag in self.agents:
+            self.agents[ag].add_connection_list(new_list_name)
 
     def add_message(self, message: Message) -> None:
         self.messages[(message.type, message.performative)] = message
@@ -104,6 +107,15 @@ class State:
             if loaded_module is not None:
                 ret_list += [mod_type.name for mod_type in loaded_module.types]
         return ret_list
+
+    def get_init_function(self, type_name: str) -> str:
+        for module in self.modules.values():
+            loaded_module = self._find_module(module.name)
+            if loaded_module is not None:
+                for mod_type in loaded_module.types:
+                    if mod_type.name == type_name:
+                        return f"{module.name}.{mod_type.name}__init()"
+        return ""
 
     def _find_module(self, name):
         for module in self.loaded_modules:

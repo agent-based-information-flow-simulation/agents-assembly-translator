@@ -101,9 +101,10 @@ class FloatListParam:
 
 
 class ModuleVariableParam:
-    def __init__(self, name: str, type: str):
+    def __init__(self, name: str, type: str, init_function: str):
         self.name: str = name
         self.type: str = type
+        self.init_function: str = init_function
 
     def print(self) -> None:
         print(f"ModuleVariableParam {self.name}: {self.type}")
@@ -190,13 +191,16 @@ class Agent:
     def add_enum(self, enum_param: EnumParam) -> None:
         self.enums[enum_param.name] = enum_param
 
-    def add_connection_list(self, list_param: ConnectionListParam) -> None:
+    def add_connection_list(self, name: str) -> None:
+        list_param = ConnectionListParam(name)
         self.connection_lists[list_param.name] = list_param
 
-    def add_message_list(self, list_param: MessageListParam) -> None:
+    def add_message_list(self, name: str) -> None:
+        list_param = MessageListParam(name)
         self.message_lists[list_param.name] = list_param
 
-    def add_float_list(self, list_param: FloatListParam) -> None:
+    def add_float_list(self, name: str) -> None:
+        list_param = FloatListParam(name)
         self.float_lists[list_param.name] = list_param
 
     def add_module_variable(self, variable_param: ModuleVariableParam) -> None:

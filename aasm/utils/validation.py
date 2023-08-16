@@ -14,6 +14,8 @@ def is_float(value: str) -> bool:
 
 
 def is_int(value: str) -> bool:
+    if value == "":
+        return False
     return value.isdigit() or (value[0] == "-" and value[1:].isdigit())
 
 

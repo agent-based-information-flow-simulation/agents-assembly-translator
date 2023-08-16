@@ -62,7 +62,10 @@ def parse_lines(lines: List[str], debug: bool, modules: List[Module]) -> ParsedD
                 op_EMESSAGE(state)
 
             case ["PRM", name, category]:
-                op_message_PRM(state, name, category)
+                if state.in_agent:
+                    op_agent_PRM(state, name, category, [])
+                else:
+                    op_message_PRM(state, name, category)
 
             case ["PRM", name, category, *args]:
                 op_agent_PRM(state, name, category, args)
@@ -78,6 +81,9 @@ def parse_lines(lines: List[str], debug: bool, modules: List[Module]) -> ParsedD
 
             case ["EACTION"]:
                 op_EACTION(state)
+
+            case ["DECL", name, category]:
+                op_DECL(state, name, category, "")
 
             case ["DECL", name, category, value]:
                 op_DECL(state, name, category, value)
