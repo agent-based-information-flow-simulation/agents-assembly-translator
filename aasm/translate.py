@@ -57,7 +57,7 @@ def main(
         spade_modules = get_modules_for_target(loaded_module_files, "spade")
         print("Loaded modules:")
         for module in spade_modules:
-            print(f"\t{module}")
+            print(f"{module.name}")
         spade_code = get_spade_code(
             lines, indent_size=4, debug=debug, modules=spade_modules
         )

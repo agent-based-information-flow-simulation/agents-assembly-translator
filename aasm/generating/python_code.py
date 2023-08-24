@@ -21,6 +21,7 @@ class PythonCode:
     ) -> None:
         if required_imports is not None:
             self.required_imports.update(required_imports)
+        line = line.replace("\t", self.indent * " ")
         if add_newline:
             self.code_lines.append(self.indent * " " + line + "\n")
         else:

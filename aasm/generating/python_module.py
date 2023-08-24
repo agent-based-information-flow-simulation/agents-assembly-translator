@@ -20,7 +20,9 @@ def get_modules_for_target(
     target_modules = []
     for module_lines in module_code_lines:
         module = Module(module_lines)
+        print("Checking: ", module.name)
         if module.does_target(target):
+            print("Adding: ", module.name)
             target_modules.append(module)
     return target_modules
 
@@ -51,6 +53,15 @@ class PythonModule(PythonCode):
             return
 
     def create_module_implementations(self):
+        for type in self.module.types:
+            impl_lines = type.init_lines[self.target]
+            self.add_line(f"def {type.name}__init():")
+            self.indent_right()
+            for line in impl_lines:
+                self.add_line(line)
+            self.indent_left()
+            self.add_newline()
+
         for impl in self.module.impls:
             if impl[0] == self.target:
                 args_data = self.module.get_args_for_instruction(impl[1])
@@ -58,6 +69,6 @@ class PythonModule(PythonCode):
                 self.add_line(f"def {impl[1]}({args_string}):")
                 self.indent_right()
                 for line in self.module.impls[impl]:
-                    self.add_line(line)
+                    self.add_line(line, add_newline=False)
                 self.indent_left()
                 self.add_newline()

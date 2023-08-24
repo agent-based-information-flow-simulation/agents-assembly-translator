@@ -37,10 +37,10 @@ class Instruction:
     ):
         self.module = module_name
         if opcode.endswith("*"):
-            self.opcode = opcode[:-1]
+            self.opcode = opcode[:-1].upper()
             self.is_block = True
         else:
-            self.opcode = opcode
+            self.opcode = opcode.upper()
             self.is_block = False
         self.available_types = [
             Type("mut", "base"),
@@ -114,6 +114,13 @@ class Instruction:
                 first_arg = False
             else:
                 current_var_type = self._get_arg_type_from_name(arg)
+                if len(self.args_dict[current_var_name]) > 0:
+                    if self.args_dict[current_var_name][0] != Type("mut", "base"):
+                        raise PanicException(
+                            f"Error in module {self.module}, instruction {self.opcode}. Variable {current_var_name} cannot have multiple types.",
+                            f"Variable {current_var_name} cannot have multiple types.",
+                            "Specify only one type for the variable.",
+                        )
                 self.args_dict[current_var_name].append(current_var_type)
 
     def _get_arg_type_from_name(self, arg_name: str) -> Type:
@@ -136,9 +143,6 @@ class Instruction:
 
         if len(self.args_dict[current_var_name]) > 1:
             if Type("mut", "base") not in self.args_dict[current_var_name]:
-                print(self.args_dict[current_var_name])
-                print(current_var_name)
-                print(Type("mut", "base"))
                 raise PanicException(
                     f"Error in module {self.module}, instruction {self.opcode}. Variable {current_var_name} cannot have multiple types.",
                     f"Variable {current_var_name} cannot have multiple types.",
@@ -147,7 +151,6 @@ class Instruction:
         # verify that the types associated with current_var_name are valid
         for var_type in self.args_dict[current_var_name]:
             if var_type not in self.available_types:
-                print("CASE 2")
                 raise PanicException(
                     f"Error in module {self.module}, instruction {self.opcode}. Type {var_type} is not defined.",
                     f"Type {var_type} is not defined.",

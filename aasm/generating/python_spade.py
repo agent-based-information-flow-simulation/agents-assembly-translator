@@ -151,13 +151,6 @@ class PythonSpadeCode(PythonCode):
             if target.name == self.target
         ]
 
-    #    spade_modules = []
-    #    for target_mod in self.modules:
-    #        for target in target_mod.targets:
-    #            if target.name == self.target:
-    #                spade_modules.append(target_mod)
-    #    self.modules = spade_modules
-
     def generate_agent(self, agent: Agent) -> None:
         self.add_line(f"class {agent.name}(spade.agent.Agent):", {"spade"})
         self.indent_right()
@@ -283,6 +276,9 @@ class PythonSpadeCode(PythonCode):
             self.add_line(
                 f'self.{float_list_param.name} = kwargs.get("{float_list_param.name}", [])'
             )
+
+        for mod_var_param in agent.module_variables.values():
+            self.add_line(f"self.{mod_var_param.name} = {mod_var_param.init_function}")
 
         self.add_line(
             "if self.logger: self.logger.debug(f'[{self.jid}] Class dict after initialization: {self.__dict__}')"
@@ -452,6 +448,14 @@ class PythonSpadeCode(PythonCode):
             )
         self.indent_left()
         self.add_line("},")
+        self.add_line('"module_variables": {')
+        self.indent_right()
+        for module_variable_name in agent.module_variables:
+            self.add_line(
+                f'"{module_variable_name}": self.agent.{module_variable_name},'
+            )
+        self.indent_left()
+        self.add_line("},")
         self.indent_left()
         self.add_line("}")
 
@@ -585,6 +589,8 @@ class PythonSpadeCode(PythonCode):
             send_msg += f'"{float_param_name}": 0.0, '
         for connection_param_name in message.connection_params:
             send_msg += f'"{connection_param_name}": "", '
+        for name, modvar_param in message.module_variable_params.items():
+            send_msg += f'"{name}": {modvar_param.init_function}, '
         send_msg += "}"
         self.add_line(send_msg)
 
@@ -639,8 +645,7 @@ class PythonSpadeCode(PythonCode):
                 case ModuleVariableDeclaration():
                     self.add_line("")
                     self.add_line("# module variable declaration")
-                    value = f"{self.parse_arg(statement.value)}"
-                    self.add_line(f"{statement.name} = {value}")
+                    self.add_line(f"{statement.name} = {statement.init_function}")
 
                 case Subset():
                     self.add_line("")

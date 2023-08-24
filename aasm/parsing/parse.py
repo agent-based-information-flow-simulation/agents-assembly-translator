@@ -47,6 +47,14 @@ if TYPE_CHECKING:
 
 def parse_lines(lines: List[str], debug: bool, modules: List[Module]) -> ParsedData:
     state = State(lines, modules, debug)
+    # first pass to get list names
+    for tokens in state.tokens_from_lines():
+        match tokens:
+            case ["AGENT", name]:
+                state.add_agent_list(name)
+            case _:
+                continue
+    state.reset_tokens()
     for tokens in state.tokens_from_lines():
         match tokens:
             case ["AGENT", name]:
@@ -62,7 +70,10 @@ def parse_lines(lines: List[str], debug: bool, modules: List[Module]) -> ParsedD
                 op_EMESSAGE(state)
 
             case ["PRM", name, category]:
-                op_message_PRM(state, name, category)
+                if state.in_agent:
+                    op_agent_PRM(state, name, category, [])
+                else:
+                    op_message_PRM(state, name, category)
 
             case ["PRM", name, category, *args]:
                 op_agent_PRM(state, name, category, args)
@@ -78,6 +89,9 @@ def parse_lines(lines: List[str], debug: bool, modules: List[Module]) -> ParsedD
 
             case ["EACTION"]:
                 op_EACTION(state)
+
+            case ["DECL", name, category]:
+                op_DECL(state, name, category, "")
 
             case ["DECL", name, category, value]:
                 op_DECL(state, name, category, value)

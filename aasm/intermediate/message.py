@@ -39,9 +39,10 @@ class ConnectionParam(MessageParam):
 
 
 class ModuleVariableParam(MessageParam):
-    def __init__(self, name: str, type: str):
+    def __init__(self, name: str, type: str, init_function: str):
         super().__init__(name)
         self.type: str = type
+        self.init_function: str = init_function
 
     def print(self) -> None:
         print(f"MessageModuleVariableParam")
