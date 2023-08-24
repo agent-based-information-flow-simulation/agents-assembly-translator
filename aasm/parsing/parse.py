@@ -47,6 +47,14 @@ if TYPE_CHECKING:
 
 def parse_lines(lines: List[str], debug: bool, modules: List[Module]) -> ParsedData:
     state = State(lines, modules, debug)
+    # first pass to get list names
+    for tokens in state.tokens_from_lines():
+        match tokens:
+            case ["AGENT", name]:
+                state.add_agent_list(name)
+            case _:
+                continue
+    state.reset_tokens()
     for tokens in state.tokens_from_lines():
         match tokens:
             case ["AGENT", name]:

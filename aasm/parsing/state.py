@@ -41,9 +41,9 @@ class State:
         self.agents: Dict[str, Agent] = {}
         self.messages: Dict[Tuple[str, str], Message] = {}
         self.graph: Graph | None = None
-        # TODO: Refactor this to a single module type
         self.modules: Dict[str, Module] = {}
         self.loaded_modules: List[LoadedModule] = modules
+        self.agent_list_names = []
 
     @property
     def last_agent(self) -> Agent:
@@ -67,11 +67,16 @@ class State:
             raise Exception("Graph is not defined")
         return self.graph
 
+    def add_agent_list(self, name: str):
+        self.agent_list_names.append(f"{name}_list")
+
     def add_agent(self, agent: Agent) -> None:
         self.agents[agent.name] = agent
-        new_list_name = f"{agent.name}_list"
-        for ag in self.agents:
-            self.agents[ag].add_connection_list(new_list_name)
+        for agent_list in self.agent_list_names:
+            self.agents[agent.name].add_connection_list(agent_list)
+        # new_list_name = f"{agent.name}_list"
+        # for ag in self.agents:
+        #     self.agents[ag].add_connection_list(new_list_name)
 
     def add_message(self, message: Message) -> None:
         self.messages[(message.type, message.performative)] = message
@@ -131,6 +136,9 @@ class State:
             if tokens:
                 tokens[0] = tokens[0].upper()
                 yield tokens
+
+    def reset_tokens(self):
+        self.line_num = 0
 
     def print(self) -> None:
         if self.messages:
