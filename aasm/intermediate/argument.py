@@ -473,7 +473,8 @@ class Argument:
         elif self.has_type(ReceivedMessageParam):
             behav = state.last_behaviour
             if isinstance(behav, MessageReceivedBehaviour):
-                subtype = behav.received_message.get_module_variable_type(self.expr)
+                prop = self.expr.split(".")[-1]
+                subtype = behav.received_message.get_module_variable_type(prop)
         elif self.has_type(SendMessageParam):
             action = state.last_action
             if isinstance(action, SendMessageAction):
