@@ -37,10 +37,10 @@ class Instruction:
     ):
         self.module = module_name
         if opcode.endswith("*"):
-            self.opcode = opcode[:-1]
+            self.opcode = opcode[:-1].upper()
             self.is_block = True
         else:
-            self.opcode = opcode
+            self.opcode = opcode.upper()
             self.is_block = False
         self.available_types = [
             Type("mut", "base"),
@@ -65,13 +65,11 @@ class Instruction:
 
     def _set_assignment(self):
         # find the mutable value in args_dict
-        print("MODULE:", self.module)
         mutable_arg = None
         for arg_name in self.args_dict.keys():
             for arg_type in self.args_dict[arg_name]:
                 if arg_type == Type("mut", "base"):
                     mutable_arg = arg_name
-                    print("mutable arg:", mutable_arg)
         self.assignment = mutable_arg
 
     def _validate_args_dict(self):
@@ -99,7 +97,6 @@ class Instruction:
         current_var_type = ""
         first_arg = True
         for arg in args:
-            print("Parsing arg:", arg)
             if arg.endswith(":"):
                 if not first_arg:
                     self._validate_var_declaration(current_var_name)
