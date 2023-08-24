@@ -20,7 +20,9 @@ def get_modules_for_target(
     target_modules = []
     for module_lines in module_code_lines:
         module = Module(module_lines)
+        print("Checking: ", module.name)
         if module.does_target(target):
+            print("Adding: ", module.name)
             target_modules.append(module)
     return target_modules
 

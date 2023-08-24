@@ -46,6 +46,7 @@ def main(
     if includes is not None:
         try:
             for include in includes:
+                print(f"Getting input from: {include}")
                 loaded_module_files.append(get_input(include))
         except PanicException as e:
             e.print()
