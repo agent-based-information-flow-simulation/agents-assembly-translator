@@ -131,7 +131,7 @@ class Module:
                     self._reset_scope()
                     self._in_impl = True
                     self._current_target = target
-                    self._current_instruction = instruction
+                    self._current_instruction = instruction.upper()
                 case ["!init", type, target]:
                     self._reset_scope()
                     self._in_init = True
@@ -191,7 +191,8 @@ class Module:
                                 "Instruction must be defined before impl. Define instruction with !impl [instruction] [target]",
                             )
                         self.impls.setdefault(
-                            (self._current_target, self._current_instruction), []
+                            (self._current_target, self._current_instruction.upper()),
+                            [],
                         ).append(line)
                     elif self._in_types:
                         if len(tokens) != 1:
