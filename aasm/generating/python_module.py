@@ -69,6 +69,6 @@ class PythonModule(PythonCode):
                 self.add_line(f"def {impl[1]}({args_string}):")
                 self.indent_right()
                 for line in self.module.impls[impl]:
-                    self.add_line(line)
+                    self.add_line(line, add_newline=False)
                 self.indent_left()
                 self.add_newline()
