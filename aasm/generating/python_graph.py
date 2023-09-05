@@ -28,6 +28,13 @@ class PythonGraph(PythonCode):
             self.add_required_imports()
             self.generate_graph(graph)
 
+    def seed_everything(self) -> None:
+        self.add_line("if seed is not None:")
+        self.indent_right()
+        self.add_line("random.seed(seed)")
+        self.add_line("numpy.random.seed(seed)")
+        self.indent_left()
+
     def add_agent_class_definition(self):
         self.add_line("class Agent:")
         self.indent_right()
@@ -109,8 +116,9 @@ class PythonGraph(PythonCode):
                 raise Exception(f"Unknown graph type: {graph.print()}")
 
     def add_statistical_graph(self, graph: StatisticalGraph) -> None:
-        self.add_line('def generate_graph_structure(domain, sim_id=""):')
+        self.add_line('def generate_graph_structure(domain, sim_id="", seed=None):')
         self.indent_right()
+        self.seed_everything()
         self.add_agent_class_definition()
 
         if not graph.agents:
@@ -205,8 +213,9 @@ class PythonGraph(PythonCode):
         self.indent_left()
 
     def add_matrix_graph(self, graph: MatrixGraph):
-        self.add_line('def generate_graph_structure(domain, sim_id=""):')
+        self.add_line('def generate_graph_structure(domain, sim_id="", seed=None):')
         self.indent_right()
+        self.seed_everything()
         self.add_agent_class_definition()
         if not graph.agents:
             self.add_line("return []")
@@ -280,8 +289,9 @@ class PythonGraph(PythonCode):
 
     def add_barabasi_graph(self, graph: BarabasiGraph):
         # generate jid list using draw by draw Barabasi-Albert algorithm for the provided graph with its m0 and m
-        self.add_line('def generate_graph_structure(domain, sim_id=""):')
+        self.add_line('def generate_graph_structure(domain, sim_id="", seed=None):')
         self.indent_right()
+        self.seed_everything()
         self.add_agent_class_definition()
         if not graph.agents:
             self.add_line("return []")
@@ -379,9 +389,10 @@ class PythonGraph(PythonCode):
         self.indent_left()
 
     def add_irg_graph(self, graph: InhomogenousRandomGraph):
-        self.add_line('def generate_graph_structure(domain, sim_id=""):')
+        self.add_line('def generate_graph_structure(domain, sim_id="", seed=None):')
         self.indent_right()
         self.add_newline()
+        self.seed_everything()
         self.add_agent_class_definition()
         self.add_newline()
         if not graph.agents:
