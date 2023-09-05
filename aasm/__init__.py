@@ -1,6 +1,6 @@
 """Agents Assembly translator"""
 
-__version__ = "0.1.8"
+__version__ = "0.1.9"
 
 from aasm.generating.code import Code
 from aasm.modules.module import Module
